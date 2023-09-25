@@ -1,0 +1,23 @@
+name: Github Pages
+run-name: build & deploy
+on: [push]
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: NPM stuff
+        run: | 
+          npm install gh-pages --save-dev
+
+      - name: Build and deploy
+        run: |
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git &
+          npm run deploy -- -m "Deploy to github pages" -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
