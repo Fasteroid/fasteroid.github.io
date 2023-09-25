@@ -1,5 +1,7 @@
-<script>
+<script lang="ts">
   import { base } from "$app/paths";
+  let tstest: number = 1;
+  console.log(tstest)
 </script>
 
 <h1>sveltekit-gh-pages</h1>
