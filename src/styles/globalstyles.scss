@@ -1,0 +1,82 @@
+@use    "./globalvars.scss" as *;
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400&display=swap');
+
+// TODO: this is already a mess, it needs tidying up
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+body {
+    background-color: $site-background;
+    color: $site-text;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 11pt;
+    line-height: 1.25;
+    word-spacing: -0.75px; 
+}
+
+
+section, h1 {
+    background-color: $section-background;
+    padding: 15px;
+    text-align: justify;
+    display: block;
+}
+h1 {
+    font-size: 24px; 
+    text-align: center; 
+    margin-bottom: 15px;
+}
+
+
+img {
+    background-color: $section-background;
+    padding: 15px 15px;
+    margin: 0 15px 15px 15px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.p {
+    margin: 0 15px 15px 15px;
+    line-height: 140%;
+    width: auto;
+    white-space: pre-wrap;
+}
+
+.margins {
+    margin: auto;
+    max-width: calc( min(80vw, 1920px) );
+    padding: 10px;
+}
+
+.dubsp {
+    white-space: pre;
+}
+
+.emdash {
+    display: inline-block;
+    text-align: center;
+    width:13pt;
+    transform: scale(1.7, 1);
+}
+
+li::marker{
+    font-size: 12pt;
+}
+
+ul {
+    margin: 0px;
+}
+
+a {
+    color: #b1b1ff;
+    &:visited {
+        color: #eca1ff;
+    }
+}
+
+::selection {
+    background: #70b0ff44;
+}

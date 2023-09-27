@@ -6,10 +6,8 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-
 		"predeploy": "npm run build",
 		"deploy": "gh-pages -d build"
 	},
@@ -24,6 +22,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@sveltejs/adapter-static": "^2.0.3"
+		"@sveltejs/adapter-static": "^2.0.3",
+		"sass": "^1.68.0"
 	}
 }
