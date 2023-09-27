@@ -6,7 +6,7 @@
   <title>About Me</title>
 </svelte:head>
 
-<component class="navbar" src="navbar.html"></component>
+<!-- Later: <component class="navbar" src="navbar.html"></component> -->
 
 <body>
     <div class="margins">
@@ -75,7 +75,7 @@
                 <div style="clear:both"></div>
                 <br>
                 That's the end of my TL;DR.<br>
-                If I've piqued your interest at all, you should check out my <a href=skilltree.html>technical skill tree</a> and learn more about what I can do.  
+                If I've piqued your interest at all, you should check out my <a href="https://fasteroid.github.io/skilltree.html">technical skill tree</a> and learn more about what I can do.  
                 Perhaps I can be of use to you!<br>
             </div>
             —Fast<br>
