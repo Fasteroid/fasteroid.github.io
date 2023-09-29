@@ -1,0 +1,38 @@
+@font-face {
+    font-family: Minecraft;
+    src: url("./../../assets/fonts/Minecraft.woff") format("woff");
+}
+
+.minecraftsplash {
+    color: #ff0;
+    position: absolute;
+    z-index: 2;
+    left: 100%;
+    font-family: 'Minecraft', 'fixedsys';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+    text-align: center;
+    white-space: pre;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    animation: minecraftwow 0.5s infinite
+}
+
+$begin: translate(-50%,60%) scale(0.95) rotate(-15deg);
+$middle: translate(-50%,60%) scale(1) rotate(-15deg);
+
+@keyframes minecraftwow {
+    0% {
+        transform: $begin;
+        animation-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
+    }
+    50% {
+        transform: $middle;
+        animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+    }
+    100% {
+        transform: $begin;
+        animation-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
+    }
+}

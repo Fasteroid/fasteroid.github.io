@@ -1,0 +1,220 @@
+@use "./../../styles/params/neons.scss" as neons;
+@use "./minecraftsplash.scss";
+@import url('https://fonts.googleapis.com/css2?family=Recursive:wght@600&display=swap');
+
+nav {
+    display: flex;
+    background: #000000;
+    font-family: 'Recursive', sans-serif;
+    font-style: italic;
+	position: sticky;
+	top: 0;
+    justify-content: space-between;
+    z-index: 999; /* thank god this actually works for once */
+
+    .home {
+        z-index: 1;
+        .home-wrapper {
+            width: max-content;
+            margin: auto;
+            padding: 15px;
+            font-size: 16pt;
+            color: #ffffff;
+            background: #000000;
+            display: grid;
+            position: relative;
+
+            grid-template-columns: 1fr;
+            * {
+                grid-row-start: 1;
+                grid-column-start: 1;
+            }
+
+            span {
+                animation: neon-cyan-flickering 1s ease-in-out alternate infinite;
+            }
+        }
+    }
+
+    .dropdown {
+        position: relative;
+        cursor: pointer;
+        background: #000000;
+    }
+
+    /* This is literal magic, it cancels out the transitions that (incorrectly) trigger on page load. */
+    @keyframes stopTransitionOnLoad {
+        from {
+            transform: translate(0, -100%);
+        }
+        to {
+            transform: translate(0, 0);
+        }
+    }
+    .dropdown-onload-wrapper {
+        animation: stopTransitionOnLoad 0.3s;
+    }
+
+    .dropdown-content, .dropdown-onload-wrapper {
+        z-index: 0;
+        display: block;
+        left: 0;
+        top: 90%;
+        width: 100%;
+    }
+    .dropdown-content {
+        box-shadow: 0px 0px 0px black;
+        position: absolute;
+        transform: translate(0,-100%);
+        transition: 0.3s;
+    }
+
+    .dropdown-head {
+        z-index: 1;
+        display: flex;
+        background: #000000;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        top: 90%;
+        padding: 0 15px;
+    }
+
+    .pages > a {
+        padding: 0 15px;
+    }
+
+    .dropdown-content a {
+        background: #000000;
+        padding: 15px;
+        filter: none;
+        mix-blend-mode: screen; /* Needed so the glows from the icons merge additively */
+    }
+
+    .dropdown-content a span {
+        filter: none;
+    }
+
+    .dropdown-content .icon {
+        mix-blend-mode: screen; /* Needed so the glows from the icons merge additively */
+    }
+
+    .dropdown,
+    .dropdown-content a,
+    .pages > a {
+        font-size: 14pt;
+    }
+    
+    .dropdown,
+    .dropdown-content a,
+    .dropdown-head a,
+    .pages > a {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+    .dropdown-content a {
+        font-size: 12pt;
+    }
+
+    .cwd {
+        background: rgb(34,34,34) !important;
+    }
+
+    .icon {
+        background-color: #0000;
+        padding: 0;
+        margin: 0px 10px 0px 0px;
+        display: inline;
+        max-height: 24px;
+    }
+
+    .dropdown > a {
+        text-decoration: none;
+    }
+
+    .dropdown:hover .dropdown-content {
+        transform: translate(0,5px) translateZ(-1px);
+        box-shadow: 0px 0px 5px black;
+    }
+
+    /* Glow animation stuff */
+    .dropdown:hover > a > span,
+    .dropdown:hover > .dropdown-head > a
+    {
+        filter: neons.$cyan-bright
+    }
+
+    .dropdown a:hover * { /* these looked obnoxious with the full glow */
+        filter: neons.$cyan-dark
+    }
+
+    a span,
+    .dropdown > a > span,
+    .dropdown > .dropdown-head > a,
+    .dropdown a * {
+        mix-blend-mode: screen;
+        transition: translate, filter 0.1s cubic-bezier(0.69, 0.02, 0.95, 0.60);
+        color: #ffffff;
+    }
+
+    a:hover span,
+    .dropdown:hover > a > span,
+    .dropdown:hover > .dropdown-head > a,
+    .dropdown a:hover * {
+        mix-blend-mode: screen;
+        transition: translate, filter 0.2s cubic-bezier(.05,.4,.22,1) !important;
+        color: #ffffff;
+    }
+
+    @media screen and (orientation:portrait) {
+        display: flex;
+        flex-flow: column;
+        .home {
+            background-color: #000000;
+            text-align: center;
+            width: calc(100% - 30px)   
+        }
+        .pages {
+            margin-left: auto; 
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            width: 100%
+        }    
+        .dropdown-head {
+            width: 100%;
+            padding: 15px;
+            /* 
+                in my testing, these looked good when scaled relative to view height on mobile
+                we can't let them grow too much though, or they spill out of their containers!
+            */
+            font-size: calc( min( max(1.3vh, 14pt), 24pt ) );
+        }
+        .dropdown {
+            /* note: must be changed if I add more dropdowns! */
+            width: 25%;
+        }
+        .dropdown,
+        .dropdown-content a,
+        .pages > a {
+            font-size: calc( min( max(1.2vh, 12pt), 24pt ) );
+        }
+    }
+
+    @media screen and (orientation:landscape) {
+        .pages {
+            margin-left: auto; 
+            margin-right: 0px;
+            display: flex;
+            align-items: center;
+        }    
+        .dropdown-head {
+            width: 80pt;
+        }
+    }
+}

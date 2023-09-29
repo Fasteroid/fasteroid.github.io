@@ -23,3 +23,12 @@ $red:
     drop-shadow(0 1px 7pt #f038)
     drop-shadow(0 1px 5pt #f008)
     drop-shadow(0 1px 8pt #f008);
+
+@keyframes neon-cyan-flickering {
+    0%, 60%, 62%, 98%, 100% {
+        filter: $cyan-bright
+    }
+    61%, 99% {
+        filter: $cyan-dark
+    }
+}
