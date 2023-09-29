@@ -43,13 +43,13 @@
                 one of five long-term problems (which all involve some combination of acting and engineering),
                 and are assigned an 8-minute 'spontaneous' problem the day of the performance.<br>
                 <br>
-                With the help of my father as the team coach (who's just there to organize and keep us on track),
-                and my wonderful teammates,
-                we managed to be World Finalists four times in a row from 2016 to 2019, with a second place 
+                With the help of my father as the team coach (who's just there to organize and keep us on track), 
+                and my wonderful teammates, 
+                we managed to be World Finalists four times in a row from 2016 to 2019, with a second place
                 victory for Problem 2 Division III in 2019 (<a href="https://www.odysseyofthemind.com/wf2019/world-finals-2019-scores">scores here</a>).<br>
                 <br>
                 Odyssey of the Mind taught me a lot—mainly that it usually isn't feasable for one person to work on everything.  
-                Different people have different strengths and weaknesses, and if one person does everything, they're bound to hit
+                Different people have different strengths and weaknesses, and if one person does everything, they're bound to hit 
                 a weakness eventually.  In contrast, with good teamwork and good skill coverage, even an intelligent adversary
                 will struggle to pick something that truly defeats everyone on the team.<br>
                 <div style="clear:both"></div>
@@ -64,7 +64,7 @@
                 <br>
                 One of the coolest features of both these servers is the presence of a bidirectional Discord Relay I designed, which allows seamless two-way 
                 interaction between players on the Garry's Mod server and users in its Discord server.  This relay has proved to serve
-                many practical applications, ranging from posting memes in the in-game chat to running commands remotely from up to 8,000 miles away.    
+                many practical applications, ranging from posting memes in the in-game chat to running commands remotely from up to 8,000 miles away.  
                 It's not a unique idea by any means, but it's 100% my unique implementation.  It's old, but I'm still proud of it.<br>
                 <br>
                 In 2021 or 2022 (I forget exactly when), I had acquired enough money via server donations to purchase a new dedicated machine for the server.  
