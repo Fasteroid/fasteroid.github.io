@@ -15,7 +15,7 @@
                 <b>About Me</b>
             </h1>
             <div class="p">
-                <img src="{base}assets/aboutme/fasteroidbruh.jpg" style="float:left; max-height: 245px; margin-left: 0px;" 
+                <img src="{base}/assets/aboutme/fasteroidbruh.jpg" style="float:left; max-height: 245px; margin-left: 0px;" 
                 alt="A 3D-printed replica Expression 2 chip from Garry's Mod.">
                 Hi, I'm Fasteroid!  Nice to meet you!<br>
                 <br>
