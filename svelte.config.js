@@ -10,8 +10,8 @@ let customSpacing = {
 		if( filename.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<body>/) ){
 			content = content.replaceAll(/ {3,}/gm,"")                          // 3+ spaces in a row is indentation, remove it
 			content = content.replaceAll(/(?! +)([^>])(\r\n)([^<])/gm,'$1 $3')  // if I forget a space before a line break, add it.
-			content = content.replaceAll(/\r\n/gm,'');                      // now delete the line breaks so the page wraps
-			content = content.replaceAll('—','<div class="emdash">—</div>'); // give em dashes extra wideness for this font
+			content = content.replaceAll(/\r\n/gm,'');                          // now delete the line breaks so the page wraps
+			content = content.replaceAll('—','<div class="emdash">—</div>');    // give em dashes extra wideness for this font
 			return { code: content }
 		}
 	},

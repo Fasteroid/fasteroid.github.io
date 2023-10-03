@@ -3,10 +3,8 @@
 </script>
 
 <svelte:head>
-  <title>About Me</title>
+    <title>About Me</title> 
 </svelte:head>
-
-<!-- Later: <component class="navbar" src="navbar.html"></component> -->
 
 <body>
     <div class="margins">

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import { page } from '$app/stores';  
+    import { page } from '$app/stores';
     let pwd = $page.url.pathname;
 </script>
 
@@ -25,7 +25,7 @@
             <div class="dropdown-content">
                 <div class="dropdown-onload-wrapper">
                     <a href="https://discord.com/users/276913653230469122/" target="_blank">
-                        <img src="{base}/assets/icons/discord.svg" class="icon" alt=""/>
+                        <img src="assets/icons/discord.svg" class="icon" alt=""/>
                         <span>Discord</span>
                     </a>
                     <a href="https://github.com/Fasteroid/" target="_blank">
