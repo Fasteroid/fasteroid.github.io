@@ -1,0 +1,79 @@
+@use "./params/globals.scss" as globals;
+@use "./params/neons.scss" as neons;
+
+.headerimage-border {
+
+    margin: 15px 15px;
+    padding: 15px 15px;
+    max-width: calc(100% - 60px);
+    
+    .headerimage {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 100%;
+        background-size: cover;
+        min-height: 200px;
+        max-height: 3in;
+        height: 20vw;
+
+        h1 {
+            background: #84888a88;
+            display: block;
+            position: relative;
+            text-align: center;
+            margin-bottom: 0;
+            width: auto;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%,-50%);
+            width: calc(100% + 30px);
+            filter: drop-shadow(0 0 4px #000000);
+            font-size: calc( max(24px, 1.8vh) ); 
+            
+            // these had me stuck for ages, goddamn it chromium
+            margin-block-start: 0;
+            margin-block-end: 0;
+        }
+    }
+}
+
+section.no-background{
+    background-color: #0000;
+}
+
+.project-shelf {
+
+    display: flex;
+    flex-flow: wrap;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+
+    & > a {
+        color: globals.$site-text;
+        display: inline-block;
+        position: relative;
+        max-width: 20vh;
+        font-size: calc( max(11pt, calc(2vw - 60px) ) );
+        margin: 2.5px;
+        line-height: 130%;
+    }
+
+    & > a:hover > img {
+        filter: neons.$white;
+        min-width: calc(100% + min(20px, 10%));
+        margin: calc( max(-10px, -5%) );
+    }
+    
+    img {
+        position: relative;
+        min-width: 100%;
+        border: none;
+        background: none;
+        box-sizing: border-box;
+        margin: 0;
+        transition-timing-function: linear;
+        transition: 0.4s;
+    }
+
+}

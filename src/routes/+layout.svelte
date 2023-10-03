@@ -5,7 +5,7 @@
 
 <svelte:head>
     <style lang="scss">
-        @import "./../styles/global.scss";
+        @import "src/styles/global.scss";
     </style>
 </svelte:head>
 

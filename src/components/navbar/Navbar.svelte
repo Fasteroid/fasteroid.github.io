@@ -1,7 +1,41 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import { page } from '$app/stores';
-    let pwd = $page.url.pathname;
+
+    type NavbarPage = {
+        title: string,
+        index: string,        
+    }
+
+    type NavbarHeader = {
+        title: string,
+        index?: string,
+        pages?: NavbarPage[]
+    }
+    
+    // TODO: write a function to automatically populate this
+    let navbarContents: NavbarHeader[] = [
+        {
+            title: "About Me",
+            index: "about",
+        },    
+        {
+            title: "Desmos",
+            index: "desmos",
+            pages: [
+                { title: "Double Tangents", index: "double-tangents" },
+                { title: "Galton Board", index: "galton-board" },
+                { title: "Nearby Points", index: "nearby-points" },
+                { title: "Portals", index: "portals" }
+            ]
+        }
+    ]
+
+    const currentPage = $page.url.pathname;
+    function isActive(page: string): boolean {
+        return currentPage.startsWith(page)
+    }
+
 </script>
 
 <svelte:head>
@@ -11,6 +45,7 @@
 </svelte:head>
 
 <nav>
+    
     <div class="home">
         <div class="home-wrapper">
             <div class="minecraftsplash">Now with Svelte!</div>
@@ -25,27 +60,37 @@
             <div class="dropdown-content">
                 <div class="dropdown-onload-wrapper">
                     <a href="https://discord.com/users/276913653230469122/" target="_blank">
-                        <img src="assets/icons/discord.svg" class="icon" alt=""/>
+                        <img src="{base}/assets/icons/discord.svg" class="icon" alt=""/>
                         <span>Discord</span>
                     </a>
                     <a href="https://github.com/Fasteroid/" target="_blank">
-                        <img src="assets/icons/github.svg" class="icon" alt=""/>
+                        <img src="{base}/assets/icons/github.svg" class="icon" alt=""/>
                         <span>Github</span>
                     </a>
                 </div>
             </div>
         </div>
-        <div class="dropdown">
-            <div class:dropdown-head={true} class:cwd={`${base}/about`==pwd}>
-                <a href="{base}/about">About Me</a>
-            </div>
-            <div class="dropdown-content">
-                <div class="dropdown-onload-wrapper">
-                    <a href="https://fasteroid.github.io/skilltree.html">
-                        <span>Skill Tree</span>
-                    </a>
+        {#each navbarContents as main}
+            <div class="dropdown">
+                <div class:dropdown-head={true} class:active={isActive(`${base}/${main.index}`)}>
+                    {#if main.index}
+                        <a href='{base}/{main.index}'>{main.title}</a>
+                    {:else}
+                        <span>{main.title}</span>
+                    {/if}
                 </div>
+                {#if main.pages}
+                    <div class="dropdown-content">
+                        <div class="dropdown-onload-wrapper">
+                            {#each main.pages as sub}
+                                <a href="{base}/{main.index}/{sub.index}" class:active={isActive(`${base}/${main.index}/${sub.index}`)}>
+                                    <span>{sub.title}</span>
+                                </a>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
             </div>
-        </div>
+        {/each}
     </div>
 </nav>
