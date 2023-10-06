@@ -1,6 +1,7 @@
-import { load as loadParent } from "../+layout.server";
+import { load as loadParent } from "../+layout";
 import { defineData } from "$lib/datacomposer";
 
 export const load = defineData( loadParent, {
-	title: "Desmos"
+	title: "Portals",
+	thumbnail: "portals.png"
 } )

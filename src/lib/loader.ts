@@ -24,7 +24,10 @@ class LoaderPathable {
         return this._path;
     }
     public get importPath(): string {
-        return "../routes/" + this._path.replace(/\.[^\.]*?$/gm,"")
+        if(process.env.NODE_ENV == "production")
+            return "../entries/pages" + this._path.replace(/(\+)(.*?)(\.ts)$/gm,"_$2.ts.js");
+        else 
+            return "../routes" + this._path.replace(/\.[^\.]*?$/gm,"");
     }
 }
 
@@ -61,8 +64,15 @@ class LoaderTreeNode extends LoaderPathable {
 type LoaderFileHandler = (file: fs.Dirent, node: LoaderTreeNode) => Promise<void>
 const fileHandlers: {[key: string]: LoaderFileHandler | undefined} = {
 
-    ["+page.server.ts"]: async (file, node) => {
-        const options: PageOptions = await import( /* @vite-ignore */ new LoaderPathable(`${node.rawPath}/${file.name}`).importPath );
+    ["+page.ts"]: async (file, node) => {
+        const importPath = new LoaderPathable(`${node.rawPath}/${file.name}`).importPath
+        let options: PageOptions;
+        try {
+            options = await import( importPath );
+        }
+        catch(e){
+            throw "bad auto-import: " + importPath + "\n\n" + e
+        }
         const data: PageData = options.load();
         node.pageData = data;
     }
