@@ -13,7 +13,7 @@
         pages?: NavbarPage[]
     }
     
-    // TODO: write a function to automatically populate this
+    // TODO: make this use the page tree.
     let navbarContents: NavbarHeader[] = [
         {
             title: "About Me",
@@ -23,9 +23,6 @@
             title: "Desmos",
             index: "desmos",
             pages: [
-                { title: "Double Tangents", index: "double-tangents" },
-                { title: "Galton Board", index: "galton-board" },
-                { title: "Nearby Points", index: "nearby-points" },
                 { title: "Portals", index: "portals" }
             ]
         }

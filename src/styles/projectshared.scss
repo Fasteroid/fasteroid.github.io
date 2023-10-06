@@ -37,8 +37,12 @@
     }
 }
 
-section.no-background{
+section.no-background {
     background-color: #0000;
+}
+
+section.extra-space, h1 {
+    margin: 15px 15px 15px 15px;
 }
 
 .project-shelf {

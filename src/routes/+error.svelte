@@ -1,5 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
+    import { page } from '$app/stores';
 </script>
 
 <svelte:head>
@@ -13,7 +14,7 @@
     <div class="margins">
         <section>
             <h1>
-                <b>404</b>
+                <b>{$page.status}</b>
             </h1>
             <div class="error-centerer">
                 <img src="{base}/assets/404.gif" alt="bikini atoll explosion">

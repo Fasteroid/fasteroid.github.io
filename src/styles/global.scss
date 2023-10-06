@@ -38,11 +38,9 @@ img {
     box-sizing: border-box;
 }
 
-.p {
+div.p {
     margin: 0 15px 15px 15px;
     line-height: 140%;
-    width: auto;
-    white-space: pre-wrap;
 }
 
 .margins {
@@ -53,13 +51,6 @@ img {
 
 .dubsp {
     white-space: pre;
-}
-
-.emdash {
-    display: inline-block;
-    text-align: center;
-    width:13pt;
-    transform: scale(1.7, 1);
 }
 
 li::marker{
@@ -79,4 +70,11 @@ a {
 
 ::selection {
     background: #70b0ff44;
+}
+
+span.emdash {
+    display: inline-block;
+    text-align: center;
+    width:13pt;
+    transform: scale(1.7, 1);
 }

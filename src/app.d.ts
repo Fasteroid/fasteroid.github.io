@@ -1,12 +1,17 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface Platform {}
-	}
+    namespace App {
+        interface PageData extends FullPageData {}
+    }
 }
 
-export {};
+interface PartialPageData {
+    title:	    string;
+    longTitle?: string;
+    thumbnail?: string;
+}
+
+interface FullPageData extends PartialPageData {
+    titlePath: string[];
+}

@@ -1,10 +1,6 @@
 <script lang="ts">
-  import { base } from "$app/paths";
+    import { base } from "$app/paths";
 </script>
-
-<svelte:head>
-    <title>About Me</title> 
-</svelte:head>
 
 <body>
     <div class="margins">
@@ -27,16 +23,11 @@
                 into a massive power trip for me.  I'm still addicted today.<br>
                 <div style="clear:both"></div>
                 <br>
-                Having now completed college, I can confidently say it's a pyramid scheme.  You pay lots of money for several years
-                to take classes that either don't teach you anything or don't teach you the right things, all just to obtain a piece
-                of paper that claims you know what you're doing.  For my field, Computer Science, claiming that in general is like
-                claiming to know every fish in the ocean on a first-name basis.  Boo!
-                <br>
             </div>
             <div class="p">
                 <img src="{base}/assets/aboutme/ody.jpg" style="float:right; max-height: 245px; margin-right: 0px;"
                 alt="2018 claiming of the Renatra Fusca Creativity Award at DE State Finals.">
-                On a lighter note, I still have my achievements in Odyssey of the Mind going for me, which is a 
+                My favorite experiences so far in life have been my adventures during Odyssey of the Mind, which is a 
                 collaborative problem-solving extracurricular for creative thinkers.  Each year, teams of 5-7 choose
                 one of five long-term problems (which all involve some combination of acting and engineering),
                 and are assigned an 8-minute 'spontaneous' problem the day of the performance.<br>
