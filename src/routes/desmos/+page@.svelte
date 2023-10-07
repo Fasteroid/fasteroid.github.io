@@ -18,9 +18,9 @@
         <section>
             <section class="headerimage-border">
                 <div class="headerimage" style="background-image: url('assets/desmos/banner.jpg');">
-                    <h1>
-                        <b>{pageData.title} Projects</b>
-                    </h1>
+                    <hgroup>
+                        <h1>{pageData.title} Projects</h1>
+                    </hgroup>
                 </div>
             </section>
             <section class="no-background">
@@ -28,7 +28,7 @@
                     {#each pagetree.getPathChildren(`/${topic}`) as node}
                         <a href="{node.webPath}">
                             <img src="assets/{topic}/{node.pageData?.thumbnail ?? "portals.png"}" alt="thumbnail">
-                            <div class="shortcut-title">{node.pageData?.title}</div>
+                            <div class="shortcut-title">{node.pageData?.longTitle || node.pageData?.title}</div>
                         </a>
                     {/each}
                 </div>

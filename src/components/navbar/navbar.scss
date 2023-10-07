@@ -3,6 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Recursive:wght@600&display=swap');
 
 nav {
+
     display: flex;
     background: #000000;
     font-family: 'Recursive', sans-serif;
@@ -11,6 +12,10 @@ nav {
 	top: 0;
     justify-content: space-between;
     z-index: 999; /* thank god this actually works for once */
+
+    .pages {
+        z-index: 0; /* fixes the minecraft splash */
+    }
 
     .home {
         z-index: 1;

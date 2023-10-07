@@ -24,7 +24,7 @@ class LoaderPathable {
         return this._path;
     }
     public get importPath(): string {
-        if(process.env.NODE_ENV == "production")
+        if(process.env.NODE_ENV == "production") // thanks vite
             return "../entries/pages" + this._path.replace(/(\+)(.*?)(\.ts)$/gm,"_$2.ts.js");
         else 
             return "../routes" + this._path.replace(/\.[^\.]*?$/gm,"");

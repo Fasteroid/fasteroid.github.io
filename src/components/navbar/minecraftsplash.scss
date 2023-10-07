@@ -1,12 +1,12 @@
 @font-face {
     font-family: Minecraft;
-    src: url("./../../assets/fonts/Minecraft.woff") format("woff");
+    src: url("/assets/fonts/Minecraft.woff") format("woff");
 }
 
 .minecraftsplash {
     color: #ff0;
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     left: 100%;
     font-family: 'Minecraft', 'fixedsys';
     font-weight: normal;
@@ -14,13 +14,12 @@
     font-size: 16px;
     text-align: center;
     white-space: pre;
-    font-smooth: never;
     -webkit-font-smoothing: none;
     animation: minecraftwow 0.5s infinite
 }
 
-$begin: translate(-50%,60%) scale(0.95) rotate(-15deg);
-$middle: translate(-50%,60%) scale(1) rotate(-15deg);
+$begin: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
+$middle: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
 
 @keyframes minecraftwow {
     0% {

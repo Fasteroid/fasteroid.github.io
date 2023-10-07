@@ -45,8 +45,8 @@
     
     <div class="home">
         <div class="home-wrapper">
-            <div class="minecraftsplash">Now with Svelte!</div>
             <span>FAST'S CODE CREATIONS</span>
+            <div class="minecraftsplash">Now with Svelte!</div>
         </div>
     </div>
     <div class="pages">

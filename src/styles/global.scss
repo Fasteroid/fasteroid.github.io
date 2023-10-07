@@ -16,17 +16,27 @@ body {
     word-spacing: -0.75px; 
 }
 
-
-section, h1 {
+section, hgroup {
     background-color: globals.$section-background;
     padding: 15px;
     text-align: justify;
     display: block;
 }
-h1 {
-    font-size: 24px; 
-    text-align: center; 
+hgroup {
+    text-align: center;
     margin-bottom: 15px;
+    * {
+        margin: 0
+    }
+    h1 {
+        font-size: 24px; 
+    }   
+    h2 {
+        font-size: 16pt;
+    }
+    h3 {
+        font-size: 12pt;
+    }
 }
 
 
@@ -41,6 +51,7 @@ img {
 div.p {
     margin: 0 15px 15px 15px;
     line-height: 140%;
+    width: auto;
 }
 
 .margins {

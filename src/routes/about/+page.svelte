@@ -5,9 +5,9 @@
 <body>
     <div class="margins">
         <section>
-            <h1>
-                <b>About Me</b>
-            </h1>
+            <hgroup>
+                <h1>About Me</h1>
+            </hgroup>
             <div class="p">
                 <img src="{base}/assets/aboutme/fasteroidbruh.jpg" style="float:left; max-height: 245px; margin-left: 0px;" 
                 alt="A 3D-printed replica Expression 2 chip from Garry's Mod.">
@@ -20,9 +20,8 @@
                 I began writing my first original lines of code early to mid 2014, in a little-known language
                 called Expression 2 from the popular sandbox game <i>Garry's Mod</i>.  Expression had a very steep learning 
                 curve to it at first due to its obscurity and narrow scope of applications, but by 2015 it had turned
-                into a massive power trip for me.  I'm still addicted today.<br>
+                into a massive power trip for me.  I'm still addicted today.
                 <div style="clear:both"></div>
-                <br>
             </div>
             <div class="p">
                 <img src="{base}/assets/aboutme/ody.jpg" style="float:right; max-height: 245px; margin-right: 0px;"
@@ -40,9 +39,8 @@
                 Odyssey of the Mind taught me a lot—mainly that it usually isn't feasable for one person to work on everything.  
                 Different people have different strengths and weaknesses, and if one person does everything, they're bound to hit 
                 a weakness eventually.  In contrast, with good teamwork and good skill coverage, even an intelligent adversary
-                will struggle to pick something that truly defeats everyone on the team.<br>
+                will struggle to pick something that truly defeats everyone on the team.
                 <div style="clear:both"></div>
-                <br>
             </div>
             <div class="p">
                 <img src="{base}/assets/aboutme/gmodfriends.jpg" style="float:left; max-height: 245px; margin-left: 0px;" 
@@ -62,7 +60,6 @@
                 The server also tolerates the other crap we put it through a lot better now, such as spawning hundreds of physics entities in confined spaces.  
                 Some people say my server is dead, but I'm four years in and still occasionally get new players.  I think it's been a success.
                 <div style="clear:both"></div>
-                <br>
                 That's the end of my TL;DR.<br>
                 If I've piqued your interest at all, you should check out my <a href="https://fasteroid.github.io/skilltree.html">technical skill tree</a> and learn more about what I can do.  
                 Perhaps I can be of use to you!<br>

@@ -2,7 +2,6 @@
 @use "./params/neons.scss" as neons;
 
 .headerimage-border {
-
     margin: 15px 15px;
     padding: 15px 15px;
     max-width: calc(100% - 60px);
@@ -15,18 +14,18 @@
         min-height: 200px;
         max-height: 3in;
         height: 20vw;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
 
-        h1 {
+        hgroup {
             background: #84888a88;
             display: block;
             position: relative;
             text-align: center;
             margin-bottom: 0;
-            width: auto;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%,-50%);
-            width: calc(100% + 30px);
+            margin-left: -15px;
+            margin-right: -15px;
             filter: drop-shadow(0 0 4px #000000);
             font-size: calc( max(24px, 1.8vh) ); 
             
@@ -41,12 +40,11 @@ section.no-background {
     background-color: #0000;
 }
 
-section.extra-space, h1 {
+section.extra-space, hgroup {
     margin: 15px 15px 15px 15px;
 }
 
 .project-shelf {
-
     display: flex;
     flex-flow: wrap;
     align-items: center;
@@ -79,5 +77,4 @@ section.extra-space, h1 {
         transition-timing-function: linear;
         transition: 0.4s;
     }
-
 }

@@ -1,9 +1,9 @@
 <div class="margins">
     <section>
-        <hgroup>
-            <h2>Desmos Portals</h2>
-            <h3>DESMOS PORTALS?</h3>
-        </hgroup>
+        <h1>
+            <div style="width: 100%; text-align: center; font-size: 16pt; font-weight: bold;">Desmos Portals</div>
+            <div style="width: 100%; text-align: center; font-size: 12pt;">DESMOS PORTALS?</div>
+        </h1>
         <section class="extra-space">
             <iframe src="https://www.desmos.com/calculator/p5cbnjegnh" style="width: 100%; height: 50vh" frameborder=0 title="graph"></iframe>
         </section>
