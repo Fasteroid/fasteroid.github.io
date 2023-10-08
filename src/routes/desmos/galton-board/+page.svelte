@@ -25,10 +25,11 @@
             as bouncing right.  By contrast, there are <b>6 unique ways</b> to reach the middle slot (can you count them all?)—a <b>6 in 16</b> probability.  
             As a result, the balls are biased to be closer to the center.<br>
             <br>
-            Secondly, central limit theorem—it is well known among staticians that over many samples of an unknown distribution, the mean tends to
-            approximate a normal distribution.  Our Galton board with 100 balls is really just 100 random samples from an unknown sampling, so
-            central limit theorem applies in this case.  As a result, both my digital version (where collisions follow a perfect binomial distribution) AND the physical board with 
-            chaotic physics-based distribution produce bell curves.<br>
+            Secondly, central limit theorem.  On average, taking many independent random samplings (most staticians agree on 30+) 
+            from any distribution will approximate a normal distribution.  This is applicable to the Galton Board, since the path 
+            of each ball is a random sampling of some distribution, and we have a large number of balls to approximate with.  
+            Both my digital version (where a ball bouncing off a peg is modeled with a binomial distribution) AND the physical 
+            board (where balls collide with pegs and each other) produce similar bell curves.<br>
             <br>
             This graph won me a Reddit platinum award on <a href="https://www.reddit.com/r/desmos/comments/hhv5a3/galton_board_w_physics/">r/desmos</a>.<br>
             <div style="clear: both;"></div>
