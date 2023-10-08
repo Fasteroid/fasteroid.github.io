@@ -32,9 +32,10 @@ class LoaderPathable {
 }
 
 class LoaderTreeNode extends LoaderPathable {
-    children?:  {[key: string]: LoaderTreeNode}
+    
+    private _children?:  {[key: string]: LoaderTreeNode}
     key:        string;
-    pageData?:  FullPageData;
+    pageData!:  FullPageData;
 
     constructor(path: string, key: string){
         super(path)
@@ -42,22 +43,25 @@ class LoaderTreeNode extends LoaderPathable {
     }
 
     getChild(key: string): LoaderTreeNode {
-        if( !this.children ) this.children = {};
-        if( !this.children[key] ) this.children[key] = new LoaderTreeNode(`${this.rawPath}/${key}`, key)
-        return this.children[key];
+        if( !this._children ) this._children = {};
+        if( !this._children[key] ) this._children[key] = new LoaderTreeNode(`${this.rawPath}/${key}`, key)
+        return this._children[key];
     }
 
-    getPathChildren(path: string): LoaderTreeNode[] {
+    getChildren(): LoaderTreeNode[] {
+        return Object.values( this._children || {} )
+    }
+
+    getChildrenAtPath(path: string): LoaderTreeNode[] {
         let chain: string[] = path.split("/").slice(1)
         let destination: LoaderTreeNode = this;
         for( let link of chain ){
             if( link.length < 1 ){ throw "bad getPathChildren; malformed." }
-            if( !destination.children ){ throw `bad getPathChildren; ${destination.dirPath} has no children.` }
-            if( !destination.children[link] ){ throw `bad getPathChildren; ${destination.dirPath} does not have ${link}.` }
-            destination = destination.children[link];
+            if( !destination._children ){ throw `bad getPathChildren; ${destination.dirPath} has no children.` }
+            if( !destination._children[link] ){ throw `bad getPathChildren; ${destination.dirPath} does not have ${link}.` }
+            destination = destination._children[link];
         }
-        if( !destination.children ){ throw `bad getPathChildren; ${destination.dirPath} has no children.` }
-        return Object.values(destination.children)
+        return destination.getChildren()
     }
 }
 
@@ -68,7 +72,7 @@ const fileHandlers: {[key: string]: LoaderFileHandler | undefined} = {
         const importPath = new LoaderPathable(`${node.rawPath}/${file.name}`).importPath
         let options: PageOptions;
         try {
-            options = await import( importPath );
+            options = await import( /* @vite-ignore */ importPath );
         }
         catch(e){
             throw "bad auto-import: " + importPath + "\n\n" + e

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { base } from "$app/paths";
     import { page } from '$app/stores';
+    import { pagetree } from "$lib/loader";
 
     type NavbarPage = {
         title: string,
@@ -14,19 +15,6 @@
     }
     
     // TODO: make this use the page tree.
-    let navbarContents: NavbarHeader[] = [
-        {
-            title: "About Me",
-            index: "about",
-        },    
-        {
-            title: "Desmos",
-            index: "desmos",
-            pages: [
-                { title: "Portals", index: "portals" }
-            ]
-        }
-    ]
 
     const currentPage = $page.url.pathname;
     function isActive(page: string): boolean {
@@ -67,21 +55,17 @@
                 </div>
             </div>
         </div>
-        {#each navbarContents as main}
+        {#each pagetree.getChildren() as main}
             <div class="dropdown">
-                <div class:dropdown-head={true} class:active={isActive(`${base}/${main.index}`)}>
-                    {#if main.index}
-                        <a href='{base}/{main.index}'>{main.title}</a>
-                    {:else}
-                        <span>{main.title}</span>
-                    {/if}
+                <div class:dropdown-head={true} class:active={isActive(main.webPath)}>
+                    <a href='{main.webPath}'>{main.pageData.title}</a>
                 </div>
-                {#if main.pages}
+                {#if main.getChildren()}
                     <div class="dropdown-content">
                         <div class="dropdown-onload-wrapper">
-                            {#each main.pages as sub}
-                                <a href="{base}/{main.index}/{sub.index}" class:active={isActive(`${base}/${main.index}/${sub.index}`)}>
-                                    <span>{sub.title}</span>
+                            {#each main.getChildren() as sub}
+                                <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`)}>
+                                    <span>{sub.pageData.title}</span>
                                 </a>
                             {/each}
                         </div>
