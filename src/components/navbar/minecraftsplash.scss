@@ -1,14 +1,21 @@
+// SVELTE PLEASE ALLOW ME A WAY TO USE $base IN SCSS
+
 @font-face {
-    font-family: Minecraft;
-    src: url("/assets/fonts/Minecraft.woff") format("woff");
+    font-family: minecraft_dev;
+    src: url("../assets/fonts/minecraft.woff") format("woff");
 }
+@font-face {
+    font-family: minecraft_prod;
+    src: url("/svelte-portfolio/assets/fonts/minecraft.woff") format("woff");
+}
+
 
 .minecraftsplash {
     color: #ff0;
     position: absolute;
     z-index: 1;
     left: 100%;
-    font-family: 'Minecraft', 'fixedsys';
+    font-family: 'minecraft_prod', 'minecraft_dev', 'fixedsys';
     font-weight: normal;
     font-style: normal;
     font-size: 11pt;
@@ -18,8 +25,8 @@
     animation: minecraftwow 0.5s infinite
 }
 
-$begin: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
-$middle: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
+$begin: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
+$middle: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
 
 @keyframes minecraftwow {
     0% {
