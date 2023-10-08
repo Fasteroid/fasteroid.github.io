@@ -8,9 +8,9 @@ import preprocess from 'svelte-preprocess';
 let customSpacing = {
 	markup({content, filename}) {
 		if( filename.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<body>/) ){
-			content = content.replaceAll('.  ',' &nbsp;');
-			content = content.replaceAll('!  ',' &nbsp;');
-			content = content.replaceAll('?  ',' &nbsp;');
+			content = content.replaceAll('.  ','.&nbsp; ');
+			content = content.replaceAll('!  ','!&nbsp; ');
+			content = content.replaceAll('?  ','?&nbsp; ');
 			content = content.replaceAll('—','<span class="emdash">—</span>');
 			return { code: content }
 		}
