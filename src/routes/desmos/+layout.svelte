@@ -5,5 +5,4 @@
     </style>
 </svelte:head>
 
-<!-- TODO: consolidate shared project elements here -->
 <slot/>

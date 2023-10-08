@@ -1,11 +1,3 @@
-<svelte:head>
-    <style lang="scss">
-        @import "src/styles/projectshared.scss";
-        @import "src/styles/projectdesmos.scss";
-    </style>
-</svelte:head>
-
-
 <script lang="ts">
     import { page } from "$app/stores";
     import { pagetree } from "$lib/loader";
@@ -25,7 +17,7 @@
             </section>
             <section class="no-background">
                 <div class="project-shelf">
-                    {#each pagetree.getPathChildren(`/${topic}`) as node}
+                    {#each pagetree.getChildrenAtPath(`/${topic}`) as node}
                         <a href="{node.webPath}">
                             <img src="assets/{topic}/{node.pageData?.thumbnail ?? "portals.png"}" alt="thumbnail">
                             <div class="shortcut-title">{node.pageData?.longTitle || node.pageData?.title}</div>
