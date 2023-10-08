@@ -13,9 +13,9 @@
 <body>
     <div class="margins">
         <section>
-            <h1>
-                <b>{$page.status}</b>
-            </h1>
+            <hgroup>
+                <h1>{$page.status}</h1>
+            </hgroup>
             <div class="error-centerer">
                 <img src="{base}/assets/404.gif" alt="bikini atoll explosion">
             </div>
