@@ -1,20 +1,4 @@
-@use "./params/globals.scss" as globals;
-@use "./params/neons.scss" as neons;
-
-.project-shelf {
-
-    img {
-        padding: 5px;
-    }
-
-}
-
-.shortcut-title {
-    position: absolute;
-    bottom: 10%;
-    width: 90%;
-    text-align: center;
-    transform: translate(5%, 0);
+.project-title {
     color: #000;
     text-shadow:
    -1px -1px 5px #fff,  

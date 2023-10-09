@@ -48,7 +48,7 @@ nav {
     }
 
     /* This is literal magic, it cancels out the transitions that (incorrectly) trigger on page load. */
-    @keyframes stopTransitionOnLoad {
+    @keyframes dropdownOnload {
         from {
             transform: translate(0, -100%);
         }
@@ -57,7 +57,7 @@ nav {
         }
     }
     .dropdown-onload-wrapper {
-        animation: stopTransitionOnLoad 0.3s;
+        animation: dropdownOnload 0.3s;
     }
 
     .dropdown-content, .dropdown-onload-wrapper {
@@ -86,10 +86,6 @@ nav {
         padding: 0 15px;
     }
 
-    .pages > a {
-        padding: 0 15px;
-    }
-
     .dropdown-content a {
         background: #000000;
         padding: 15px;
@@ -106,15 +102,13 @@ nav {
     }
 
     .dropdown,
-    .dropdown-content a,
-    .pages > a {
+    .dropdown-content a {
         font-size: 14pt;
     }
     
     .dropdown,
     .dropdown-content a,
-    .dropdown-head a,
-    .pages > a {
+    .dropdown-head a {
         display: flex;
         align-items: center;
         height: 100%;
@@ -138,17 +132,12 @@ nav {
         max-height: 24px;
     }
 
-    .dropdown > a {
-        text-decoration: none;
-    }
-
     .dropdown:hover .dropdown-content {
         transform: translate(0,5px) translateZ(-1px);
         box-shadow: 0px 0px 5px black;
     }
 
     /* Glow animation stuff */
-    .dropdown:hover > a > span,
     .dropdown:hover > .dropdown-head > a
     {
         filter: neons.$cyan-bright
@@ -159,7 +148,6 @@ nav {
     }
 
     a span,
-    .dropdown > a > span,
     .dropdown > .dropdown-head > a,
     .dropdown a * {
         mix-blend-mode: screen;
@@ -168,7 +156,6 @@ nav {
     }
 
     a:hover span,
-    .dropdown:hover > a > span,
     .dropdown:hover > .dropdown-head > a,
     .dropdown a:hover * {
         mix-blend-mode: screen;
@@ -203,11 +190,6 @@ nav {
         .dropdown {
             /* note: must be changed if I add more dropdowns! */
             width: 25%;
-        }
-        .dropdown,
-        .dropdown-content a,
-        .pages > a {
-            font-size: calc( min( max(1.2vh, 12pt), 24pt ) );
         }
     }
 

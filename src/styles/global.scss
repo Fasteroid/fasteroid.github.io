@@ -41,6 +41,13 @@ hgroup {
     }
 }
 
+section.no-background {
+    background-color: #0000;
+}
+section.extra-space {
+    margin: 15px 15px 15px 15px;
+}
+
 
 img {
     background-color: globals.$section-background;

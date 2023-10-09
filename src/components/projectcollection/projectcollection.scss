@@ -1,0 +1,45 @@
+@use "./../../styles/params/neons.scss" as neons;
+@use "./../../styles/params/globals.scss" as globals;
+
+.project-shelf {
+    display: flex;
+    flex-flow: wrap;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+
+    & > a {
+        color: globals.$site-text;
+        display: inline-block;
+        position: relative;
+        max-width: 20vh;
+        width: 100%;
+        font-size: calc( max(11pt, calc(2vw - 60px) ) );
+        margin: 2.5px;
+        line-height: 130%;
+    }
+
+    & > a:hover img {
+        filter: neons.$white;
+        transform: scale(1.05)
+    }
+    
+    img {
+        position: relative;
+        min-width: 100%;
+        border: none;
+        background: none;
+        box-sizing: border-box;
+        margin: 0;
+        transition: transform 0.4s, filter 0.4s;
+        padding: 5px;
+    }
+}
+
+.project-title {
+    position: absolute;
+    bottom: 10%;
+    width: 90%;
+    text-align: center;
+    transform: translate(5%, 0);
+}
