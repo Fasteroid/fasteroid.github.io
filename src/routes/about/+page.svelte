@@ -58,7 +58,7 @@
                 This machine runs Linux instead of Windows, and server performance has been significantly better ever since this change.  Most E2 scripts 
                 (which run serverside) run with half the CPU time they used to use.
                 The server also tolerates the other crap we put it through a lot better now, such as spawning hundreds of physics entities in confined spaces.  
-                Some people say my server is dead, but I'm four years in and still occasionally get new players.  I think it's been a success.
+                Some people say my server is dead, but I'm four years in and still occasionally get new players.  I think it's been a success.<br>
                 <div style="clear:both"></div>
                 That's the end of my TL;DR.<br>
                 If I've piqued your interest at all, you should check out my <a href="https://fasteroid.github.io/skilltree.html">technical skill tree</a> and learn more about what I can do.  
