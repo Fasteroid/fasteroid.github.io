@@ -3,19 +3,6 @@
     import { page } from '$app/stores';
     import { pagetree } from "$lib/loader";
 
-    type NavbarPage = {
-        title: string,
-        index: string,        
-    }
-
-    type NavbarHeader = {
-        title: string,
-        index?: string,
-        pages?: NavbarPage[]
-    }
-    
-    // TODO: make this use the page tree.
-
     const currentPage = $page.url.pathname;
     function isActive(page: string): boolean {
         return currentPage.startsWith(page)
@@ -23,11 +10,9 @@
 
 </script>
 
-<svelte:head>
-    <style lang="scss">
-        @import "./navbar.scss";
-    </style>
-</svelte:head>
+<style lang="scss">
+    @import "./navbar.scss";
+</style>
 
 <nav>
     
