@@ -1,8 +1,8 @@
-
 <script lang="ts">
     import Navbar from "../components/navbar/Navbar.svelte";
-    import "$lib/loader";
     import { page } from "$app/stores";
+    import type { FullPageData } from "$lib/pagedata";
+
     $: pageData = $page.data as FullPageData; // needed for type safety
 </script>
 

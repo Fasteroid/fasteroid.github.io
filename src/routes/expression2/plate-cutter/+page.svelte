@@ -1,5 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
+  import ExpressionBox from "../../../components/expressionbox/ExpressionBox.svelte";
     import BackgroundTitle from "../../../components/titlebar/BackgroundTitle.svelte";
 </script>
 
@@ -28,6 +29,7 @@
             Make sure to first grab the <a href=https://github.com/Fasteroid/expression2-public/tree/master/plate_cutter_util>dependencies</a>
             from my Github if you want to try this out.  Cheers!<br>
         </section>
+        <ExpressionBox></ExpressionBox>
         <component class="e2code" src="https://raw.githubusercontent.com/Fasteroid/expression2-public/master/plate_cutter_util/gmod_plate_cutter.txt" style="height: 50vh"></component>
     </section>
 </div>

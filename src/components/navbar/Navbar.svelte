@@ -1,13 +1,12 @@
 <script lang="ts">
-    import { base } from "$app/paths";
     import { page } from '$app/stores';
-    import { pagetree } from "$lib/loader";
-
+    import { base } from "$app/paths";
+    import { pagetree } from '$lib/pagetree';
+        
     const currentPage = $page.url.pathname;
     function isActive(page: string): boolean {
         return currentPage.startsWith(page)
     }
-
 </script>
 
 <style lang="scss">
@@ -15,7 +14,6 @@
 </style>
 
 <nav>
-    
     <div class="home">
         <div class="home-wrapper">
             <span>FAST'S CODE CREATIONS</span>
