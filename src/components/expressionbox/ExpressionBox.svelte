@@ -1,9 +1,28 @@
 <script lang="ts">
     import { browser } from '$app/environment';
-   
+  import { applySyntaxHighlight } from './syntaxhighlighter';
+
+    export let source: string;
+    let box: HTMLElement;
+
+    console.log(source)
+
+    async function loadE2Code(){
+        let resp = await fetch(source)
+        let data = await resp.text()
+        box.innerText = data;
+        applySyntaxHighlight(box);
+    }
+
     if (browser) {
-        const balls = document.querySelector('#balls');
-        balls!.innerHTML = "yo wtf"
+        loadE2Code()
     }
 </script>
-<div id="balls">lol</div>
+<svelte:head>
+    <style lang="scss">
+        @import "./expression2.scss";
+    </style>
+</svelte:head>
+
+<section bind:this={box} class="code-container" >
+</section>

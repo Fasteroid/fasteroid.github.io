@@ -17,7 +17,7 @@ nav {
         z-index: 0; /* fixes the minecraft splash */
     }
 
-    .home {
+    div.home {
         z-index: 1;
         .home-wrapper {
             width: max-content;
@@ -168,8 +168,7 @@ nav {
         flex-flow: column;
         .home {
             background-color: #000000;
-            text-align: center;
-            width: calc(100% - 30px)   
+            text-align: center; 
         }
         .pages {
             margin-left: auto; 

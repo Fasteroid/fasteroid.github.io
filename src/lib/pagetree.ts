@@ -4,5 +4,3 @@ import { TreeNode } from './treelib'
 
 TreeNode.setWebBase(base)
 export const pagetree = TreeNode.fromJSON(data)
-
-console.log(pagetree)

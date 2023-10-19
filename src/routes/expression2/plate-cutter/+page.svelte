@@ -1,14 +1,14 @@
 <script lang="ts">
     import { base } from "$app/paths";
-  import ExpressionBox from "../../../components/expressionbox/ExpressionBox.svelte";
+    import ExpressionBox from "../../../components/expressionbox/ExpressionBox.svelte";
     import BackgroundTitle from "../../../components/titlebar/BackgroundTitle.svelte";
 </script>
 
 <div class="margins">
     <section>
         <BackgroundTitle title="Gmod Plate Cutting Tool" background='{base}/assets/expression2/platecutter/banner.jpg'/>
-        <section class="description" style="min-height: 306pt">
-            <img src="{base}/assets/expression2/platecutter/usage.jpg" style="float:left; max-height: 306pt; margin-left: 0px;" alt="The TF2 engineer using a comedically large pair of scissors">
+        <section class="extra-space" style="min-height: 306pt">
+            <img src="{base}/assets/expression2/platecutter/usage.jpg" style="float:left; max-height: 306pt; margin-left: 0px;" alt="A player preparing to split a 1x2 plate into two 1x1 plates">
             For those unfamiliar, hunter plates are a subset of the default construction props in Garry's Mod.  They are my
             favorite props to build with, and are objectively the most popular within the Garry's Mod community.<br>
             <br>
@@ -26,10 +26,9 @@
             requiring prop resizing or custom models! This function not only allows you to summon whatever size 
             plates your build calls for, but also lets you cut them in half and punch out holes of custom dimensions.<br>
             <br>
-            Make sure to first grab the <a href=https://github.com/Fasteroid/expression2-public/tree/master/plate_cutter_util>dependencies</a>
+            Make sure to first grab the <a href="https://github.com/Fasteroid/expression2-public/tree/master/plate_cutter_util">dependencies</a>
             from my Github if you want to try this out.  Cheers!<br>
         </section>
-        <ExpressionBox></ExpressionBox>
-        <component class="e2code" src="https://raw.githubusercontent.com/Fasteroid/expression2-public/master/plate_cutter_util/gmod_plate_cutter.txt" style="height: 50vh"></component>
+        <ExpressionBox source="https://raw.githubusercontent.com/Fasteroid/expression2-public/master/plate_cutter_util/gmod_plate_cutter.txt"></ExpressionBox>
     </section>
 </div>
