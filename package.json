@@ -2,6 +2,7 @@
 	"name": "svelte-portfolio",
 	"version": "0.0.1",
 	"private": true,
+	"homepage" : "http://fasteroid.github.io/svelte-portfolio",
 	"scripts": {
 		"dev": "npm run prebuild & vite dev",
 		"build": "npm run prebuild & vite build",
