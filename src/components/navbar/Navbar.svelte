@@ -3,8 +3,10 @@
     import { base } from "$app/paths";
     import { pagetree } from '$lib/pagetree';
         
-    const currentPage = $page.url.pathname;
-    function isActive(page: string): boolean {
+    $: currentPage = $page.url.pathname;
+
+    // this second arg might look stupid, but it's required for reactivity
+    function isActive(page: string, currentPage: string): boolean {
         return currentPage.startsWith(page)
     }
 </script>
@@ -40,14 +42,14 @@
         </div>
         {#each pagetree.getChildren() as main}
             <div class="dropdown">
-                <div class:dropdown-head={true} class:active={isActive(main.webPath)}>
+                <div class:dropdown-head={true} class:active={isActive(main.webPath, currentPage)}>
                     <a href='{main.webPath}'>{main.pageData.title}</a>
                 </div>
                 {#if main.getChildren()}
                     <div class="dropdown-content">
                         <div class="dropdown-onload-wrapper">
                             {#each main.getChildren() as sub}
-                                <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`)}>
+                                <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`, currentPage)}>
                                     <span>{sub.pageData.title}</span>
                                 </a>
                             {/each}
@@ -58,3 +60,4 @@
         {/each}
     </div>
 </nav>
+<!--  -->
