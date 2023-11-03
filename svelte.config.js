@@ -24,6 +24,9 @@ const preprocessors = [
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	preprocess: preprocessors,
+	compilerOptions : {
+		hydratable: false
+	},
 	kit: {
 		adapter: adapter({
 			pages:  'build',

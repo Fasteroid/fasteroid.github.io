@@ -1,28 +1,30 @@
 <script lang="ts">
     import { browser } from '$app/environment';
-  import { applySyntaxHighlight } from './syntaxhighlighter';
+    import { getHighlightedHTML } from './syntaxhighlighter';
 
     export let source: string;
-    let box: HTMLElement;
-
-    console.log(source)
+    export let name: string;
 
     async function loadE2Code(){
+
         let resp = await fetch(source)
-        let data = await resp.text()
-        box.innerText = data;
-        applySyntaxHighlight(box);
+        let code = await resp.text()
+        let html = getHighlightedHTML(code)
+
+        let box = document.getElementById(name)
+        if(box) box.innerHTML = html;
     }
 
     if (browser) {
         loadE2Code()
     }
 </script>
+
 <svelte:head>
     <style lang="scss">
         @import "./expression2.scss";
     </style>
 </svelte:head>
 
-<section bind:this={box} class="code-container" >
+<section class="code-container" id={name}>
 </section>

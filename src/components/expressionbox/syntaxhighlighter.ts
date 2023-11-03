@@ -300,20 +300,19 @@ export const E2SyntaxHighlighter = {
 }
 
 /**
- * Apply E2 Syntax Highlighting to an element's contents
+ * Takes source code, returns syntax-highlighted html
  */
-export function applySyntaxHighlight(elem: HTMLElement) {
-    let txt = elem.innerText; // innerhtml will break some characters
-    txt = txt.replaceAll("<","\u1000") // use weird sentinels we can replace at the end
-    txt = txt.replaceAll(">","\u1001")
-    txt = E2SyntaxHighlighter.highlightDirectives(txt);
-    txt = E2SyntaxHighlighter.highlightStringsAndComments(txt);
-    txt = E2SyntaxHighlighter.highlightTypes(txt);
-    txt = E2SyntaxHighlighter.highlightVariables(txt);
-    txt = E2SyntaxHighlighter.highlightKeywords(txt);
-    txt = E2SyntaxHighlighter.highlightMulti(txt); // has to be last
-    txt = txt.replaceAll("\u1000","&lt;")
-    txt = txt.replaceAll("\u1001","&gt;")
-    elem.innerHTML = txt;
+export function getHighlightedHTML(source: string): string {
+    source = source.replaceAll("<","\u1000") // use weird sentinels we can replace at the end
+    source = source.replaceAll(">","\u1001")
+    source = E2SyntaxHighlighter.highlightDirectives(source);
+    source = E2SyntaxHighlighter.highlightStringsAndComments(source);
+    source = E2SyntaxHighlighter.highlightTypes(source);
+    source = E2SyntaxHighlighter.highlightVariables(source);
+    source = E2SyntaxHighlighter.highlightKeywords(source);
+    source = E2SyntaxHighlighter.highlightMulti(source); // has to be last
+    source = source.replaceAll("\u1000","&lt;")
+    source = source.replaceAll("\u1001","&gt;")
+    return source;
 }
 

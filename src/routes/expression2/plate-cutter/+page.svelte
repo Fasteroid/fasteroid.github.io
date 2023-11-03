@@ -29,6 +29,9 @@
             Make sure to first grab the <a href="https://github.com/Fasteroid/expression2-public/tree/master/plate_cutter_util">dependencies</a>
             from my Github if you want to try this out.  Cheers!<br>
         </section>
-        <ExpressionBox source="https://raw.githubusercontent.com/Fasteroid/expression2-public/master/plate_cutter_util/gmod_plate_cutter.txt"></ExpressionBox>
+        <ExpressionBox 
+            source="https://raw.githubusercontent.com/Fasteroid/expression2-public/master/plate_cutter_util/gmod_plate_cutter.txt"
+            name="plate-cutter"
+        />
     </section>
 </div>
