@@ -42,18 +42,16 @@
         </div>
         {#each pagetree.getChildren() as main}
             <div class="dropdown">
-                <div class:dropdown-head={true} class:active={isActive(main.webPath, currentPage)}>
-                    <a href='{main.webPath}'>{main.pageData.title}</a>
-                </div>
+                <a class:dropdown-head={true} class:active={isActive(main.webPath, currentPage)} href='{main.webPath}'>
+                    <span>{main.pageData.title}</span>
+                </a>
                 {#if main.getChildren()}
                     <div class="dropdown-content">
-                        <div class="dropdown-onload-wrapper">
-                            {#each main.getChildren() as sub}
-                                <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`, currentPage)}>
-                                    <span>{sub.pageData.title}</span>
-                                </a>
-                            {/each}
-                        </div>
+                        {#each main.getChildren() as sub}
+                            <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`, currentPage)}>
+                                <span>{sub.pageData.title}</span>
+                            </a>
+                        {/each}
                     </div>
                 {/if}
             </div>
