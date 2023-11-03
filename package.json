@@ -4,12 +4,12 @@
 	"private": true,
 	"homepage" : "http://fasteroid.github.io/svelte-portfolio",
 	"scripts": {
-		"dev": "npm run prebuild & vite dev",
-		"build": "npm run prebuild & vite build",
+		"dev": "npm run buildtree & vite dev",
+		"build": "npm run buildtree & vite build",
 		"preview": "vite preview",
 		"predeploy": "npm run build",
 		"deploy": "gh-pages -d build",
-		"prebuild": "tsx ./src/building/treebuilder.ts"
+		"buildtree": "tsx ./src/building/treebuilder.ts"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
