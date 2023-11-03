@@ -2,7 +2,7 @@ import type { FullPageData } from "$lib/pagedata";
 
 export const prerender = true;
 export const ssr = true;
-export const csr = false; // I hate everything
+// export const csr = false; // I hate everything
 
 let title = "Fast's Code Creations"
 

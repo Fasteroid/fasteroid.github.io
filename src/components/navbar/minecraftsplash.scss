@@ -1,12 +1,8 @@
 // SVELTE PLEASE ALLOW ME A WAY TO USE $base IN SCSS
 
 @font-face {
-    font-family: minecraft_dev;
-    src: url("/test/assets/fonts/minecraft.woff") format("woff");
-}
-@font-face {
-    font-family: minecraft_prod;
-    src: url("/svelte-portfolio/assets/fonts/minecraft.woff") format("woff");
+    font-family: minecraft;
+    src: url("/assets/fonts/minecraft.woff") format("woff");
 }
 
 
@@ -15,7 +11,7 @@
     position: absolute;
     z-index: 1;
     left: 100%;
-    font-family: 'minecraft_prod', 'minecraft_dev', 'fixedsys';
+    font-family: 'minecraft', 'fixedsys';
     font-weight: normal;
     font-style: normal;
     font-size: 11pt;
