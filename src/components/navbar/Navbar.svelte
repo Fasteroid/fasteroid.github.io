@@ -1,13 +1,13 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { base } from "$lib/base";
+    import { base } from "$app/paths";
     import { pagetree } from '$lib/pagetree';
         
     $: currentPage = $page.url.pathname;
 
     // this second arg might look stupid, but it's required for reactivity
     function isActive(page: string, currentPage: string): boolean {
-        return currentPage.startsWith(page.replace(base, ""))
+        return currentPage.startsWith(page)
     }
 </script>
 

@@ -35,10 +35,8 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-		prerender: {
-			handleHttpError: ({ path, referrer, message }) => {
-				return; // ignore.
-			}
+		paths: {
+			base: "/svelte-portfolio"
 		}
 	},
 };

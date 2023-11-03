@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { base } from "$lib/base";
+    import { base } from "$app/paths";
     import { page } from '$app/stores';
 </script>
 

@@ -1,9 +1,8 @@
 
 import * as fs from 'fs'
-import * as path from 'path'
 import { TreeNode } from './treelib';
 import type { FullPageData } from './pagedata';
-import { base } from "../lib/base";
+import { base } from "$app/paths";
 
 TreeNode.setWebBase(base)
 

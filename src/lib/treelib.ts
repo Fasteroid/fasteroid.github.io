@@ -1,5 +1,4 @@
 import type { FullPageData } from "./pagedata";
-import { base } from "./base";
 
 interface TreeNodeData {
     children?:  {[key: string]: TreeNodeData}
@@ -18,7 +17,7 @@ export class TreeNode implements TreeNodeData {
     pageData!:  FullPageData;
 
     public get webPath(): string {
-        return base + TreeNode.webBase + this.path.replace("/routes","");
+        return TreeNode.webBase + this.path.replace("/routes","");
     }
 
     constructor(path: string, key: string){
