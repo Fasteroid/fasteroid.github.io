@@ -54,9 +54,9 @@ async function buildPageTree(node: TreeNode = new TreeNode("","")){
     return node;
 }
 
-//let start = performance.now()
+let start = performance.now()
 export const pagetree = await buildPageTree( new TreeNode("/routes","") );
-//const output = JSON.stringify(tree,undefined,4)
-//fs.writeFileSync("./src/lib/pagetree.json", output)
+const output = JSON.stringify(pagetree,undefined,4)
+fs.writeFileSync("./src/lib/pagetree.json", output)
 
-//console.log(`  treebuilder.ts: Created pagetree.json in ${Math.floor(performance.now() - start)} ms`)
+console.log(`  treebuilder.ts: Created pagetree.json in ${Math.floor(performance.now() - start)} ms`)
