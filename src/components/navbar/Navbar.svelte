@@ -7,7 +7,7 @@
 
     // this second arg might look stupid, but it's required for reactivity
     function isActive(page: string, currentPage: string): boolean {
-        return currentPage.startsWith(page)
+        return currentPage.startsWith(page.replace(base, ""))
     }
 </script>
 
