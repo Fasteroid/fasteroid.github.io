@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { base } from "$app/paths";
+    import { base } from "$lib/base";
     import { pagetree } from "$lib/pagetree";
     import BackgroundTitle from "../titlebar/BackgroundTitle.svelte";
     import type { FullPageData } from "$lib/pagedata";

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { base } from "$app/paths";
+    import { base } from "$lib/base";
     import { pagetree } from '$lib/pagetree';
         
     $: currentPage = $page.url.pathname;

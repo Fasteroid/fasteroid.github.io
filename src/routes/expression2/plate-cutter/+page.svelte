@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { base } from "$app/paths";
+    import { base } from "$lib/base";
     import ExpressionBox from "../../../components/expressionbox/ExpressionBox.svelte";
     import BackgroundTitle from "../../../components/titlebar/BackgroundTitle.svelte";
 </script>
