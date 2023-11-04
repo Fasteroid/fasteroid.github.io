@@ -6,7 +6,7 @@ const preprocessors = [
 	
 	/* doublespace.js */ {
 		markup({content, filename}) {
-			if( filename.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<body>/) ){
+			if( filename.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<section>/) ){
 				content = content.replaceAll('.  ','.&nbsp; ');
 				content = content.replaceAll('!  ','!&nbsp; ');
 				content = content.replaceAll('?  ','?&nbsp; ');
