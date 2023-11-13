@@ -1,0 +1,49 @@
+.carousel {
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 70px;
+
+    * {
+        flex-grow: 1;
+        flex-shrink: 1;
+        position: relative;
+    }
+
+    .frame {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 1; /* This wasn't possible last year! */
+        border-style: solid;
+        border-width: 15px;
+        border-color: #ffffff15;
+        box-sizing: border-box;
+        width: 100%;
+
+        .rack {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0px;
+        }
+        
+        .buttons {
+            width: 100%;
+            height: 100%;        
+            position: absolute;
+            z-index: 1;   
+        
+            button {
+                background: transparent;
+                width:   50%;
+                height:  100%;
+                border:  none;
+                outline: none;
+                float:   left;
+                cursor:  pointer;
+            }
+        }
+    }
+    
+}

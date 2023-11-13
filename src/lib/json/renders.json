@@ -1,0 +1,497 @@
+{
+    "256": [
+        {
+            "file": "assets/expression2/raytracer/curvybase256.png",
+            "title": "The Amazing Curvy Base",
+            "capt1": "256x Render",
+            "capt2": "Speedeo's Bitmap Module"
+        },{
+            "file": "assets/expression2/raytracer/shippingcontainersdemo.png",
+            "title": "Shipping Containers",
+            "capt1": "256x Render",
+            "capt2": "Colored Shadows Dev Test"
+        },{
+            "file": "assets/expression2/raytracer/tracecluster.png",
+            "title": "Transparency Test",
+            "capt1": "256x Render",
+            "capt2": "Colored Shadows Update"
+        },{
+            "file": "assets/expression2/raytracer/mellonsphere.png",
+            "title": "Mellon Sphere",
+            "capt1": "256x Render",
+            "capt2": "Simple AO Update"
+        },{
+            "file": "assets/expression2/raytracer/ballbin.png",
+            "title": "AO Ballpit",
+            "capt1": "256x Render",
+            "capt2": "Colored AO Update"
+        },{
+            "file": "assets/expression2/raytracer/pgengrass1.png",
+            "title": "Grass Test 1",
+            "capt1": "256x Render",
+            "capt2": "Working on P-Gen Grass"
+        },{
+            "file": "assets/expression2/raytracer/pgengrass2.png",
+            "title": "Grass Test 2",
+            "capt1": "256x Render",
+            "capt2": "Working on P-Gen Grass"
+        },{
+            "file": "assets/expression2/raytracer/pgengrass.png",
+            "title": "Procedurally Generated Grass",
+            "capt1": "256x Render",
+            "capt2": "Submaterials Update Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/urmomgay.png",
+            "title": "no u",
+            "capt1": "256x Render",
+            "capt2": "Spectacular Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/glowyspheresrain.png",
+            "title": "Lights & Rain",
+            "capt1": "256x Render",
+            "capt2": "Eye of the Storm: First Render"
+        },{
+            "file": "assets/expression2/raytracer/terrain.png",
+            "title": "Custom Terrain",
+            "capt1": "256x Render",
+            "capt2": "Eye of the Storm Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/italianhouse.png",
+            "title": "Modern House",
+            "capt1": "256x Render",
+            "capt2": "Colored AO Update"
+        },{
+            "file": "assets/expression2/raytracer/illuminatis.png",
+            "title": "Tetra Lattice",
+            "capt1": "256x Render",
+            "capt2": "Soft-Shadow Point Lights"
+        },{
+            "file": "assets/expression2/raytracer/refraction_demo.png",
+            "title": "Refractive Wheel of Doom",
+            "capt1": "256x Render",
+            "capt2": "First Attempt at Refraction"
+        },{
+            "file": "assets/expression2/raytracer/car.png",
+            "title": "Unusual Hotrod",
+            "capt1": "256x Render",
+            "capt2": "Simple Refraction Update"
+        },{
+            "file": "assets/expression2/raytracer/globgogabgolab_shiny.png",
+            "title": "Shiny Starfall Prop",
+            "capt1": "256x Render",
+            "capt2": "Discovery of Starfall Custom Props"
+        },{
+            "file": "assets/expression2/raytracer/pgengrass3.png",
+            "title": "Princess Peach",
+            "capt1": "256x Render",
+            "capt2": "Submaterials Update Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/quatcubes.png",
+            "title": "Angled Cube Rings",
+            "capt1": "256x Render",
+            "capt2": "Quaternion Texture Rotation"
+        },{
+            "file": "assets/expression2/raytracer/streetlights.png",
+            "title": "Street Lamps",
+            "capt1": "256x Render",
+            "capt2": "Spectacular Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/wet.png",
+            "title": "Wet",
+            "capt1": "256x Render",
+            "capt2": "Creating the &quot;rain on the lens&quot; effect"
+        },{
+            "file": "assets/expression2/raytracer/iconicbridge2.png",
+            "title": "The Overpass",
+            "capt1": "256x Render",
+            "capt2": "Winds and Clouds Update"
+        },{
+            "file": "assets/expression2/raytracer/coloredlighttest.png",
+            "title": "Fence Shader vs. Point Lights",
+            "capt1": "256x Render",
+            "capt2": "Winds and Clouds Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/fenceshadows2.png",
+            "title": "Fence Shader vs. Sunlight",
+            "capt1": "256x Render",
+            "capt2": "Winds and Clouds Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/cubemapballs.png",
+            "title": "Cubemap Spheres",
+            "capt1": "256x Render",
+            "capt2": "Winds and Clouds Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/spookyemissives.png",
+            "title": "Cursed Emissive Textures",
+            "capt1": "256x Render",
+            "capt2": "Discovery of a Useful Bug"
+        },{
+            "file": "assets/expression2/raytracer/glowball.png",
+            "title": "Glowball",
+            "capt1": "256x Render",
+            "capt2": "Emissive Textures Update"
+        },{
+            "file": "assets/expression2/raytracer/garrybot.jpg",
+            "title": "Garry's Splash Screen Robot",
+            "capt1": "256x Render",
+            "capt2": "Emissive Textures Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/shadowtest.png",
+            "title": "Fence Shader Test 3",
+            "capt1": "256x Render",
+            "capt2": "Submaterials Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/coolairship.png",
+            "title": "Cool Airship Dupe",
+            "capt1": "256x Render",
+            "capt2": "Feathered Spotlight Test"
+        },{
+            "file": "assets/expression2/raytracer/fantasticvismeshprops.png",
+            "title": "Fantastic Vismesh Props!",
+            "capt1": "256x Render",
+            "capt2": "Custom Props: The Final Frontier"
+        },{
+            "file": "assets/expression2/raytracer/sunreflection.png",
+            "title": "Cheeky Breeki Peeki Sun",
+            "capt1": "256x Render",
+            "capt2": "Only A Partly Cloudy Update"
+        },{
+            "file": "assets/expression2/raytracer/finallysomegoodfuckingrefraction.png",
+            "title": "Sphere of True Refraction",
+            "capt1": "256x Render",
+            "capt2": "Refraction Rework Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/spacebuild.png",
+            "title": "Submaterial Transparency II",
+            "capt1": "256x Render",
+            "capt2": "Submaterials Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/cursed_shiny.png",
+            "title": "Recursion Torture Test",
+            "capt1": "256x Render",
+            "capt2": "Submaterial Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/rhnb.png",
+            "title": "Red Hot Nickel Balls",
+            "capt1": "256x Render",
+            "capt2": "Submaterial Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/refraction_reactor.png",
+            "title": "Fusion Refractor",
+            "capt1": "256x Render",
+            "capt2": "Submaterial Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/spectest.png",
+            "title": "Specular Highlights Test I",
+            "capt1": "256x Render",
+            "capt2": "A Spectacular Update!"
+        },{
+            "file": "assets/expression2/raytracer/cubespam.png",
+            "title": "Specular Highlights Test II",
+            "capt1": "256x Render",
+            "capt2": "Spectacular Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/lightingtest2.png",
+            "title": "Sideways Windows Test",
+            "capt1": "256x Render",
+            "capt2": "Spectacular Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/littleplanet.png",
+            "title": "A Small World",
+            "capt1": "256x Render",
+            "capt2": "Eye of the Storm Rv. 4"
+        },{
+            "file": "assets/expression2/raytracer/indooooors.png",
+            "title": "TV Time",
+            "capt1": "256x Render",
+            "capt2": "Eye of the Storm Rv. 4"
+        },{
+            "file": "assets/expression2/raytracer/causticsmain.png",
+            "title": "Caustics Testing",
+            "capt1": "256x Render",
+            "capt2": "Specular Caustics Testing"
+        },{
+            "file": "assets/expression2/raytracer/funnycans.png",
+            "title": "Glowy Cans",
+            "capt1": "256x Render",
+            "capt2": "Caustics Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/cursedcubes.png",
+            "title": "Dense Transparent Cubes",
+            "capt1": "256x Render",
+            "capt2": "Influence-Based Limits"
+        },{
+            "file": "assets/expression2/raytracer/shards.png",
+            "title": "Glass Shards",
+            "capt1": "256x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/horribleconstructbuilding.png",
+            "title": "Construct Tower A",
+            "capt1": "256x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/tinfoil_and_barrels.png",
+            "title": "Shiny Surface + Barrels",
+            "capt1": "256x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/cursedchairs.png",
+            "title": "Blue Chair Trefoil Knot",
+            "capt1": "256x Render",
+            "capt2": "Point Light Improvements"
+        }
+        ,{
+            "file": "assets/expression2/raytracer/go-outside-already.png",
+            "title": "Wiremod Base Interior",
+            "capt1": "256x Render",
+            "capt2": "Circular Soft Shadows"
+        }
+        ,{
+            "file": "assets/expression2/raytracer/goldencitypool.png",
+            "title": "gm_goldencity",
+            "capt1": "256x Render",
+            "capt2": "Global Illumination Edits"
+        },{
+            "file": "assets/expression2/raytracer/gi-cube-hell.png",
+            "title": "GI Cube Spam",
+            "capt1": "256x Render",
+            "capt2": "Global Illumination Edits"
+        },{
+            "file": "assets/expression2/raytracer/gi-cube-hell.png",
+            "title": "GI Cube Spam",
+            "capt1": "256x Render",
+            "capt2": "Global Illumination Edits"
+        },{
+            "file": "assets/expression2/raytracer/gardenbase.png",
+            "title": "Not so secret garden",
+            "capt1": "256x Render",
+            "capt2": "Global Illumination Edits"
+        }
+
+    ],
+
+    "512": [
+        {
+            "file": "assets/expression2/raytracer/latenightvibes.png",
+            "title": "Late Night Vibes",
+            "capt1": "512x Render",
+            "capt2": "Point Light Improvements"
+        },{
+            "file": "assets/expression2/raytracer/stairs.png",
+            "title": "Central Stair Unit",
+            "capt1": "512x Render",
+            "capt2": "Point Light Improvements"
+        },{
+            "file": "assets/expression2/raytracer/wirefacility.png",
+            "title": "Wire Facility",
+            "capt1": "512x Render",
+            "capt2": "Point Light Improvements"
+        },{
+            "file": "assets/expression2/raytracer/secretgarden.png",
+            "title": "Secret Garden",
+            "capt1": "512x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/office.png",
+            "title": "Mirror's Edge Style Office",
+            "capt1": "512x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/cabin.png",
+            "title": "Destructable Cabin",
+            "capt1": "512x Render",
+            "capt2": "Caustics Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/roboengineer.png",
+            "title": "Robo-Engineer Vismesh w/ Caustics",
+            "capt1": "512x Render",
+            "capt2": "Caustics Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/reflections.png",
+            "title": "Reflections: Visualized",
+            "capt1": "512x Render",
+            "capt2": "Caustics Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/rainybase.png",
+            "title": "Wiremod Base",
+            "capt1": "512x Render",
+            "capt2": "Eye of the Storm Update Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/zippubombu.png",
+            "title": "Zip Bomb Dupe",
+            "capt1": "512x Render",
+            "capt2": "Eye of the Storm Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/stormarrives.png",
+            "title": "Ready for Anything",
+            "capt1": "512x Render",
+            "capt2": "Eye of the Storm Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/bigspecular.png",
+            "title": "On the Edge",
+            "capt1": "512x Render",
+            "capt2": "Spectacular Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/pow.png",
+            "title": "💥⌁POW⌁💥",
+            "capt1": "512x Render",
+            "capt2": "A Spectacular Update!"
+        },{
+            "file": "assets/expression2/raytracer/mobiusloop.png",
+            "title": "Möbius Thicc",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/glasshouse.png",
+            "title": "Glass House",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/submaterials.png",
+            "title": "Multi-Material Masterpiece",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update"
+        },{
+            "file": "assets/expression2/raytracer/barrelinvasion.png",
+            "title": "Barrel Invasion",
+            "capt1": "512x Render",
+            "capt2": "Material System Expansions"
+        },{
+            "file": "assets/expression2/raytracer/greyhoundbuilding.png",
+            "title": "Greyhound Building",
+            "capt1": "512x Render",
+            "capt2": "Starlit Skies Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/starlight.png",
+            "title": "Sleep Is For The Weak",
+            "capt1": "512x Render",
+            "capt2": "Starlit Skies Update"
+        },{
+            "file": "assets/expression2/raytracer/garry_christmas.png",
+            "title": "Garry Christmas",
+            "capt1": "512x Render",
+            "capt2": "Refractive Rework Update Rv.4"
+        },{
+            "file": "assets/expression2/raytracer/icecubes512.png",
+            "title": "Ice Cubes",
+            "capt1": "512x Render",
+            "capt2": "Material System Expansions"
+        },{
+            "file": "assets/expression2/raytracer/dreary.png",
+            "title": "Dreary Interior",
+            "capt1": "512x Render",
+            "capt2": "Eye of the Storm Rv. 4"
+        },{
+            "file": "assets/expression2/raytracer/picnic.png",
+            "title": "Picnic Party",
+            "capt1": "512x Render",
+            "capt2": "Testing the &quot;Leaves&quot; Shader"
+        },{
+            "file": "assets/expression2/raytracer/prop_penumbras.png",
+            "title": "Prop Penumbras",
+            "capt1": "512x Render",
+            "capt2": "PNG Exporting w/ Vurv's pnglib"
+        },{
+            "file": "assets/expression2/raytracer/lightning.png",
+            "title": "Barrel Annihilation",
+            "capt1": "512x Render",
+            "capt2": "Eye of the Storm Update"
+        },{
+            "file": "assets/expression2/raytracer/fibosphere.png",
+            "title": "Chair Matrix",
+            "capt1": "512x Render",
+            "capt2": "Spectacular Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/thefactory.png",
+            "title": "The Factory",
+            "capt1": "512x Render",
+            "capt2": "Spectacular Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/triphousecubes.png",
+            "title": "gm_tripcity",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update Rv.4a"
+        },{
+            "file": "assets/expression2/raytracer/absolutelyhorriblehaystack.png",
+            "title": "Needles In A Haystack",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/inthehaystack.png",
+            "title": "Needles In A Haystack: Needle POV",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update Rv.3"
+        },{
+            "file": "assets/expression2/raytracer/bluechair.png",
+            "title": "That Blue Chair Prop Everyone Spams",
+            "capt1": "512x Render",
+            "capt2": "Submaterials Update"
+        },{
+            "file": "assets/expression2/raytracer/wiremod.png",
+            "title": "Big Wiremod Props",
+            "capt1": "512x Render",
+            "capt2": "Emissive Textures Update Rv.1"
+        },{
+            "file": "assets/expression2/raytracer/cubeaids.png",
+            "title": "gm_triphouse",
+            "capt1": "512x Render",
+            "capt2": "Winds and Clouds Update Rv.2"
+        },{
+            "file": "assets/expression2/raytracer/toxic_goo.png",
+            "title": "Caution: Radioactive Floor",
+            "capt1": "512x Render",
+            "capt2": "Emissive Textures Update"
+        },{
+            "file": "assets/expression2/raytracer/glowchess.png",
+            "title": "Glowy Chess",
+            "capt1": "512x Render",
+            "capt2": "Refractive Rework Update"
+        }
+    ],
+
+    "1024": [
+        {
+            "file": "assets/expression2/raytracer/skybase_big.png",
+            "title": "Orange Skybase v8",
+            "capt1": "1024x Render",
+            "capt2": "Winds and Clouds Update Rv.1"
+        },
+        {
+            "file": "assets/expression2/raytracer/debugbase.png",
+            "title": "Destructive E2 Testing Base",
+            "capt1": "1024x Render",
+            "capt2": "Refractive Rework Update"
+        },
+        {
+            "file": "assets/expression2/raytracer/bluehallway.png",
+            "title": "Hi-Poly Glass Sphere",
+            "capt1": "1024x Render",
+            "capt2": "Refractive Rework Update"
+        },
+        {
+            "file": "assets/expression2/raytracer/tracertag.png",
+            "title": "Tracer Tag",
+            "capt1": "1024x Render",
+            "capt2": "Refractive Rework Update Rv.4"
+        },
+        {
+            "file": "assets/expression2/raytracer/ttt_poolparty.png",
+            "title": "ttt_poolparty",
+            "capt1": "1024x Render",
+            "capt2": "Starlit Skies Update"
+        },
+        {
+            "file": "assets/expression2/raytracer/aerobase.png",
+            "title": "The Aerobase - Night",
+            "capt1": "1024x Render",
+            "capt2": "Submaterials Update Rv.3"
+        },
+        {
+            "file": "assets/expression2/raytracer/aerobase2.png",
+            "title": "The Aerobase - Day",
+            "capt1": "1024x Render",
+            "capt2": "Submaterials Update Rv.3"
+        }
+    ]
+}    
