@@ -37,16 +37,17 @@
             in retrospect.  Who would be such an idiot as to write a raytracer that runs serverside, in an interpreted language
             built upon another interpreted language?  Yup.  That would be me.<br>
             <br>
-            While I may not work on this anymore because the codebase is a mess and the thing is way too slow, I still showcase
+            While I may not work on this anymore because the codebase is a mess and rendering now is just way too slow, I still showcase
             it here because of the incredible journey it took me on.  From the very beginning, where simultaneous reflection and transparency
-            forced me to conquer recursion for the first time, to the very end where I learned my life was a lie and none of this was physically
-            accurate to real-life, without this project having existed I'd be a very different person today.<br>
+            forced me to truly tackle recursion for the first time, to the very end, where I learned nearly every render I'd done used only naive
+            guesses as to how light really behaves in real life.  Without these renders, I would never have created this portfolio to show them
+            and other my amazing projects to the world.<br>
+            <br>Godsend, E2 Raytracer.  You will never be forgotten.<br>
             <br>
-            Special thanks to my old friend <a href="https://discord.com/users/331192747933302837">@Speedeo</a> (bitmaps), and more
-            recently <a href="https://discord.com/users/363590853140152321">@Vurv</a> (pnglib) for helping me encode my traces into
-            these mostly-to-spec images. <br>
+            Special thanks to <a href="https://discord.com/users/331192747933302837">@Speedeo</a> (bitmaps), and
+            <a href="https://discord.com/users/363590853140152321">@Vurv</a> (pnglib) for helping me encode my traces into mostly-to-spec image formats.<br>
+            The gallery below would be empty if not for their help!<br>
             <br>
-            Please enjoy the render gallery.<br>
             (Click the left or right sides of the image carousels to browse them.)
         </section>
         <section class="extra-space">
