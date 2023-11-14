@@ -7,6 +7,7 @@
     import renders from "$lib/json/renders.json"
     import type { CarouselImageData, CarouselImagePicker } from "../../../components/imagecarousel/carousel-common";
 
+    // don't remove this or Unique IDs won't synchronize during the build stage:
     import { UniqueIDs } from "$lib/uniqueid";
     UniqueIDs.start()
 
@@ -22,12 +23,14 @@
         }
     }
 
+    const dwell_256 = 5000;
+
 </script>
 
 <div class="margins">
     <section>
         <BackgroundTitle title="Expression 2 Raytracer" background='{base}/assets/expression2/raytracer/banner.jpg'/>
-        <section class="extra-space" style="min-height: 306pt">
+        <section class="extra-space">
             &emsp;&emsp;I'll cut the philosophy and cut to the <i>trace</i>—this thing was an absolutely terrible idea 
             in retrospect.  Who would be such an idiot as to write a raytracer that runs serverside, in an interpreted language
             built upon another interpreted language?  Yup.  That would be me.<br>
@@ -47,9 +50,19 @@
         <section class="extra-space" >
             <ImageCarousel
                 source = { renders[256] }
-                filter = { getPicker(4,0) }
+                filter = { getPicker(4, 0) }
                 size   = { 256 }
+                scroll_interval = { dwell_256 }
+                scroll_delay    = { dwell_256 * 0 / 4 }
             />
+            <ImageCarousel
+                source = { renders[256] }
+                filter = { getPicker(4, 1) }
+                size   = { 256 }
+                scroll_interval = { dwell_256 }
+                scroll_delay    = { dwell_256 * 1 / 4 }
+            />
+            
         </section>
     </section>
 </div>

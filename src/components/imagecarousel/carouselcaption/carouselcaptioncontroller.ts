@@ -1,4 +1,4 @@
-import { assertExists } from "$lib/uniqueid";
+import { assertExists, assertQueryExists } from "$lib/uniqueid";
 import type { PrefixedIntStr } from "$lib/uniqueid";
 import type { CarouselImageData } from "../carousel-common";
 
@@ -10,10 +10,10 @@ export class CarouselCaptionController {
     capt2: HTMLElement;
 
     constructor(id: PrefixedIntStr){
-        this.base  = assertExists( document.getElementById(id) );
-        this.title = assertExists( this.base.querySelector(".title") );
-        this.capt1 = assertExists( this.base.querySelector(".capt1") );
-        this.capt2 = assertExists( this.base.querySelector(".capt2") );
+        this.base  = assertExists( id );
+        this.title = assertQueryExists( this.base, ".title" );
+        this.capt1 = assertQueryExists( this.base, ".capt1" );
+        this.capt2 = assertQueryExists( this.base, ".capt2" );
     }
 
     setData(data: CarouselImageData){

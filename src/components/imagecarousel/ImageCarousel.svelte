@@ -14,7 +14,11 @@
     
     export let source: CarouselImageData[];
     export let filter: CarouselImagePicker;
-    export let size:   number;
+
+    export let size: number; // size of images
+
+    export let scroll_delay:    number;   // wait before autoscroll kickoff
+    export let scroll_interval: number; // duration between autoscrolls
 
     const transition = 250
     const imageDataArray: CarouselImageData[] = filter(source);
@@ -25,9 +29,10 @@
     
     if (browser) {
 
+        console.log("init")
+
         let captionControllers: CarouselCaptionController[] = [];
         let imageControllers: CarouselImageController[] = [];
-        let frame:       HTMLElement;
         let rack:        HTMLElement;
         let button_next: HTMLElement;
         let button_prev: HTMLElement;
@@ -35,6 +40,20 @@
         let curIndex = 0;
         let curCaption = 0;
         let busy = false;
+
+        rack = assertExists( UniqueIDs.getClient('rack') );
+
+        for (const imageData of imageDataArray) {          
+            imageControllers.push(
+                new CarouselImageController(UniqueIDs.getClient("image"), imageData)
+            )
+        }
+
+        button_prev = assertExists( UniqueIDs.getClient('button_prev') )
+        button_next = assertExists( UniqueIDs.getClient('button_next') )
+
+        captionControllers[0] = new CarouselCaptionController( UniqueIDs.getClient("caption") );
+        captionControllers[1] = new CarouselCaptionController( UniqueIDs.getClient("caption") );
 
         function getRackAnim(direction: number){
             return [ {left: `${-direction}%`} ]
@@ -72,27 +91,10 @@
             if( next < 0 ){ next += imageDataArray.length }
             setImage(next, offset * 100)
         }
-
-        frame = assertExists( document.getElementById(UniqueIDs.prefix('frame')) )
-        rack  = assertExists( document.getElementById(UniqueIDs.prefix('rack')) )
-
-        for (const imageData of imageDataArray) {
-            imageControllers.push(
-                new CarouselImageController(UniqueIDs.prefix("image"), imageData)
-            )
-        }
-
-        button_prev = assertExists( document.getElementById(UniqueIDs.prefix('button_prev')) )
-        button_prev.onclick = () => { nextImage(-1) }
-        button_next = assertExists( document.getElementById(UniqueIDs.prefix('button_next')) )
+        
         button_next.onclick = () => { nextImage(+1) }
+        button_prev.onclick = () => { nextImage(-1) }
 
-        captionControllers[0] = new CarouselCaptionController( UniqueIDs.prefix("caption") )
-        captionControllers[1] = new CarouselCaptionController( UniqueIDs.prefix("caption") )
-        
-        console.log(imageControllers)
-        console.log(captionControllers)
-        
         setInterval(
             () => {
 
@@ -109,31 +111,31 @@
 </style>
 
 <div class="carousel" style="max-width: {size}px;">
-    <div class="frame" id={UniqueIDs.prefix('frame')}>
-        <div class="rack" id={UniqueIDs.prefix('rack')}>
+    <div class="frame">
+        <div class="rack" id={UniqueIDs.getServer('rack')}>
             {#each imageDataArray as image}
                 <CarouselImage
-                    id   = {UniqueIDs.prefix('image')}
+                    id   = {UniqueIDs.getServer('image')}
                     data = {image}
                 />
             {/each}
         </div>
         <div class="buttons">
             <button
-                id = {UniqueIDs.prefix('button_prev')}
+                id = {UniqueIDs.getServer('button_prev')}
             />
             <button
-                id = {UniqueIDs.prefix('button_next')}
+                id = {UniqueIDs.getServer('button_next')}
             />
         </div>
     </div>
     <div class="captionholder">
         <CarouselCaption
-            id    = {UniqueIDs.prefix('caption')}
+            id    = {UniqueIDs.getServer('caption')}
             first = {imageDataArray[0]}
         />
         <CarouselCaption
-            id    = {UniqueIDs.prefix('caption')}
+            id    = {UniqueIDs.getServer('caption')}
         />
     </div>
 </div>
