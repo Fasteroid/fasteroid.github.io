@@ -26,7 +26,7 @@
                 {#each pagetree.getChildrenAtPath(`/${topic}`) as node}
                     <a href="{node.webPath}">
                         <img src="{ sanitizeThumbnail(node.pageData?.thumbnail) }" alt="thumbnail">
-                        <div class="project-title">{ node.pageData?.title }</div>
+                        <div class="project-title">{ node.pageData?.longTitle || node.pageData?.title }</div>
                     </a>
                 {/each}
             </div>
