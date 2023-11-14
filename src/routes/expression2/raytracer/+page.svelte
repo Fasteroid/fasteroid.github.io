@@ -23,7 +23,9 @@
         }
     }
 
-    const dwell_256 = 5000;
+    const intervals = {
+        [256]: 4000
+    };
 
 </script>
 
@@ -47,22 +49,19 @@
             Please enjoy the render gallery.<br>
             (Click the left or right sides of the image carousels to browse them.)
         </section>
-        <section class="extra-space" >
-            <ImageCarousel
-                source = { renders[256] }
-                filter = { getPicker(4, 0) }
-                size   = { 256 }
-                scroll_interval = { dwell_256 }
-                scroll_delay    = { dwell_256 * 0 / 4 }
-            />
-            <ImageCarousel
-                source = { renders[256] }
-                filter = { getPicker(4, 1) }
-                size   = { 256 }
-                scroll_interval = { dwell_256 }
-                scroll_delay    = { dwell_256 * 1 / 4 }
-            />
-            
+        <section class="extra-space">
+            {#each [0,1,2,3] as offset}
+                <ImageCarousel
+                    source = { renders[256] }
+                    filter = { getPicker(4, offset) }
+                    size   = { 256 }
+                    autoscroll = {{
+                        interval:   intervals[256],
+                        delay:      intervals[256] * offset / 4,
+                        transition: 250
+                    }}
+                />
+            {/each}
         </section>
     </section>
 </div>

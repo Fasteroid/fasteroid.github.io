@@ -26,7 +26,7 @@ export class CarouselCaptionController {
         this.base.classList.toggle("hidden", !vis)
     }
 
-    fade(opacity: number, transition: number){
+    fade(opacity: number, transition: KeyframeAnimationOptions){
         if( opacity > 0 ){ this.setVisible(true) }
         this.base.animate([
             {opacity: `${100-opacity}%`},

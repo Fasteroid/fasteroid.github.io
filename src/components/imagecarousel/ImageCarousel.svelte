@@ -3,8 +3,8 @@
     
     import { browser } from '$app/environment';
 
-    import { UniqueIDs, assertExists } from '$lib/uniqueid';
-    import type { CarouselImagePicker, CarouselImageData } from './carousel-common';
+    import { UniqueIDs, assertExists, assertQueryExists } from '$lib/uniqueid';
+    import type { CarouselImagePicker, CarouselImageData, AutoscrollProperties } from './carousel-common';
 
     import CarouselCaption from './carouselcaption/CarouselCaption.svelte';
     import { CarouselCaptionController } from './carouselcaption/carouselcaptioncontroller';
@@ -17,10 +17,8 @@
 
     export let size: number; // size of images
 
-    export let scroll_delay:    number;   // wait before autoscroll kickoff
-    export let scroll_interval: number; // duration between autoscrolls
+    export let autoscroll: AutoscrollProperties;
 
-    const transition = 250
     const imageDataArray: CarouselImageData[] = filter(source);
 
     // this is needed for serverside prerender so we can render exactly one placeholder image
@@ -29,19 +27,15 @@
     
     if (browser) {
 
-        console.log("init")
+        const easeTransition = {
+            duration: autoscroll.transition,
+            easing: "ease-in-out"
+        }
 
-        let captionControllers: CarouselCaptionController[] = [];
-        let imageControllers: CarouselImageController[] = [];
-        let rack:        HTMLElement;
-        let button_next: HTMLElement;
-        let button_prev: HTMLElement;
+        const captionControllers: CarouselCaptionController[] = [];
+        const imageControllers:   CarouselImageController[] = [];
 
-        let curIndex = 0;
-        let curCaption = 0;
-        let busy = false;
-
-        rack = assertExists( UniqueIDs.getClient('rack') );
+        const rack = assertExists( UniqueIDs.getClient('rack') );
 
         for (const imageData of imageDataArray) {          
             imageControllers.push(
@@ -49,59 +43,82 @@
             )
         }
 
-        button_prev = assertExists( UniqueIDs.getClient('button_prev') )
-        button_next = assertExists( UniqueIDs.getClient('button_next') )
+        const buttons = assertExists( UniqueIDs.getClient('buttons') );
+        const b_prev = assertQueryExists( buttons, ".prev" );
+        const b_next = assertQueryExists( buttons, ".next" );
 
         captionControllers[0] = new CarouselCaptionController( UniqueIDs.getClient("caption") );
         captionControllers[1] = new CarouselCaptionController( UniqueIDs.getClient("caption") );
+    
+        let curIndex:   number = 0;     // which image is displayed?
+        let curCaption: number = 0;     // which caption is visible?
+        let busy:       boolean = false; // are we currently animating?
+        let loop:       number = 0;  // interval for autoscroll if active
+        let wait:       number = 0;  // delay for autoscroll if active
 
-        function getRackAnim(direction: number){
-            return [ {left: `${-direction}%`} ]
-        }
 
         function setImage(newIndex: number = 0, direction: number = 100){
-                       
             if (busy || curIndex === newIndex) {
                 return;
             }
             
             busy = true;
 
-            const newImage = imageControllers[newIndex]
-            newImage.setVisible(true)
-            newImage.setShift(direction)
+            const newImage = imageControllers[newIndex];
+            newImage.setVisible(true);
+            newImage.setShift(direction);
 
-            captionControllers[curCaption].fade(0, transition)
-            curCaption = (curCaption + 1) % 2
-            captionControllers[curCaption].fade(100, transition)
-            captionControllers[curCaption].setData(newImage.data)
+            captionControllers[curCaption].fade(0, easeTransition);
+            curCaption = (curCaption + 1) % 2;
+            captionControllers[curCaption].fade(100, easeTransition);
+            captionControllers[curCaption].setData(newImage.data);
 
-            rack.animate( getRackAnim(direction), transition ).addEventListener("finish",() => {
-                const oldImage = imageControllers[curIndex]
-                oldImage.setVisible(false)
-                newImage.setShift(0)
-                curIndex = newIndex
+            rack.animate( [{left: `${-direction}%`}], easeTransition ).addEventListener("finish",() => {
+                const oldImage = imageControllers[curIndex];
+                oldImage.setVisible(false);
+                newImage.setShift(0);
+                curIndex = newIndex;
                 busy = false;
             })
-
         }
 
         function nextImage(offset: number){
             let next = (curIndex + offset) % imageDataArray.length;
             if( next < 0 ){ next += imageDataArray.length }
-            setImage(next, offset * 100)
+            setImage(next, offset * 100);
         }
-        
-        button_next.onclick = () => { nextImage(+1) }
-        button_prev.onclick = () => { nextImage(-1) }
 
-        setInterval(
-            () => {
+        function stopScroll(){
+            clearTimeout(wait);
+            clearInterval(loop);
+            wait = 0;
+            loop = 0;
+        }
 
-            }, 
-            2500
-        )
+        function autoScroll(startDelay: number){
+            stopScroll();
+            wait = window.setTimeout(
+                () => {
+                    stopScroll();
+                    nextImage(+1)
+                    loop = window.setInterval(() => {nextImage(+1)}, autoscroll.interval);
+                },
+                startDelay
+            )
+        }
+
+        b_next.onclick = () => { nextImage(+1) }
+        b_prev.onclick = () => { nextImage(-1) }
         
+        buttons.onmouseenter = () => {
+            stopScroll()
+        }
+        buttons.onmouseleave = () => {
+            autoScroll(autoscroll.interval / 2)
+        }
+
+        autoScroll(autoscroll.delay)
+
     }
     
 </script>
@@ -120,13 +137,9 @@
                 />
             {/each}
         </div>
-        <div class="buttons">
-            <button
-                id = {UniqueIDs.getServer('button_prev')}
-            />
-            <button
-                id = {UniqueIDs.getServer('button_next')}
-            />
+        <div class="buttons" id={UniqueIDs.getServer('buttons')}>
+            <button class="prev"/>
+            <button class="next"/>
         </div>
     </div>
     <div class="captionholder">

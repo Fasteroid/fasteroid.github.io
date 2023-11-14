@@ -7,3 +7,9 @@ export interface CarouselImageData {
 }
 
 export type CarouselImagePicker = (pics: CarouselImageData[]) => CarouselImageData[]
+
+export interface AutoscrollProperties {
+    delay: number
+    interval: number
+    transition: number
+}
