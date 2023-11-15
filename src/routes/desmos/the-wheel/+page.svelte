@@ -23,10 +23,10 @@
             The idea is simple: graph any function with vertical asymptote(s), add curvature along the y axis, 
             tape the ends of the asymptote(s) together, and <i>voilà</i>, you have now broken normal algebra, for &minus;infinity and &plus;infinity are now the same number.<br>
             <br>
-            This recently popped back into my head after seeing a meme I could find again to save my life regarding "the wheel", and how remarkably similar it looked to my original
+            This recently popped back into my head after seeing a meme (one I couldn't find again to save my life) regarding "the wheel", and how remarkably similar it looked to my original
             drawing.  What is "the wheel", you ask?  Well apparently, it's <a href="https://en.wikipedia.org/wiki/Wheel_theory">a completely different set of algebraic rules</a>,
             designed exactly around this goofy graph on a toilet-paper roll concept.  I had no idea this stupid idea had any real practicality in mathematics, but apparently,
-            <i>it does.  </i>I mean, it has a Wikipedia page, so it must have some kind of use—don't actually quote me on that though.<br>
+            <i>it does.  </i>I mean, it has a Wikipedia page.<br>
             <br>
             <div style="clear: both;"></div>
             Why was I thinking about this in Calculus 1?  If you squint at it, the behavior of the line wrapping around from negative infinity to infinity or vise-versa looks <i>remarkably similar</i>
