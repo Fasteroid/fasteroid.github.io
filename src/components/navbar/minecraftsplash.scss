@@ -18,7 +18,12 @@
     text-align: center;
     white-space: pre;
     -webkit-font-smoothing: none;
-    animation: minecraftwow 0.5s infinite
+    animation: minecraftwow 0.5s infinite;
+    text-decoration: none;
+}
+
+.minecraftsplash:hover {
+    text-decoration: underline;
 }
 
 $begin: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
