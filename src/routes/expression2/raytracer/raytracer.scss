@@ -1,0 +1,28 @@
+.gallery {
+    display: grid;
+    gap: 15px;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, auto);
+}
+
+.grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.small {
+        grid-column: auto / span 2;
+        grid-row: auto / span 3;
+    }
+
+    &.med {
+        grid-column: auto / span 4;
+        grid-row: auto / span 4;
+    }
+
+    &.large {
+        grid-column: auto / span 6;
+        grid-row: auto / span 6;
+    }
+}

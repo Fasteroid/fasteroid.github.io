@@ -99,7 +99,7 @@
             "file": "assets/expression2/raytracer/wet.png",
             "title": "Wet",
             "capt1": "256x Render",
-            "capt2": "Creating the &quot;rain on the lens&quot; effect"
+            "capt2": "Creating the \"rain on the lens\" effect"
         },{
             "file": "assets/expression2/raytracer/iconicbridge2.png",
             "title": "The Overpass",
@@ -250,11 +250,6 @@
         ,{
             "file": "assets/expression2/raytracer/goldencitypool.png",
             "title": "gm_goldencity",
-            "capt1": "256x Render",
-            "capt2": "Global Illumination Edits"
-        },{
-            "file": "assets/expression2/raytracer/gi-cube-hell.png",
-            "title": "GI Cube Spam",
             "capt1": "256x Render",
             "capt2": "Global Illumination Edits"
         },{

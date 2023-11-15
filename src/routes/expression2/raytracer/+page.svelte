@@ -23,11 +23,11 @@
         }
     }
 
-    const intervals = {
-        [256]: 4000
-    };
-
 </script>
+
+<style lang="scss">
+    @import "./raytracer.scss";
+</style>
 
 <div class="margins">
     <section>
@@ -44,24 +44,52 @@
             and other my amazing projects to the world.<br>
             <br>Godsend, E2 Raytracer.  You will never be forgotten.<br>
             <br>
-            Special thanks to <a href="https://discord.com/users/331192747933302837">@Speedeo</a> (bitmaps), and
+            Special thanks to <a href="https://discord.com/users/331192747933302837">@Speedeo</a> (bitmaps) and
             <a href="https://discord.com/users/363590853140152321">@Vurv</a> (pnglib) for helping me encode my traces into mostly-to-spec image formats.<br>
             The gallery below would be empty if not for their help!<br>
             <br>
             (Click the left or right sides of the image carousels to browse them.)
         </section>
-        <section class="extra-space">
-            {#each [0,1,2,3] as offset}
+        <section class="extra-space gallery">
+            <div class="grid large">
                 <ImageCarousel
-                    source = { renders[256] }
-                    filter = { getPicker(4, offset) }
-                    size   = { 256 }
+                    source = { renders[1024] }
+                    filter = { (x) => x }
+                    size   = { 1024 }
                     autoscroll = {{
-                        interval:   intervals[256],
-                        delay:      intervals[256] * offset / 4,
-                        transition: 250
+                        interval:   10000,
+                        delay:      5000,
+                        transition: 1000
                     }}
                 />
+            </div>
+            {#each [0,1,2,3,4,5] as offset}
+                <div class="grid small">
+                    <ImageCarousel
+                        source = { renders[256] }
+                        filter = { getPicker(6, offset) }
+                        size   = { 256 }
+                        autoscroll = {{
+                            interval:   6000,
+                            delay:      1000 * offset,
+                            transition: 250
+                        }}
+                    />
+                </div>
+            {/each}
+            {#each [0,1,2] as offset}
+                <div class="grid med">
+                    <ImageCarousel
+                        source = { renders[512] }
+                        filter = { getPicker(3, offset) }
+                        size   = { 512 }
+                        autoscroll = {{
+                            interval:   6000,
+                            delay:      6000 * offset / 3,
+                            transition: 500
+                        }}
+                    />
+                </div>
             {/each}
         </section>
     </section>
