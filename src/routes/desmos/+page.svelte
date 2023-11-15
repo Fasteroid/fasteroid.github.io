@@ -4,7 +4,7 @@
 
 <svelte:head>
     <style lang="scss">
-        @import "src/styles/projectdesmos.scss";
+        @import "./desmos-project.scss";
     </style>
 </svelte:head>
 

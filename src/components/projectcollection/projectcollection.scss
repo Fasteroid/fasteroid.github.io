@@ -1,5 +1,5 @@
-@use "./../../styles/params/neons.scss" as neons;
-@use "./../../styles/params/globals.scss" as globals;
+@use "./../../globalstyle/params/neons.scss" as neons;
+@use "./../../globalstyle/params/globals.scss" as globals;
 
 .project-shelf {
     display: flex;

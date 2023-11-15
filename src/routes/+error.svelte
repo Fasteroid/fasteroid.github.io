@@ -5,10 +5,11 @@
 
 <svelte:head>
     <title>OH NAR</title> 
-    <style lang="scss">
-        @import "src/styles/goofy404.scss";
-    </style>
 </svelte:head>
+
+<style lang="scss">
+    @import "./404.scss";
+</style>
 
 <body>
     <div class="margins">
