@@ -6,7 +6,7 @@ const preprocessors = [
 	
 	/* doublespace.js */ {
 		markup({content, filename}) {
-			if( filename.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<section>/) ){
+			if( filename?.match(/\/routes\/.*?\+.*?\.svelte/) && content.match(/<section>/) ){
 				content = content.replaceAll('.  ','.&nbsp; ');
 				content = content.replaceAll('!  ','!&nbsp; ');
 				content = content.replaceAll('?  ','?&nbsp; ');
@@ -17,7 +17,11 @@ const preprocessors = [
 	},
 
 	/* svelte-preprocess */
-	preprocess()
+	preprocess({
+		scss: {
+			includePaths: ["src/globalstyle"]
+		}
+	})
 	
 ]
 
