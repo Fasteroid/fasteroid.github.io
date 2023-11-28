@@ -12,3 +12,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .cache/*
 src/lib/json/pagetree.json
+src/globalstyle/vars/base.scss

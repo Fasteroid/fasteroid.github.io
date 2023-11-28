@@ -1,0 +1,285 @@
+@use "vars/base.scss" as base;
+
+.redstone > .front {
+    background-image: url(base.$base + '/assets/skilltree/redstone.svg');
+}
+.redstone > div {
+    background-color: #5f2b2b;
+}
+
+.mindstorms > .front {
+    background-image: url(base.$base + '/assets/skilltree/mindstorms.svg');
+}
+.mindstorms > div {
+    background-color: #4b4b4b;
+}
+
+.expression2 > .front {
+    background-image: url(base.$base + '/assets/skilltree/expression2.svg');
+}
+.expression2 > div {
+    background-color: #1f1f1f;
+}
+
+.lua > .front {
+    background-image: url(base.$base + '/assets/skilltree/lua.svg');
+}
+.lua > div {
+    background-color: #161d50;
+}
+
+.code > .front {
+    background-image: url(base.$base + '/assets/skilltree/codeorg.svg');
+}
+.code > div {
+    background-color: #386c6d;
+}
+
+.js > .front {
+    background-image: url(base.$base + '/assets/skilltree/js.svg');
+}
+.js > div {
+    background-color: #706425;
+}
+
+.nodejs > .front {
+    background-image: url(base.$base + '/assets/skilltree/nodejs.svg');
+}
+.nodejs > div {
+    background-color: #244225;
+}
+
+.html > .front {
+    background-image: url(base.$base + '/assets/skilltree/html.svg');
+}
+.html > div {
+    background-color: #543026;
+}
+
+.css > .front {
+    background-image: url(base.$base + '/assets/skilltree/css.svg');
+}
+.css > div {
+    background-color: #27314d;
+}
+
+.electron > .front {
+    background-image: url(base.$base + '/assets/skilltree/electron.svg');
+}
+.electron > div {
+    background-color: #353d4b;
+}
+
+.java > .front {
+    background-image: url(base.$base + '/assets/skilltree/java.svg');
+}
+.java > div {
+    background-color: #572629;
+}
+
+.c > .front {
+    background-image: url(base.$base + '/assets/skilltree/c.svg');
+}
+.c > div {
+    background-color: #263652;
+}
+
+.arduino > .front {
+    background-image: url(base.$base + '/assets/skilltree/arduino.svg');
+}
+.arduino > div {
+    background-color: #34696d;
+}
+
+.illustrator > div {
+    background-color: #301111;
+}
+.illustrator > .front {
+    box-shadow: inset 0px 0px 0px 5px #ff9b0077;
+}
+
+.photoshop > div {
+    background-color: #081f3a;
+}
+.photoshop > .front {
+    box-shadow: inset 0px 0px 0px 5px #2da9ff77;
+}
+
+.gimp > .front {
+    background-image: url(base.$base + '/assets/skilltree/gimp.svg');
+}
+.gimp > div {
+    background-color: #496177;
+}
+
+.aftereffects > div {
+    background-color: #2e0e3f;
+}
+.aftereffects > .front {
+    box-shadow: inset 0px 0px 0px 5px #db96fd77;
+}
+
+.premiere > div {
+    background-color: #2a0d44;
+}
+.premiere > .front {
+    box-shadow: inset 0px 0px 0px 5px #db96fd77;
+}
+
+.audacity > .front {
+    background-image: url(base.$base + '/assets/skilltree/audacity.svg');
+}
+.audacity > div {
+    background-color: #635424;
+}
+
+.drums > .front {
+    background-image: url(base.$base + '/assets/skilltree/sticks.svg');
+}
+.drums > div {
+    background-color: #55462f;
+}
+
+.lego > .front {
+    background-image: url(base.$base + '/assets/skilltree/technic.svg');
+}
+.lego > div {
+    background-color: #797979;
+}
+
+.autodesk > .front {
+    background-image: url(base.$base + '/assets/skilltree/123d.svg');
+}
+.autodesk > div {
+    background-color: #2b5e68;
+}
+
+.knex > .front {
+    background-image: url(base.$base + '/assets/skilltree/knex.svg');
+}
+.knex > div {
+    background-color: #3b5040;
+}
+
+.woodworking > .front {
+    background-image: url(base.$base + '/assets/skilltree/woodworking.svg');
+}
+.woodworking > div {
+    background-color: #695431;
+}
+
+.printing > .front {
+    background-image: url(base.$base + '/assets/skilltree/printing.svg');
+}
+.printing > div {
+    background-color: #724a33;
+}
+
+.blender > .front {
+    background-image: url(base.$base + '/assets/skilltree/blender.svg');
+}
+.blender > div {
+    background-color: #5c3821;
+}
+
+.sketchup > .front {
+    background-image: url(base.$base + '/assets/skilltree/sketchup.svg');
+}
+.sketchup > div {
+    background-color: #684040;
+}
+
+.bootstrap > .front {
+    background-size: 80%;
+    background-image: url(base.$base + '/assets/skilltree/bootstrap.svg');
+}
+.bootstrap > div {
+    background-color: #34274b;
+}
+
+.regex > .front {
+    background-image: url(base.$base + '/assets/skilltree/regex.svg');
+}
+.regex > div {
+    background-color: #333333;
+}
+
+.ubuntu > .front {
+    background-image: url(base.$base + '/assets/skilltree/ubuntu.svg');
+}
+.ubuntu > div {
+    background-color: #2e1425;
+}
+
+.bash > .front {
+    background-image: url(base.$base + '/assets/skilltree/bash.svg');
+}
+.bash > div {
+    background-color: #214220;
+}
+
+.desmos > .front {
+    background-image: url(base.$base + '/assets/skilltree/desmos.svg');
+    background-size: 77%;
+}
+.desmos > div {
+    background-color: #164229;
+}
+.desmos > .back {
+    /* Bernard. */
+    background-image: url(base.$base + '/assets/skilltree/desmos-easteregg.svg');
+}
+
+.calculus > .front {
+    background-image: url(base.$base + '/assets/skilltree/calculus.svg');
+}
+.calculus > div {
+    background-color: #2b3c42;
+}
+
+.ts > .front {
+    background-image: url(base.$base + '/assets/skilltree/ts.svg');
+}
+.ts > div {
+    background-color: #1f5579;
+}
+
+.webgl > .front {
+    background-image: url(base.$base + '/assets/skilltree/webgl.svg');
+    background-size: 77%;
+}
+.webgl > div {
+    background-color: #5a0e0e;
+}
+
+.coldfusion > div {
+    background-color: #182c58;
+}
+.coldfusion > .front {
+    box-shadow: inset 0px 0px 0px 5px #7cafff77;
+}
+
+.angular > .front {
+    background-image: url(base.$base + '/assets/skilltree/angular.svg');
+}
+.angular > div {
+    background-color: #490e1b;
+}
+
+.angular-mat > .front {
+    background-image: url(base.$base + '/assets/skilltree/angular-mat.svg');
+}
+.angular-mat > div {
+    background-color: #53340d;
+}
+
+.sass > .front {
+    background-image: url(base.$base + '/assets/skilltree/sass.svg');
+}
+.sass > div {
+    background-color: #611c44;
+}
+
+.invisible {
+    display: none
+}
