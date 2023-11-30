@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="0.8276in" height="0.8889in" viewBox="0 0 59.584 64">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: 0.4;
+      }
+
+      .cls-2 {
+        fill: #ffa726;
+      }
+
+      .cls-3 {
+        fill: #fb8c00;
+      }
+    </style>
+  </defs>
+  <title>angular-mat</title>
+  <g id="Layer_1" data-name="Layer 1" class="cls-1">
+    <polygon class="cls-2" points="29.792 7.104 29.792 7.072 29.792 0 0 10.624 4.544 50.016 29.792 64 29.792 39.488 29.792 7.104"/>
+    <polygon class="cls-3" points="29.792 0 29.792 7.072 29.792 7.104 29.792 39.488 29.792 64 55.04 50.016 59.584 10.624 29.792 0"/>
+  </g>
+</svg>

@@ -1,3 +1,5 @@
+@use "vars/base.scss" as base;
+
 :root {
     --node-size: min(1.35in, 12vw)
 }
@@ -6,15 +8,16 @@
     height: 100%;
     width: 100%;
     position: relative;
+    grid-area: inner-div;
 }
   
 .grid {
-    height: calc( var(--node-size) * 15 + 0.7in );
+    height: calc( var(--node-size) * 18 + 0.7in );
     display: grid;
     place-items: left;
     grid-template-areas: "inner-div";
     padding: 0.7in;
-    background-image: url("/assets/grid.png");
+    background-image: url(base.$base + "/assets/grid.png");
 }
   
 .node::before {
@@ -114,6 +117,7 @@
     -webkit-transform: rotateY(-180deg) translateZ(-1px);
     font-size: calc( var(--node-size) * 0.09 );
     font-weight: 300;
+    line-height: 11pt;
 }
 
 .node:hover > .back {
@@ -121,7 +125,7 @@
     -webkit-transform: rotateY(0deg) translateZ(-1px);
 }
 
-.treeline {
+.tree-line {
     stroke: #fff;
     stroke-width: calc( var(--node-size) * 0.03 );
     animation: fadeIn 0.1s;
@@ -134,7 +138,7 @@
     from{stroke-dashoffset: calc( var(--node-size) * -0.04 + -16px);}
 }
 
-.treesvg {
+.tree-line {
     width: 100%;
     height: 100%;
     position: absolute;
