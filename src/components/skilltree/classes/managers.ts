@@ -67,10 +67,6 @@ export class SkillTreeNodeManager {
         SkillTreeNodeManager.declare(node)
     }
 
-    static foreach(fn: (p: DynamicSkillTreeNode) => void){
-        this.dynamicNodes.forEach(fn)
-    }
-
 }
 
 function getPos(el: any /*HTMLElement*/) { // cursed function from stackoverflow, don't ask me how it works
@@ -88,6 +84,7 @@ export class SkillTreeManager {
     static containerPos: Vec2 = new Vec2();
     static oldW: number;
     static oldH: number;
+    
 
     static handleResize(){
         
@@ -95,21 +92,16 @@ export class SkillTreeManager {
         SkillTreeManager.relativeDistance = NODE_DISTANCE * SkillTreeNodeManager.staticNodes[0].html.clientWidth;
         SkillTreeManager.relativePadding  = NODE_PADDING  * SkillTreeNodeManager.staticNodes[0].html.clientWidth;
     
-        for( let node of SkillTreeNodeManager.dynamicNodes ){
+        SkillTreeNodeManager.dynamicNodes.forEach(node => {
             node.setPos( (node.pos.x/this.oldW)*this.nodeContainer.clientWidth, (node.pos.y/this.oldH)*this.nodeContainer.clientHeight );
             node.render();
-        }  
+        })
     
-        for( let node of SkillTreeNodeManager.staticNodes ){
-            node.render();
-        }  
+        SkillTreeNodeManager.staticNodes.forEach(node => node.render())
+        SkillTreeLineManager.lineObjects.forEach(line => line.render())
     
         this.oldW = this.nodeContainer.clientWidth;
         this.oldH = this.nodeContainer.clientHeight;
-    
-        for( let line of SkillTreeLineManager.lineObjects ){ 
-            line.render();
-        }  
     
     }
 
@@ -140,27 +132,23 @@ export class SkillTreeManager {
         SkillTreeManager.handleResize();
 
         function frame(){
-            for( let node of SkillTreeNodeManager.dynamicNodes ){
-                node.render();
-            }
-            for( let line of SkillTreeLineManager.lineObjects ){
-                line.render();
-            }
+            SkillTreeNodeManager.dynamicNodes.forEach(node => node.render())
+            SkillTreeLineManager.lineObjects.forEach(line => line.render())
         }
         
         setInterval( () => {
-            SkillTreeNodeManager.foreach( node => node.doForces() )
-            SkillTreeNodeManager.foreach( node => node.doPositioning() )
+            SkillTreeNodeManager.dynamicNodes.forEach( node => node.doForces() )
+            SkillTreeNodeManager.dynamicNodes.forEach( node => node.doPositioning() )
             requestAnimationFrame(frame);
         } , 16);
         
         
         document.addEventListener("mouseup",()=>{
-            SkillTreeNodeManager.foreach( node => node.stopDrag() )
+            SkillTreeNodeManager.dynamicNodes.forEach( node => node.stopDrag() )
         });
         
         document.addEventListener("touchend",()=>{
-            SkillTreeNodeManager.foreach( node => node.stopDrag() )
+            SkillTreeNodeManager.dynamicNodes.forEach( node => node.stopDrag() )
         });
         
     }
