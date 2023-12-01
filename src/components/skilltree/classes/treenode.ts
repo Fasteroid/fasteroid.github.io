@@ -32,6 +32,10 @@ export class SkillTreeNode implements SkillTreeNodeData {
         this.html.id = ""
 
         let self = this;
+
+        this.htmlStyle.opacity = '0'
+        setTimeout(() => self.htmlStyle.opacity = '1', 0)
+
         this.html.addEventListener("mouseover",() => {
             for(const link of self.links){
                 link.svg.classList.toggle("thick", true)
