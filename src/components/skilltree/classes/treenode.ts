@@ -31,6 +31,19 @@ export class SkillTreeNode implements SkillTreeNodeData {
         this.htmlStyle.top = `${this.pos.y}px`;
         this.html.id = ""
 
+        let self = this;
+        this.html.addEventListener("mouseover",() => {
+            for(const link of self.links){
+                link.svg.classList.toggle("thick", true)
+            }
+        });
+        this.html.addEventListener("mouseout",() => {
+            for(const link of self.links){
+                link.svg.classList.toggle("thick", false)
+            }
+        });
+
+
         SkillTreeManager.nodeContainer.appendChild(this.html)
     }
 
@@ -184,7 +197,6 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
             force.y = force.y * SkillTreeManager.nodeContainer.clientHeight;
             if(force.distance(this.pos) < SkillTreeManager.relativeDistance ){
                 this.homePos = undefined;
-                console.log(this.name)
                 return;
             }
             force.scaleBy(-1);

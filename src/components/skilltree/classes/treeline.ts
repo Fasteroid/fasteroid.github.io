@@ -19,6 +19,7 @@ export class SkillTreeLine {
 
     constructor(childId: string, parentId: string, length: number){
         this.svg = document.createElementNS("http://www.w3.org/2000/svg","line");
+        this.svg.classList.add("tree-line")
         
         this.parentId = parentId;
         this.childId  = childId;

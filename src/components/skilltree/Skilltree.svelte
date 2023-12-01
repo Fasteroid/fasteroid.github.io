@@ -22,7 +22,7 @@
 
 <section class="grid">
     <div class="line-container" id="tree-lines">
-        <svg class="tree-line"></svg>
+        <svg class="tree-line-container"></svg>
     </div>     
     <div class="node-container">
         
