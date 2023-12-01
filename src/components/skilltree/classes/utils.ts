@@ -2,6 +2,7 @@
 const sqrt = Math.sqrt;
 
 export class Vec2 {
+
     x: number;
     y: number;
     
@@ -18,7 +19,7 @@ export class Vec2 {
         return sqrt(this.distanceSqr(that));
     }
 
-    normalizeReturnLength(){
+    normalize(){
         const length = this.length();
         this.scaleBy(1 / length);
         return length
@@ -37,6 +38,14 @@ export class Vec2 {
         this.y += y;
     }
 
+    addToV(that: Vec2){
+        this.addTo(that.x, that.y);
+    }
+
+    clone() {
+        return new Vec2(this.x, this.y)
+    }
+
     setTo(x: number, y: number){
         this.x = x;
         this.y = y;
@@ -49,5 +58,6 @@ export class Vec2 {
 }
 
 export function clamp(n: number, min: number, max: number): number {
-    return (n > max ? max : (n < min ? min : n));
+    const ret = (n > max ? max : (n < min ? min : n));
+    return isNaN(ret) ? 0 : ret;
 }

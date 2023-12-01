@@ -1,15 +1,22 @@
+export type SkillTreeParentRef = {
+    name: string,
+    dist: number
+}
+
 export interface SkillTreeNodeData {
-    name: string;
+    x?: number,
+    y?: number,
+    name: string
 }
 
 export interface DynamicSkillTreeNodeData extends SkillTreeNodeData {
-    parents: {[name: string]: number}
-    desc:    string[]  
-    style:   string;
+    parents: SkillTreeParentRef[],
+    desc:    string[],
+    style:   string
 }
 
 export interface StaticSkillTreeNodeData extends SkillTreeNodeData {
     x: number,
     y: number,
-    tier: number,
+    tier: number
 }

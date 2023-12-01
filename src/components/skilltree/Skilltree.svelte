@@ -7,14 +7,16 @@
 
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { SkillTreeManager } from "./classes/managers";
+  import { SkillTreeManager, SkillTreeNodeManager } from "./classes/managers";
 
     if(browser) {
         SkillTreeManager.setup(
             document.querySelector(".node-container")!,
             document.getElementById("template-node")!,
             document.getElementById("tree-lines")!.children[0]! as SVGSVGElement,
-        )
+        );
+        (window as any).SkillTreeManager = SkillTreeManager;
+        (window as any).SkillTreeNodeManager = SkillTreeNodeManager
     }
 </script>
 

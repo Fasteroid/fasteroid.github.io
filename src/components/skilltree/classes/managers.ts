@@ -121,7 +121,7 @@ export class SkillTreeManager {
         }
 
         for( const dynamicNode of SkillTreeData.dynamicNodes ){
-            SkillTreeNodeManager.createDynamic(dynamicNode as unknown as DynamicSkillTreeNodeData)
+            SkillTreeNodeManager.createDynamic(dynamicNode)
         }
 
         SkillTreeLineManager.initialize()
@@ -138,7 +138,7 @@ export class SkillTreeManager {
         
         setInterval( () => {
             SkillTreeNodeManager.dynamicNodes.forEach( node => node.doForces() )
-            SkillTreeNodeManager.dynamicNodes.forEach( node => node.doPositioning() )
+            SkillTreeNodeManager.dynamicNodes.forEach( node => node.simulate() )
             requestAnimationFrame(frame);
         } , 16);
         
@@ -151,6 +151,23 @@ export class SkillTreeManager {
             SkillTreeNodeManager.dynamicNodes.forEach( node => node.stopDrag() )
         });
         
+    }
+
+    static getSerialized(){
+        const data = {
+            staticNodes:  SkillTreeNodeManager.staticNodes.map((node) => node.getSerialized()),
+            dynamicNodes: SkillTreeNodeManager.dynamicNodes.map((node) => node.getSerialized())
+        }
+
+        const download = new File([JSON.stringify(data,undefined,"\t")], "skilltree.json")
+
+        const link = document.createElement("a");
+        link.style.display = "none";
+        link.href = URL.createObjectURL(download);
+        link.download = download.name;
+
+        document.body.appendChild(link);
+        link.click();
     }
 
 }

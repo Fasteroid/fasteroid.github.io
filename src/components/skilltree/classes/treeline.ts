@@ -44,8 +44,8 @@ export class SkillTreeLine {
         this.parentNode = SkillTreeNodeManager.namedNodes[this.parentId];
         this.childNode = SkillTreeNodeManager.namedNodes[this.childId];
         if(!this.parentNode || !this.childNode){ console.warn(`Could not initialize link from ${this.parentId} to ${this.childId}`); return }
-        this.parentNode.lines.push(this)
-        this.childNode.lines.push(this)
+        this.parentNode.links.push(this)
+        this.childNode.links.push(this)
         this.initialized = true;
     }
 

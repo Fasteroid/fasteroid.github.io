@@ -1,7 +1,7 @@
 import { GRAVITY, NODE_BOB_FORCE, NODE_DISTANCE, NODE_MAX_VEL } from "./constants";
-import type { DynamicSkillTreeNodeData, SkillTreeNodeData, StaticSkillTreeNodeData } from "./interfaces";
+import type { DynamicSkillTreeNodeData, SkillTreeNodeData, SkillTreeParentRef, StaticSkillTreeNodeData } from "./interfaces";
 import { SkillTreeManager, SkillTreeNodeManager, SkillTreeLineManager } from "./managers";
-import type { SkillTreeLine } from "./treeline";
+import type { SkillTreeLine as SkillTreeLink } from "./treeline";
 import { clamp, Vec2 } from "./utils";
 
 function rand(): number {
@@ -10,10 +10,9 @@ function rand(): number {
 
 export class SkillTreeNode implements SkillTreeNodeData {
 
-    lines:   SkillTreeLine[] = [];
+    links:   SkillTreeLink[] = [];
     name:    string;
-    tier:     number = 0;
-    latitude: number = 0.5
+    tier:    number = 0;
 
     pos: Vec2 = new Vec2();
     vel: Vec2 = new Vec2();
@@ -36,13 +35,14 @@ export class SkillTreeNode implements SkillTreeNodeData {
     }
 
     setPos(x: number, y: number){
-        this.pos.x = clamp(x,0,SkillTreeNodeManager.container.clientWidth);
-        this.pos.y = clamp(y,0,SkillTreeNodeManager.container.clientHeight);       
+        this.pos.setTo(
+            clamp(x,0,SkillTreeNodeManager.container.clientWidth),
+            clamp(y,0,SkillTreeNodeManager.container.clientHeight)
+        )
     }
 
     applyForce(x: number, y: number){
-        this.vel.x += x;
-        this.vel.y += y;
+        this.vel.addTo(x, y)
     }
 
     render(){
@@ -50,40 +50,40 @@ export class SkillTreeNode implements SkillTreeNodeData {
         this.htmlStyle.top = `${Math.round(this.pos.y)}px`;
     }
 
+    getSerialized(): SkillTreeNodeData {
+        return {
+            name: this.name,
+            x:    this.pos.x / SkillTreeManager.nodeContainer.clientWidth,
+            y:    this.pos.y / SkillTreeManager.nodeContainer.clientHeight
+        }
+    }
+
 }
 
 export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillTreeNodeData {
 
-    lines:   SkillTreeLine[] = [];
     canMouseOver: boolean  = true;
     mouseForce:   number = 0;
 
+    homePos?:     Vec2;
+
     desc:    string[];
     style:   string;
-    parents: {[name: string]: number};
+    parents: SkillTreeParentRef[];
 
     dragListener: ((this: Document, ev: MouseEvent | TouchEvent) => any) | null = null;
 
-    getRecursiveProperties(){
-        const parentList = Object.keys( this.parents )
-
-        let tier     = this.tier;
-        let latitude = this.latitude;
-
-        for(let parentName of parentList){
-            let parent = SkillTreeNodeManager.namedNodes[parentName]
+    getTier(): number {
+        let tier = this.tier;
+        for(let parentRef of this.parents){
+            let parent = SkillTreeNodeManager.namedNodes[parentRef.name]
             if(!parent){
-                console.warn(`${self}: Attempt to access node ${parentName} before instantiation!`)
+                console.warn(`${self}: Attempt to access node ${parentRef.name} before instantiation!`)
                 continue
             };
-            tier     = Math.max(tier, parent.tier);
-            latitude = latitude * 0.5 + parent.latitude
+            tier = Math.max(tier, parent.tier);
         }
-
-        return {
-            tier: tier + 1,
-            latitude: latitude
-        };
+        return tier + 1;
     }
 
     constructor(data: DynamicSkillTreeNodeData){
@@ -94,10 +94,11 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
         this.desc    = data.desc;
         this.style   = data.style
         this.html.classList.add(data.style);
-        const recurProps = this.getRecursiveProperties();
+        this.tier    = this.getTier();
 
-        this.latitude = recurProps.latitude
-        this.tier     = recurProps.tier
+        if( data.x !== undefined && data.y !== undefined ){
+            this.homePos = new Vec2(data.x, data.y);
+        }
 
         this.html.querySelector(".back")!.innerHTML = this.desc.join("<br><br>")
 
@@ -120,12 +121,12 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
         this.html.addEventListener("touchstart",() => this.startDrag());
 
         // setupDynamicNode 
-        for( let [parent, dist] of Object.entries(data.parents) ){
-            SkillTreeLineManager.create(data.name, parent, dist);
+        for( const parent of data.parents ){
+            SkillTreeLineManager.create(data.name, parent.name, parent.dist);
         }
         
         this.setPos( SkillTreeNodeManager.container.clientWidth/2, 0 );
-        this.applyForce( (this.latitude - 0.5) * 100, this.tier * 10 );
+        this.applyForce( rand() * 10, rand() * 10 );
 
     }
 
@@ -161,7 +162,7 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
         this.vel.setTo(0,0);
     }
 
-    repelForce(that: SkillTreeNode){
+    doRepulsionForce(that: SkillTreeNode){
         const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
         const nx = (that.pos.x-this.pos.x)/dist;
         const ny = (that.pos.y-this.pos.y)/dist;
@@ -176,7 +177,29 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
         }
     }
 
-    doWallConstraints(){
+    doHomingForce(){
+        if(this.homePos){
+            const force = this.homePos.clone();
+            force.x = force.x * SkillTreeManager.nodeContainer.clientWidth;
+            force.y = force.y * SkillTreeManager.nodeContainer.clientHeight;
+            if(force.distance(this.pos) < SkillTreeManager.relativeDistance ){
+                this.homePos = undefined;
+                console.log(this.name)
+                return;
+            }
+            force.scaleBy(-1);
+            force.addToV(this.pos);
+            force.scaleBy(-1);
+            const speed = force.normalize();
+            force.scaleBy(clamp(speed, 0, 15));
+            const damp = this.vel.clone();
+            damp.scaleBy(-0.2);
+            force.addToV(damp);
+            this.applyForce(force.x, force.y);
+        }
+    }
+
+    doWallForce(){
         if( this.pos.x < SkillTreeManager.relativePadding ){
             this.applyForce( ((SkillTreeManager.relativePadding - this.pos.x)**2)*0.00005, 0 );
         }
@@ -193,46 +216,54 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
     }
 
     doForces(){
-
         this.applyForce(0, GRAVITY); // gravity
         this.mouseForce = clamp(this.mouseForce - 0.1,0,Infinity);
         this.applyForce(0, -this.mouseForce);
 
-        for( let line of this.lines ){ // elastic constraints
+        for( let line of this.links ){ // elastic constraints
             line.doElasticConstraint();
         }
 
         for( let that of SkillTreeNodeManager.allNodes ){ // repulsive forces
-            this.repelForce(that);
+            this.doRepulsionForce(that);
         }
 
-        this.doWallConstraints();
+        this.doWallForce();
 
+        this.doHomingForce();
     }
 
-    doPositioning(){
+    simulate(){
         if(this.dragListener){ return }
-        let speed = this.vel.normalizeReturnLength();
+        let speed = this.vel.normalize();
         speed = Math.min(speed + 0.01, NODE_MAX_VEL);
         this.vel.scaleBy(speed * 0.9)
         this.pos.addTo(this.vel.x, this.vel.y)
         this.setPos(this.pos.x, this.pos.y); // clamp
     }
 
+    getSerialized(): DynamicSkillTreeNodeData {
+        return {
+            ...super.getSerialized(),
+            parents: this.parents,
+            desc:    this.desc,
+            style:   this.style
+        }
+    }
+
 }
 
 export class StaticSkillTreeNode extends SkillTreeNode implements StaticSkillTreeNodeData {
+
     tier: number;
     x: number;
     y: number
-    latitude: number;
 
     constructor(data: StaticSkillTreeNodeData){
         super(data);
         this.tier = data.tier
         this.x    = data.x
         this.y    = data.y
-        this.latitude = data.x
 
         this.html.classList.add("static")
         this.html.querySelector(".back")!.remove();
@@ -241,8 +272,15 @@ export class StaticSkillTreeNode extends SkillTreeNode implements StaticSkillTre
     }
 
     render(){
-        this.setPos(SkillTreeManager.nodeContainer.clientWidth * this.x, this.y)
+        this.setPos(SkillTreeManager.nodeContainer.clientWidth * this.x, this.y * SkillTreeManager.nodeContainer.clientHeight)
         super.render();
+    }
+
+    getSerialized(): StaticSkillTreeNodeData {
+        return {
+            ...super.getSerialized(),
+            tier: this.tier
+        } as StaticSkillTreeNodeData
     }
 
     applyForce(x: number, y: number){ }
