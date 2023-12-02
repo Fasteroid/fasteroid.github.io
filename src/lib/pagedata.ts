@@ -12,8 +12,10 @@ export interface FullPageData extends PartialPageData {
 
 export function defineData( loadParent: () => FullPageData, data: PartialPageData ): () => FullPageData {
     return () => {
+        let parentData = loadParent();
+        parentData.longTitle = undefined;
         const childData: FullPageData = {
-            ...loadParent(),
+            ...parentData,
             ...data,
         };
         childData.titlePath.push(data.title);
