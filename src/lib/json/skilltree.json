@@ -28,8 +28,8 @@
 	"dynamicNodes": [
 		{
 			"name": "LEGO Technic",
-			"x": 0.5285941244876451,
-			"y": 0.08730813769463731,
+			"x": 0.527937120121632,
+			"y": 0.08756174861576126,
 			"parents": [
 				{
 					"name": "ENGINEERING",
@@ -44,8 +44,8 @@
 		},
 		{
 			"name": "LEGO Mindstorms",
-			"x": 0.42332927165416606,
-			"y": 0.14255577801429106,
+			"x": 0.42200248943606056,
+			"y": 0.14249602559144703,
 			"parents": [
 				{
 					"name": "COMPUTER SCIENCE",
@@ -64,8 +64,8 @@
 		},
 		{
 			"name": "Percussion",
-			"x": 0.9371507989521929,
-			"y": 0.100949351622992,
+			"x": 0.9377531925089786,
+			"y": 0.10093215586990259,
 			"parents": [
 				{
 					"name": "DIGITAL MEDIA",
@@ -80,8 +80,8 @@
 		},
 		{
 			"name": "Redstone",
-			"x": 0.4349236626701025,
-			"y": 0.26023956150765143,
+			"x": 0.4320829006956325,
+			"y": 0.26020909096503403,
 			"parents": [
 				{
 					"name": "LEGO Mindstorms",
@@ -96,8 +96,8 @@
 		},
 		{
 			"name": "Woodworking",
-			"x": 0.6330041264310355,
-			"y": 0.12187528007928011,
+			"x": 0.63251212543492,
+			"y": 0.12259781262380677,
 			"parents": [
 				{
 					"name": "ENGINEERING",
@@ -112,8 +112,8 @@
 		},
 		{
 			"name": "Audacity",
-			"x": 0.9325049522392082,
-			"y": 0.18401473805552288,
+			"x": 0.9324808332857304,
+			"y": 0.18396937016619094,
 			"parents": [
 				{
 					"name": "Percussion",
@@ -128,8 +128,8 @@
 		},
 		{
 			"name": "Adobe Photoshop",
-			"x": 0.8441918934188358,
-			"y": 0.12063142030506062,
+			"x": 0.8440996011289951,
+			"y": 0.1184086735757755,
 			"parents": [
 				{
 					"name": "DIGITAL MEDIA",
@@ -144,8 +144,8 @@
 		},
 		{
 			"name": "Expression 2",
-			"x": 0.44726401840569197,
-			"y": 0.3764936047906117,
+			"x": 0.4421531010940295,
+			"y": 0.3764016731930359,
 			"parents": [
 				{
 					"name": "Redstone",
@@ -160,8 +160,8 @@
 		},
 		{
 			"name": "Adobe Illustrator",
-			"x": 0.8270399790979354,
-			"y": 0.2151283100929655,
+			"x": 0.8138281661716339,
+			"y": 0.21191234368544298,
 			"parents": [
 				{
 					"name": "Adobe Photoshop",
@@ -176,12 +176,12 @@
 		},
 		{
 			"name": "GIMP",
-			"x": 0.7558447756749481,
-			"y": 0.17885000094232664,
+			"x": 0.734453649131505,
+			"y": 0.17499843420608505,
 			"parents": [
 				{
 					"name": "Adobe Photoshop",
-					"dist": 1
+					"dist": 1.1
 				}
 			],
 			"desc": [
@@ -192,8 +192,8 @@
 		},
 		{
 			"name": "Autodesk 123D Design",
-			"x": 0.6324443428645895,
-			"y": 0.21734353023010433,
+			"x": 0.6319243141089266,
+			"y": 0.2187000633413435,
 			"parents": [
 				{
 					"name": "Woodworking",
@@ -208,8 +208,8 @@
 		},
 		{
 			"name": "Adobe After Effects",
-			"x": 0.8271790961148953,
-			"y": 0.30199828495555264,
+			"x": 0.8165465890552069,
+			"y": 0.29900687091429035,
 			"parents": [
 				{
 					"name": "Adobe Illustrator",
@@ -224,8 +224,8 @@
 		},
 		{
 			"name": "Blender",
-			"x": 0.7243709970736538,
-			"y": 0.2594949239495185,
+			"x": 0.719731646473729,
+			"y": 0.2676935382548365,
 			"parents": [
 				{
 					"name": "Autodesk 123D Design",
@@ -237,7 +237,7 @@
 				},
 				{
 					"name": "GIMP",
-					"dist": 1
+					"dist": 1.1
 				}
 			],
 			"desc": [
@@ -248,8 +248,8 @@
 		},
 		{
 			"name": "3D Printing",
-			"x": 0.6254141852376136,
-			"y": 0.3096418461532718,
+			"x": 0.6178605980870661,
+			"y": 0.31086248781603915,
 			"parents": [
 				{
 					"name": "Autodesk 123D Design",
@@ -268,8 +268,8 @@
 		},
 		{
 			"name": "Code.org / ES1 JavaScript",
-			"x": 0.44912220547813697,
-			"y": 0.4878931272108402,
+			"x": 0.44338761733986204,
+			"y": 0.4878228742394646,
 			"parents": [
 				{
 					"name": "Expression 2",
@@ -284,8 +284,8 @@
 		},
 		{
 			"name": "Arduino",
-			"x": 0.5657966600599089,
-			"y": 0.393759606644596,
+			"x": 0.5595216207547818,
+			"y": 0.3942168215195846,
 			"parents": [
 				{
 					"name": "Expression 2",
@@ -304,8 +304,8 @@
 		},
 		{
 			"name": "C",
-			"x": 0.5757773692484766,
-			"y": 0.485422378384824,
+			"x": 0.5691841402240685,
+			"y": 0.4847991297574643,
 			"parents": [
 				{
 					"name": "Arduino",
@@ -320,8 +320,8 @@
 		},
 		{
 			"name": "Java",
-			"x": 0.5127016506107994,
-			"y": 0.5517237547100579,
+			"x": 0.5078021500331493,
+			"y": 0.5520428780218758,
 			"parents": [
 				{
 					"name": "Code.org / ES1 JavaScript",
@@ -340,8 +340,8 @@
 		},
 		{
 			"name": "Adobe Premiere",
-			"x": 0.8265432629758793,
-			"y": 0.3851069817798417,
+			"x": 0.8159065632461877,
+			"y": 0.38229889052670235,
 			"parents": [
 				{
 					"name": "Adobe After Effects",
@@ -356,8 +356,8 @@
 		},
 		{
 			"name": "Calculus",
-			"x": 0.1522845680022234,
-			"y": 0.49428532480758,
+			"x": 0.14611205473758718,
+			"y": 0.4971699331064638,
 			"parents": [
 				{
 					"name": "ADVANCED MATHEMATICS",
@@ -372,8 +372,8 @@
 		},
 		{
 			"name": "Desmos",
-			"x": 0.2189465360439168,
-			"y": 0.6403848333901013,
+			"x": 0.20269096283789384,
+			"y": 0.6468948078748383,
 			"parents": [
 				{
 					"name": "Calculus",
@@ -388,8 +388,8 @@
 		},
 		{
 			"name": "Lua",
-			"x": 0.37960674943044265,
-			"y": 0.44910358119598065,
+			"x": 0.3740780633260675,
+			"y": 0.4486400719713565,
 			"parents": [
 				{
 					"name": "Expression 2",
@@ -404,8 +404,8 @@
 		},
 		{
 			"name": "NodeJS",
-			"x": 0.3651459764511434,
-			"y": 0.5343630734953664,
+			"x": 0.3590429327029601,
+			"y": 0.5337745090283618,
 			"parents": [
 				{
 					"name": "Code.org / ES1 JavaScript",
@@ -424,8 +424,8 @@
 		},
 		{
 			"name": "JavaScript",
-			"x": 0.433206678083748,
-			"y": 0.5958379758643104,
+			"x": 0.42655036217421527,
+			"y": 0.5954787266348978,
 			"parents": [
 				{
 					"name": "NodeJS",
@@ -438,14 +438,14 @@
 			],
 			"desc": [
 				"ES6+ Specifications; modern JavaScript without frameworks.",
-				"I have yet to experience the power of a good framework."
+				"Slightly inferior to TypeScript."
 			],
 			"style": "js"
 		},
 		{
 			"name": "HTML",
-			"x": 0.410290329095961,
-			"y": 0.6752498472122147,
+			"x": 0.4623703031546437,
+			"y": 0.6659753223210505,
 			"parents": [
 				{
 					"name": "JavaScript",
@@ -460,12 +460,16 @@
 		},
 		{
 			"name": "CSS",
-			"x": 0.4418182707207745,
-			"y": 0.7453614594602715,
+			"x": 0.36790159813661377,
+			"y": 0.6699913507090158,
 			"parents": [
 				{
 					"name": "HTML",
-					"dist": 0.7916666666666666
+					"dist": 0.9
+				},
+				{
+					"name": "JavaScript",
+					"dist": 0.9
 				}
 			],
 			"desc": [
@@ -476,8 +480,8 @@
 		},
 		{
 			"name": "Regex",
-			"x": 0.32941998018617746,
-			"y": 0.6101486107857805,
+			"x": 0.31973699549537443,
+			"y": 0.6085116120981785,
 			"parents": [
 				{
 					"name": "JavaScript",
@@ -496,8 +500,8 @@
 		},
 		{
 			"name": "Ubuntu/Linux",
-			"x": 0.6071258472424147,
-			"y": 0.5701794937404558,
+			"x": 0.6052216445129693,
+			"y": 0.5670144713651775,
 			"parents": [
 				{
 					"name": "C",
@@ -513,8 +517,8 @@
 		},
 		{
 			"name": "Bash",
-			"x": 0.606858199833842,
-			"y": 0.6532356891951188,
+			"x": 0.6182043315126837,
+			"y": 0.6481283619465624,
 			"parents": [
 				{
 					"name": "Ubuntu/Linux",
@@ -528,34 +532,21 @@
 			"style": "bash"
 		},
 		{
-			"name": "frameworks",
-			"x": 0.5667195911060522,
-			"y": 0.7345609424123148,
+			"name": "Electron",
+			"x": 0.5940389690152994,
+			"y": 0.7200645886943701,
 			"parents": [
 				{
 					"name": "HTML",
-					"dist": 1.8
+					"dist": 1.4
 				},
 				{
 					"name": "CSS",
-					"dist": 1.2
+					"dist": 2.4
 				},
 				{
 					"name": "JavaScript",
-					"dist": 2
-				}
-			],
-			"desc": [],
-			"style": "invisible"
-		},
-		{
-			"name": "Electron",
-			"x": 0.5900402483913321,
-			"y": 0.8555856322110806,
-			"parents": [
-				{
-					"name": "frameworks",
-					"dist": 1.5
+					"dist": 2.1
 				}
 			],
 			"desc": [
@@ -566,28 +557,28 @@
 		},
 		{
 			"name": "Bootstrap CSS",
-			"x": 0.4877632298214106,
-			"y": 0.8405015674736045,
+			"x": 0.374568070366193,
+			"y": 0.737324422801511,
 			"parents": [
 				{
 					"name": "CSS",
-					"dist": 1.2
+					"dist": 1
 				}
 			],
 			"desc": [
 				"Learned during my third year of college.",
-				"I'm beginning to see the appeal."
+				"Can be used to quickly style elements without writing the CSS yourself."
 			],
 			"style": "bootstrap"
 		},
 		{
 			"name": "TypeScript",
-			"x": 0.31777161669381077,
-			"y": 0.6807483087070987,
+			"x": 0.2869406527575455,
+			"y": 0.7044558962353764,
 			"parents": [
 				{
 					"name": "JavaScript",
-					"dist": 1.4
+					"dist": 1.8
 				},
 				{
 					"name": "Desmos",
@@ -602,8 +593,8 @@
 		},
 		{
 			"name": "WebGL",
-			"x": 0.21893031936833757,
-			"y": 0.7235408417318633,
+			"x": 0.1882151529947527,
+			"y": 0.7294962357206479,
 			"parents": [
 				{
 					"name": "Desmos",
@@ -617,17 +608,17 @@
 			"style": "webgl"
 		},
 		{
-			"name": "AngularJS",
-			"x": 0.3527338647159562,
-			"y": 0.7735665683734454,
+			"name": "Angular",
+			"x": 0.399298575570436,
+			"y": 0.8360841839102716,
 			"parents": [
 				{
 					"name": "TypeScript",
-					"dist": 1.2
+					"dist": 1.9
 				},
 				{
 					"name": "HTML",
-					"dist": 1.2
+					"dist": 1.8
 				}
 			],
 			"desc": [
@@ -638,11 +629,11 @@
 		},
 		{
 			"name": "Adobe ColdFusion",
-			"x": 0.30015178271465864,
-			"y": 0.8480373236554004,
+			"x": 0.4776435123133831,
+			"y": 0.7482283013044476,
 			"parents": [
 				{
-					"name": "AngularJS",
+					"name": "HTML",
 					"dist": 1
 				}
 			],
@@ -653,33 +644,31 @@
 			"style": "coldfusion"
 		},
 		{
-			"name": "Angular Material",
-			"x": 0.38062540275605417,
-			"y": 0.8977738041651632,
+			"name": "MariaDB",
 			"parents": [
 				{
-					"name": "AngularJS",
-					"dist": 1.5
-				},
-				{
-					"name": "Bootstrap CSS",
-					"dist": 1.2
+					"name": "Adobe ColdFusion",
+					"dist": 1
 				}
 			],
 			"desc": [
-				"A set of default-ish components for Angular.",
-				"They honestly just look better than their HTML counterparts."
+				"Perhaps the only practical information I learned in college.",
+				"It surprised me with how fun it can be to create databases."
 			],
-			"style": "angular-mat"
+			"style": "mariadb"
 		},
 		{
 			"name": "Sass",
-			"x": 0.3984067501828281,
-			"y": 0.8347901038067166,
+			"x": 0.29657762034806784,
+			"y": 0.8225214802500994,
 			"parents": [
 				{
 					"name": "CSS",
-					"dist": 1.2
+					"dist": 2
+				},
+				{
+					"name": "Angular",
+					"dist": 1
 				}
 			],
 			"desc": [
@@ -687,6 +676,46 @@
 				"Finally, compact and sensible CSS!"
 			],
 			"style": "sass"
+		},
+		{
+			"name": "Angular Material",
+			"x": 0.3204928082198137,
+			"y": 0.9093945170745797,
+			"parents": [
+				{
+					"name": "Angular",
+					"dist": 1.2
+				},
+				{
+					"name": "Bootstrap CSS",
+					"dist": 2.2
+				},
+				{
+					"name": "Sass",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Default components for building good-looking UI in Angular.",
+				"Can be styled to use specific color schemes with Sass."
+			],
+			"style": "angular-mat"
+		},
+		{
+			"name": "Svelte",
+			"x": 0.42315773644489546,
+			"y": 0.9175693948902144,
+			"parents": [
+				{
+					"name": "Angular",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Another web framework like Angular, but a bit less heavy.",
+				"I usually like it, but at times it makes me want to [REDACTED]"
+			],
+			"style": "svelte"
 		}
 	]
 }

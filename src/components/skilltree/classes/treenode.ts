@@ -199,7 +199,7 @@ export class DynamicSkillTreeNode extends SkillTreeNode implements DynamicSkillT
             const force = this.homePos.clone();
             force.x = force.x * SkillTreeManager.nodeContainer.clientWidth;
             force.y = force.y * SkillTreeManager.nodeContainer.clientHeight;
-            if(force.distance(this.pos) < SkillTreeManager.relativeDistance ){
+            if(force.distance(this.pos) < SkillTreeManager.relativeDistance * 0.5 ){
                 this.homePos = undefined;
                 return;
             }
