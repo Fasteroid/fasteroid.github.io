@@ -14,7 +14,7 @@
     }
 </script>
 
-<style lang="scss">
+<style lang="scss" >
     @import "./projectcollection.scss";
 </style>
 
@@ -23,6 +23,7 @@
         <BackgroundTitle title={(pageData.longTitle || pageData.title) + " Projects"} background='{base}/assets/{topic}/banner.jpg'/>
         <section class="no-background">
             <div class="project-shelf">
+                <slot style='color: red;'></slot>
                 {#each pagetree.getChildrenAtPath(`/${topic}`) as node}
                     <a href="{node.webPath}">
                         <img src="{ sanitizeThumbnail(node.pageData?.thumbnail) }" alt="thumbnail">

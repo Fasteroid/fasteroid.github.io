@@ -2,13 +2,14 @@
 @use "vars/globals.scss" as globals;
 
 .project-shelf {
+    
     display: flex;
     flex-flow: wrap;
     align-items: center;
     justify-content: center;
     margin: auto;
 
-    & > a {
+    :global(a) {
         color: globals.$site-text;
         display: inline-block;
         position: relative;
@@ -19,12 +20,12 @@
         line-height: 130%;
     }
 
-    & > a:hover img {
+    :global(a:hover img) {
         filter: neons.$white;
         transform: scale(1.05)
     }
     
-    img {
+    :global(img) {
         position: relative;
         min-width: 100%;
         border: none;
@@ -32,14 +33,14 @@
         box-sizing: border-box;
         margin: 0;
         transition: transform 0.4s, filter 0.4s;
-        padding: 5px;
+        padding: 15px;
     }
-}
 
-.project-title {
-    position: absolute;
-    bottom: 10%;
-    width: 90%;
-    text-align: center;
-    transform: translate(5%, 0);
+    :global(.project-title) {
+        position: absolute;
+        width: 90%;
+        text-align: center;
+        transform: translate(5%, 0);
+    }
+
 }

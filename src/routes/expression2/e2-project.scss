@@ -1,0 +1,9 @@
+@use "vars/globals.scss" as globals;
+
+.project-shelf a {
+    background: globals.$section-background;
+}
+
+.project-title {
+    bottom: 7%;
+}
