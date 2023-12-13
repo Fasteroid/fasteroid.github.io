@@ -19,7 +19,7 @@
     <div class="home">
         <div class="home-wrapper">
             <span>FAST'S CODE CREATIONS</span>
-            <a class="minecraftsplash" href="https://github.com/Fasteroid/svelte-portfolio">Now with Svelte!</a>
+            <a class="minecraftsplash" href="https://svelte.dev">Now with Svelte!</a>
         </div>
     </div>
     <div class="pages">
