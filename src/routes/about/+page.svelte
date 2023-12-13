@@ -18,7 +18,8 @@
                 looking for a special someone who will tolerate loving the socially-awkward goofball I am.  I spoil you, you spoil me, ya know?<br>
                 <br>
                 I began writing my first original lines of code early to mid 2014, in a little-known language
-                called Expression 2 from the popular sandbox game <i>Garry's Mod</i>.  Expression had a very steep learning 
+                called Expression&nbsp;2 from the popular sandbox game <i>Garry's Mod</i>.  
+                Expression&nbsp;2 had a very steep learning 
                 curve to it at first due to its obscurity and narrow scope of applications, but by 2015 it had turned
                 into a massive power trip for me.  I'm still addicted today.
                 <div style="clear:both"></div>
