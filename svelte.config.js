@@ -40,7 +40,7 @@ const config = {
 			strict: true
 		}),
 		paths: {
-			base: "/svelte-portfolio"
+			base: ""
 		}
 	},
 };
