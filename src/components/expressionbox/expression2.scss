@@ -1,0 +1,50 @@
+e2key { 
+    color: #a0f0f0;
+}
+e2var { 
+    color: #a0f0a0;
+}
+e2type { 
+    color: #f0a060;
+}
+e2dir { 
+    color: #f0f0a0;
+}
+e2func { 
+    color: #a0a0f0;
+}
+e2string { 
+    color: #a0a0a0;
+}           
+e2num {
+    color: #f0a0a0;
+}
+
+/* I'm too lazy to fix my syntax highlighter, so we're doing this for now. */
+e2comment { 
+    color: #6b6b6b
+}      
+e2comment * { 
+    color: #6b6b6b !important
+}
+
+section.code-container {
+    background-color: #000000ff;
+    margin: 15px;
+    line-height: 130%;
+    overflow: scroll;
+    max-height: 70vh;
+    font-size: 10pt;
+    outline: 10px solid black;
+    outline-offset: -10px;
+    word-wrap: break-word; 
+    white-space: pre;
+    word-spacing: normal;
+    
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+section.code-container::-webkit-scrollbar {
+    display: none;
+}

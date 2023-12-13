@@ -1,0 +1,721 @@
+{
+	"staticNodes": [
+		{
+			"name": "ENGINEERING",
+			"x": 0.6333,
+			"y": 0.0125,
+			"tier": 0
+		},
+		{
+			"name": "COMPUTER SCIENCE",
+			"x": 0.3666,
+			"y": 0.0125,
+			"tier": 0
+		},
+		{
+			"name": "DIGITAL MEDIA",
+			"x": 0.9,
+			"y": 0.0125,
+			"tier": 0
+		},
+		{
+			"name": "ADVANCED MATHEMATICS",
+			"x": 0.10000000000000002,
+			"y": 0.3333333333333333,
+			"tier": 3
+		}
+	],
+	"dynamicNodes": [
+		{
+			"name": "LEGO Technic",
+			"x": 0.527937120121632,
+			"y": 0.08756174861576126,
+			"parents": [
+				{
+					"name": "ENGINEERING",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"The bricks with holes that put functionality over beauty.",
+				"Used and abused hard during childhood."
+			],
+			"style": "lego"
+		},
+		{
+			"name": "LEGO Mindstorms",
+			"x": 0.42200248943606056,
+			"y": 0.14249602559144703,
+			"parents": [
+				{
+					"name": "COMPUTER SCIENCE",
+					"dist": 1
+				},
+				{
+					"name": "LEGO Technic",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Simple block-style programming for LEGO robots.",
+				"Used as late as 2019 to drop plastic spiders on trick-or-treaters"
+			],
+			"style": "mindstorms"
+		},
+		{
+			"name": "Percussion",
+			"x": 0.9377531925089786,
+			"y": 0.10093215586990259,
+			"parents": [
+				{
+					"name": "DIGITAL MEDIA",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"A keeper of time and drummer of drums from 4th to 8th grade.",
+				"I can keep precise time up to around 770BPM."
+			],
+			"style": "drums"
+		},
+		{
+			"name": "Redstone",
+			"x": 0.4320829006956325,
+			"y": 0.26020909096503403,
+			"parents": [
+				{
+					"name": "LEGO Mindstorms",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Laid the foundations for my understanding of boolean logic.",
+				"Minecraft also started me memorizing my powers of two."
+			],
+			"style": "redstone"
+		},
+		{
+			"name": "Woodworking",
+			"x": 0.63251212543492,
+			"y": 0.12259781262380677,
+			"parents": [
+				{
+					"name": "ENGINEERING",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Officially picked up in 8th grade.",
+				"I can use a variety of woodshop tools safely."
+			],
+			"style": "woodworking"
+		},
+		{
+			"name": "Audacity",
+			"x": 0.9324808332857304,
+			"y": 0.18396937016619094,
+			"parents": [
+				{
+					"name": "Percussion",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Does audio & waveform editing.",
+				"I'm capable of making song mashups that aren't actually terrible."
+			],
+			"style": "audacity"
+		},
+		{
+			"name": "Adobe Photoshop",
+			"x": 0.8440996011289951,
+			"y": 0.1184086735757755,
+			"parents": [
+				{
+					"name": "DIGITAL MEDIA",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Edits images in almost any way imaginable.",
+				"Can create from scratch too, but illustrator is usually better for that."
+			],
+			"style": "photoshop"
+		},
+		{
+			"name": "Expression 2",
+			"x": 0.4421531010940295,
+			"y": 0.3764016731930359,
+			"parents": [
+				{
+					"name": "Redstone",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"My first true coding language.",
+				"Part of an addon for the popular sandbox game, Garry's Mod."
+			],
+			"style": "expression2"
+		},
+		{
+			"name": "Adobe Illustrator",
+			"x": 0.8138281661716339,
+			"y": 0.21191234368544298,
+			"parents": [
+				{
+					"name": "Adobe Photoshop",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Creates and edits vector graphics, which display crisply at all resolutions.",
+				"Most of these nodes use vector graphics."
+			],
+			"style": "illustrator"
+		},
+		{
+			"name": "GIMP",
+			"x": 0.734453649131505,
+			"y": 0.17499843420608505,
+			"parents": [
+				{
+					"name": "Adobe Photoshop",
+					"dist": 1.1
+				}
+			],
+			"desc": [
+				"The GNU Image Manipulation Program.",
+				"Open-source, free, and 9 times out of 10 better than photoshop."
+			],
+			"style": "gimp"
+		},
+		{
+			"name": "Autodesk 123D Design",
+			"x": 0.6319243141089266,
+			"y": 0.2187000633413435,
+			"parents": [
+				{
+					"name": "Woodworking",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"The deprecated predecessor to Fusion 360.",
+				"Immensely powerful, easy to use, and free."
+			],
+			"style": "autodesk"
+		},
+		{
+			"name": "Adobe After Effects",
+			"x": 0.8165465890552069,
+			"y": 0.29900687091429035,
+			"parents": [
+				{
+					"name": "Adobe Illustrator",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Photoshop for video; puts the FX in VFX.",
+				"Used for many disgraceful memes and edits."
+			],
+			"style": "aftereffects"
+		},
+		{
+			"name": "Blender",
+			"x": 0.719731646473729,
+			"y": 0.2676935382548365,
+			"parents": [
+				{
+					"name": "Autodesk 123D Design",
+					"dist": 1
+				},
+				{
+					"name": "Adobe Illustrator",
+					"dist": 1
+				},
+				{
+					"name": "GIMP",
+					"dist": 1.1
+				}
+			],
+			"desc": [
+				"The 3D multipurpose program with a brutal learning curve",
+				"Used here and there in multiple different projects."
+			],
+			"style": "blender"
+		},
+		{
+			"name": "3D Printing",
+			"x": 0.6178605980870661,
+			"y": 0.31086248781603915,
+			"parents": [
+				{
+					"name": "Autodesk 123D Design",
+					"dist": 1
+				},
+				{
+					"name": "Blender",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Abused so badly in Odyssey of the Mind that a policy was implemented to nerf my 3D printing!",
+				"The nerf was a feeble attempt to stop me."
+			],
+			"style": "printing"
+		},
+		{
+			"name": "Code.org / ES1 JavaScript",
+			"x": 0.44338761733986204,
+			"y": 0.4878228742394646,
+			"parents": [
+				{
+					"name": "Expression 2",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"ES1 JavaScript from Code.org's App Lab.",
+				"These nodes use modified physics code from an App Lab project."
+			],
+			"style": "code"
+		},
+		{
+			"name": "Arduino",
+			"x": 0.5595216207547818,
+			"y": 0.3942168215195846,
+			"parents": [
+				{
+					"name": "Expression 2",
+					"dist": 1
+				},
+				{
+					"name": "3D Printing",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"A C-style language simplified enough for an amateur to pick up.",
+				"Used in Odyssey of the Mind in 2019 and helped us place second at world finals!"
+			],
+			"style": "arduino"
+		},
+		{
+			"name": "C",
+			"x": 0.5691841402240685,
+			"y": 0.4847991297574643,
+			"parents": [
+				{
+					"name": "Arduino",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Learned during second and third years of college.",
+				"Haven't mastered it, but I know the core concepts."
+			],
+			"style": "c"
+		},
+		{
+			"name": "Java",
+			"x": 0.5078021500331493,
+			"y": 0.5520428780218758,
+			"parents": [
+				{
+					"name": "Code.org / ES1 JavaScript",
+					"dist": 1
+				},
+				{
+					"name": "C",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Learned during AP Computer Science A.",
+				"I used it to extend my Discord relay to a Minecraft server, but it sucked."
+			],
+			"style": "java"
+		},
+		{
+			"name": "Adobe Premiere",
+			"x": 0.8159065632461877,
+			"y": 0.38229889052670235,
+			"parents": [
+				{
+					"name": "Adobe After Effects",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"For compiling audio and video clips.",
+				"I used this my senior year of high school for editing the school's news show."
+			],
+			"style": "premiere"
+		},
+		{
+			"name": "Calculus",
+			"x": 0.14611205473758718,
+			"y": 0.4971699331064638,
+			"parents": [
+				{
+					"name": "ADVANCED MATHEMATICS",
+					"dist": 1.8333333333333335
+				}
+			],
+			"desc": [
+				"Learned During AP Calc AB.",
+				"I'm self taught on some concepts from Calc C!"
+			],
+			"style": "calculus"
+		},
+		{
+			"name": "Desmos",
+			"x": 0.20269096283789384,
+			"y": 0.6468948078748383,
+			"parents": [
+				{
+					"name": "Calculus",
+					"dist": 1.8333333333333335
+				}
+			],
+			"desc": [
+				"An inspiring, free, and turing-complete online graphing calculator.",
+				"Anything is possible if you're determined enough!"
+			],
+			"style": "desmos"
+		},
+		{
+			"name": "Lua",
+			"x": 0.3740780633260675,
+			"y": 0.4486400719713565,
+			"parents": [
+				{
+					"name": "Expression 2",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"A common language of game scripting.",
+				"I know the variant used in Garry's Mod."
+			],
+			"style": "lua"
+		},
+		{
+			"name": "NodeJS",
+			"x": 0.3590429327029601,
+			"y": 0.5337745090283618,
+			"parents": [
+				{
+					"name": "Code.org / ES1 JavaScript",
+					"dist": 1
+				},
+				{
+					"name": "Lua",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"ES6 JavaScript as a backend.",
+				"Runs the peripherals of my Garry's Mod server and auto-restarts it when it crashes."
+			],
+			"style": "nodejs"
+		},
+		{
+			"name": "JavaScript",
+			"x": 0.42655036217421527,
+			"y": 0.5954787266348978,
+			"parents": [
+				{
+					"name": "NodeJS",
+					"dist": 1
+				},
+				{
+					"name": "Code.org / ES1 JavaScript",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"ES6+ Specifications; modern JavaScript without frameworks.",
+				"Slightly inferior to TypeScript."
+			],
+			"style": "js"
+		},
+		{
+			"name": "HTML",
+			"x": 0.4623703031546437,
+			"y": 0.6659753223210505,
+			"parents": [
+				{
+					"name": "JavaScript",
+					"dist": 0.7916666666666666
+				}
+			],
+			"desc": [
+				"The skeleton and structure of websites,",
+				"and a subset of the wider XML family."
+			],
+			"style": "html"
+		},
+		{
+			"name": "CSS",
+			"x": 0.36790159813661377,
+			"y": 0.6699913507090158,
+			"parents": [
+				{
+					"name": "HTML",
+					"dist": 0.9
+				},
+				{
+					"name": "JavaScript",
+					"dist": 0.9
+				}
+			],
+			"desc": [
+				"Formatting the web with extravagant &lt;style&gt;",
+				"A constant source of frustration, but usually worth the struggle."
+			],
+			"style": "css"
+		},
+		{
+			"name": "Regex",
+			"x": 0.31973699549537443,
+			"y": 0.6085116120981785,
+			"parents": [
+				{
+					"name": "JavaScript",
+					"dist": 1
+				},
+				{
+					"name": "NodeJS",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Forbidden pattern-matching runes with immense power.",
+				"Most familiar with the EMCAScript variant."
+			],
+			"style": "regex"
+		},
+		{
+			"name": "Ubuntu/Linux",
+			"x": 0.6052216445129693,
+			"y": 0.5670144713651775,
+			"parents": [
+				{
+					"name": "C",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"𝚜𝚞𝚍𝚘 𝚌𝚑𝚘𝚠𝚗 -𝚁 𝚏𝚊𝚜𝚝𝚎𝚛𝚘𝚒𝚍 / ",
+				"wait frick 💀",
+				"I recovered in 4 hours with no real backups!"
+			],
+			"style": "ubuntu"
+		},
+		{
+			"name": "Bash",
+			"x": 0.6182043315126837,
+			"y": 0.6481283619465624,
+			"parents": [
+				{
+					"name": "Ubuntu/Linux",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"The beloved Bourne Again Shell.",
+				"After the above incident, I wrote a bash script for automated backups."
+			],
+			"style": "bash"
+		},
+		{
+			"name": "Electron",
+			"x": 0.5940389690152994,
+			"y": 0.7200645886943701,
+			"parents": [
+				{
+					"name": "HTML",
+					"dist": 1.4
+				},
+				{
+					"name": "CSS",
+					"dist": 2.4
+				},
+				{
+					"name": "JavaScript",
+					"dist": 2.1
+				}
+			],
+			"desc": [
+				"Desktop apps made by web developers!",
+				"Used to build an app for my dad that helps him automate patient data at work."
+			],
+			"style": "electron"
+		},
+		{
+			"name": "Bootstrap CSS",
+			"x": 0.374568070366193,
+			"y": 0.737324422801511,
+			"parents": [
+				{
+					"name": "CSS",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Learned during my third year of college.",
+				"Can be used to quickly style elements without writing the CSS yourself."
+			],
+			"style": "bootstrap"
+		},
+		{
+			"name": "TypeScript",
+			"x": 0.2869406527575455,
+			"y": 0.7044558962353764,
+			"parents": [
+				{
+					"name": "JavaScript",
+					"dist": 1.8
+				},
+				{
+					"name": "Desmos",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"It's JavaScript, but BETTER!",
+				"It has types and helps you write better code!"
+			],
+			"style": "ts"
+		},
+		{
+			"name": "WebGL",
+			"x": 0.1882151529947527,
+			"y": 0.7294962357206479,
+			"parents": [
+				{
+					"name": "Desmos",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"A terrifying low-level GPU API for the web.",
+				"Do NOT approach outside of Shadertoy."
+			],
+			"style": "webgl"
+		},
+		{
+			"name": "Angular",
+			"x": 0.399298575570436,
+			"y": 0.8360841839102716,
+			"parents": [
+				{
+					"name": "TypeScript",
+					"dist": 1.9
+				},
+				{
+					"name": "HTML",
+					"dist": 1.8
+				}
+			],
+			"desc": [
+				"A powerful framework for reusable web components.",
+				"Why can't I inherit decorators though?"
+			],
+			"style": "angular"
+		},
+		{
+			"name": "Adobe ColdFusion",
+			"x": 0.4776435123133831,
+			"y": 0.7482283013044476,
+			"parents": [
+				{
+					"name": "HTML",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"A serverside scripting language written with XML tags.",
+				"It breaks most normal scripting language conventions."
+			],
+			"style": "coldfusion"
+		},
+		{
+			"name": "MariaDB",
+			"parents": [
+				{
+					"name": "Adobe ColdFusion",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Perhaps the only practical information I learned in college.",
+				"It surprised me with how fun it can be to create databases."
+			],
+			"style": "mariadb"
+		},
+		{
+			"name": "Sass",
+			"x": 0.29657762034806784,
+			"y": 0.8225214802500994,
+			"parents": [
+				{
+					"name": "CSS",
+					"dist": 2
+				},
+				{
+					"name": "Angular",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"What if you could nest CSS class definitions?",
+				"Finally, compact and sensible CSS!"
+			],
+			"style": "sass"
+		},
+		{
+			"name": "Angular Material",
+			"x": 0.3204928082198137,
+			"y": 0.9093945170745797,
+			"parents": [
+				{
+					"name": "Angular",
+					"dist": 1.2
+				},
+				{
+					"name": "Bootstrap CSS",
+					"dist": 2.2
+				},
+				{
+					"name": "Sass",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Default components for building good-looking UI in Angular.",
+				"Can be styled to use specific color schemes with Sass."
+			],
+			"style": "angular-mat"
+		},
+		{
+			"name": "Svelte",
+			"x": 0.42315773644489546,
+			"y": 0.9175693948902144,
+			"parents": [
+				{
+					"name": "Angular",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Another web framework like Angular, but a bit less heavy.",
+				"I usually like it, but at times it makes me want to [REDACTED]"
+			],
+			"style": "svelte"
+		}
+	]
+}

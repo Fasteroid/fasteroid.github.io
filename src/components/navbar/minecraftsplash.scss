@@ -1,0 +1,45 @@
+// SVELTE PLEASE ALLOW ME A WAY TO USE $base IN SCSS
+
+@font-face {
+    font-family: minecraft;
+    src: url("/assets/fonts/minecraft.woff") format("woff");
+}
+
+
+.minecraftsplash {
+    color: #ff0;
+    position: absolute;
+    z-index: 1;
+    left: 100%;
+    font-family: 'minecraft', 'fixedsys';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 11pt;
+    text-align: center;
+    white-space: pre;
+    -webkit-font-smoothing: none;
+    animation: minecraftwow 0.5s infinite;
+    text-decoration: none;
+}
+
+.minecraftsplash:hover {
+    text-decoration: underline;
+}
+
+$begin: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
+$middle: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
+
+@keyframes minecraftwow {
+    0% {
+        transform: $begin;
+        animation-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
+    }
+    50% {
+        transform: $middle;
+        animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+    }
+    100% {
+        transform: $begin;
+        animation-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
+    }
+}
