@@ -5,7 +5,7 @@
 <body>
     <div class="margins">
         <section>
-            <hgroup>
+            <hgroup class="taller">
                 <h1>About Me</h1>
             </hgroup>
             <div class="p">
