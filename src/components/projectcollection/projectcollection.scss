@@ -15,7 +15,7 @@
         position: relative;
         max-width: 20vh;
         width: 100%;
-        font-size: calc( max(11pt, calc(2vw - 60px) ) );
+        font-size: 11pt;
         margin: 2.5px;
         line-height: 130%;
     }
@@ -33,7 +33,7 @@
         box-sizing: border-box;
         margin: 0;
         transition: transform 0.4s, filter 0.4s;
-        padding: 15px;
+        padding: 5px;
     }
 
     :global(.project-title) {
