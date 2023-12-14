@@ -1,0 +1,5 @@
+padding:      70px on each side
+halo color:   #505254 (same as the background of these icons)
+blur:         70px feathered selection
+initial size: 460x460
+final size:   600x600
