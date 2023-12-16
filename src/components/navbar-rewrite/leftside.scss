@@ -1,0 +1,26 @@
+.home {
+    
+
+    cursor: default;
+    z-index: 2;
+
+    left: 0;
+    padding: 15px;
+    font-size: 16pt;
+    color: #ffffff;
+    background: #000000;
+    display: grid;
+    position: relative;
+
+    // this is just to stack the contents all in the same position
+    grid-template-columns: 1fr;
+    * {
+        grid-row-start: 1;
+        grid-column-start: 1;
+    }
+
+    span.glowy {
+        animation: neon-cyan-flickering 1s ease-in-out alternate infinite;
+    }
+
+}

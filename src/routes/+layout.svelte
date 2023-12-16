@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Navbar from "../components/navbar/Navbar.svelte";
+    import Navbar from "../components/navbar-rewrite/Navbar.svelte";
     import { page } from "$app/stores";
     import type { FullPageData } from "$lib/pagedata";
 
@@ -15,6 +15,8 @@
     </title>
 </svelte:head>
 
-<Navbar/>
+<body>
+    <Navbar/>
 
-<slot/>
+    <slot/>
+</body>
