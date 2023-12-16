@@ -2,6 +2,8 @@
     import { page } from '$app/stores';
     import { base } from "$app/paths";
     import { pagetree } from '$lib/pagetree';
+    import pagelinks from '$lib/json/pagelinks.json'
+    import { TreeNode } from '$lib/treelib';
         
     $: currentPage = $page.url.pathname;
 
@@ -9,6 +11,7 @@
     function isActive(page: string, currentPage: string): boolean {
         return currentPage.startsWith(page)
     }
+
 </script>
 
 <style lang="scss">
@@ -17,40 +20,45 @@
 
 <nav>
     <div class="home">
-        <div class="home-wrapper">
-            <span>FAST'S CODE CREATIONS</span>
+        <span>
+            <span class="glowy">FAST'S CODE CREATIONS</span>
             <a class="minecraftsplash" href="https://svelte.dev">Now with Svelte!</a>
-        </div>
+        </span>
     </div>
-    <div class="pages">
+    <div class="right">
         <div class="dropdown">
-            <div class="dropdown-head">
+            <div class="top">
                 <span>Links</span>
             </div>
-            <div class="dropdown-content">
-                <div class="dropdown-onload-wrapper">
-                    <a href="https://discord.com/users/276913653230469122/" target="_blank">
-                        <img src="{base}/assets/icons/discord.svg" class="icon" alt=""/>
-                        <span>Discord</span>
+            <div class="tray real-entries">
+                {#each pagelinks as link}
+                    <a href="{link.url}">
+                        <span>{link.title}</span>
                     </a>
-                    <a href="https://github.com/Fasteroid/" target="_blank">
-                        <img src="{base}/assets/icons/github.svg" class="icon" alt=""/>
-                        <span>Github</span>
-                    </a>
-                </div>
+                {/each}
+            </div>
+            <div class="tray width-enforcers">
+                {#each pagelinks as dummy}
+                    <span>{dummy.title}</span>
+                {/each}
             </div>
         </div>
         {#each pagetree.getChildren() as main}
             <div class="dropdown">
-                <a class:dropdown-head={true} class:active={isActive(main.webPath, currentPage)} href='{main.webPath}'>
+                <a class:top={true} class:active={isActive(main.webPath, currentPage)} href='{main.webPath}'>
                     <span>{main.pageData.title}</span>
                 </a>
                 {#if main.getChildren()}
-                    <div class="dropdown-content">
+                    <div class="tray real-entries">
                         {#each main.getChildren() as sub}
                             <a href="{sub.webPath}" class:active={isActive(`${sub.webPath}`, currentPage)}>
                                 <span>{sub.pageData.title}</span>
                             </a>
+                        {/each}
+                    </div>
+                    <div class="tray width-enforcers">
+                        {#each main.getChildren() as dummy}
+                            <span>{dummy.pageData.title}</span>
                         {/each}
                     </div>
                 {/if}

@@ -17,15 +17,14 @@
     }
 </script>
 
-<body>
-    <div class="margins">
-        <section>
-            <hgroup class="taller">
-                <h1>/</h1>
-            </hgroup>
-            <section class="extra-space">
-                There's nothing here... sending you to <a href="./about">./about</a> in <span id="countdown">3</span> seconds...
-            </section>
+
+<div class="margins">
+    <section>
+        <hgroup class="taller">
+            <h1>/</h1>
+        </hgroup>
+        <section class="extra-space">
+            There's nothing here... sending you to <a href="./about">./about</a> in <span id="countdown">3</span> seconds...
         </section>
-    </div>
-</body>
+    </section>
+</div>

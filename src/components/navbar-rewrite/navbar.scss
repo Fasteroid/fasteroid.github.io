@@ -1,0 +1,61 @@
+@use "vars/neons.scss" as neons;
+@use "./rightside.scss";
+@use "./leftside.scss";
+@use "./minecraftsplash.scss";
+@import url('https://fonts.googleapis.com/css2?family=Recursive:wght@600&display=swap');
+
+.active {
+    background: rgb(34,34,34) !important;
+}
+
+nav {
+
+	position: sticky;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: space-between;
+
+    font-family: 'Recursive', sans-serif;
+    font-style: italic;
+    font-size: 12pt;
+
+    background: #000000;
+
+    z-index: 999;
+    
+}
+
+@media screen and (max-width: 700px) {
+    
+    nav {
+        flex-direction: column;
+        justify-content: space-between;
+        align-content: space-between;
+
+        .home {
+            text-align: center;
+        }
+
+
+        .dropdown {
+            flex-grow: 1;
+            flex-shrink: 1;
+        }
+
+    }
+
+}
+
+@media screen and (max-width: 500px) {
+    nav .right .dropdown {
+        .top {
+            padding: 15px 4px;
+            font-size: 12pt;
+        }
+        .tray a span {
+            margin: 15px 7px;
+        }
+    }
+}

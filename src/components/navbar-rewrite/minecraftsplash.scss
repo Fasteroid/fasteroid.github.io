@@ -8,9 +8,9 @@
 
 .minecraftsplash {
     color: #ff0;
+    background-color: transparent;
     position: absolute;
     z-index: 1;
-    left: 100%;
     font-family: 'minecraft', 'fixedsys';
     font-weight: normal;
     font-style: normal;
@@ -26,8 +26,8 @@
     text-decoration: underline;
 }
 
-$begin: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
-$middle: translate(calc(-60% + 0.6px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
+$begin: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(0.95) rotate(-15deg);
+$middle: translate(calc(-50% + 0.5px),calc(60% - 0.6px)) scale(1) rotate(-15deg);
 
 @keyframes minecraftwow {
     0% {

@@ -1,0 +1,99 @@
+@use "vars/neons.scss" as neons;
+
+.glow-container {
+    background: #000000;
+    & > * {
+        transition: filter 0.2s cubic-bezier(.05,.4,.22,1) !important;
+        mix-blend-mode: screen;
+    }
+    &:hover * {
+        filter: neons.$cyan-dark
+    }
+}
+
+a {
+    @extend .glow-container;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.right {
+    
+    display: flex;
+    z-index: 1;
+
+    .dropdown {
+
+        grid-template-columns: 1fr;
+        & > * {
+            grid-row-start: 1;
+            grid-column-start: 1;
+        }
+
+        position: relative;
+        cursor: pointer;
+        font-size: 12pt;
+
+        display: grid;
+        grid-auto-flow: row;
+
+        .top {
+            @extend .glow-container;
+            font-size: 14pt;
+            z-index: 2;
+            display: inline-flex;
+
+            padding: 15px 30px;
+
+            background: #000000;
+            text-decoration: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tray {
+
+            z-index: 1;
+
+            display: grid;
+            grid-auto-flow: row;
+
+            span {
+                display: block;
+                margin: 15px;
+            }
+
+            &.width-enforcers {
+                height: 0;
+                overflow: hidden;
+                max-width: min-content;
+            }
+            &.real-entries {
+                position: absolute;
+                
+                top: 100%;
+                transform: translateY(-100%);
+
+                display: grid;
+                grid-auto-flow: row;
+
+                font-size: 12pt;
+
+                transition: transform 0.3s ease;
+                width: 100%;
+
+                span {
+                    display: block;
+                    margin: 15px;
+                }
+            }
+
+        }
+
+        &:hover .tray {
+            transform: translateY(0);
+        }
+
+    }
+
+}
