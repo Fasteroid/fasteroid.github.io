@@ -30,7 +30,7 @@
             <br>
             <div style="clear: both;"></div>
             Why was I thinking about this in Calculus 1?  If you squint at it, the behavior of the line wrapping around from negative infinity to infinity or vise-versa looks <i>remarkably similar</i>
-            to how big numbers in computers wrap around due to integer overflow/underflow.  For a while I thought logic itself might be prone to overflow errors, until I realized that taping
+            to how big numbers in computers wrap around due to integer overflow/underflow.  For a while I thought the universe itself might be prone to overflow errors, until I realized that taping
             the ends of the asymptote together is an entirely arbitrary decision.<br>
             <br>
             What is scary though is that if you squint at general relativity and quantum mechanics, and think about how they describe behaviors different than the norm for values that are either really 
