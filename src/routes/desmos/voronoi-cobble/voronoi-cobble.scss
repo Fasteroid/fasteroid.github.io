@@ -1,0 +1,41 @@
+section {
+
+    img {
+        width: 100%;
+        margin: 0;
+    }
+
+    .shelf {
+        margin: 15px auto;
+        width: 100%;
+        display: grid;
+        gap: 15px;
+        align-items: center;
+        &.double {
+            grid-template-columns: 1fr 1fr;
+            &.collapsing {
+                @media screen and (max-aspect-ratio: 1 / 1.2) {
+                    grid-template-columns: 1fr;
+                }
+            }
+        }
+        &.quadruple {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            &.collapsing {
+                @media screen and (max-aspect-ratio: 1 / 1.2) {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+        }
+    }
+
+    .stack {
+        margin: auto auto;
+        padding: 0 30px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-direction: column;
+    }
+    
+}

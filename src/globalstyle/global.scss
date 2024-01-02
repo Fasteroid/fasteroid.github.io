@@ -66,7 +66,7 @@ section.extra-space {
 
 img {
     background-color: globals.$section-background;
-    padding: 15px 15px;
+    padding: calc(min(15px, 2.5vw));
     margin: 0 15px 15px 15px;
     max-width: 100%;
     box-sizing: border-box;
