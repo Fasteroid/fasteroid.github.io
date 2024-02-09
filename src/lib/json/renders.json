@@ -240,14 +240,12 @@
             "title": "Blue Chair Trefoil Knot",
             "capt1": "256x Render",
             "capt2": "Point Light Improvements"
-        }
-        ,{
+        },{
             "file": "assets/expression2/raytracer/go-outside-already.png",
             "title": "Wiremod Base Interior",
             "capt1": "256x Render",
             "capt2": "Circular Soft Shadows"
-        }
-        ,{
+        },{
             "file": "assets/expression2/raytracer/goldencitypool.png",
             "title": "gm_goldencity",
             "capt1": "256x Render",
@@ -262,6 +260,11 @@
             "title": "Not so secret garden",
             "capt1": "256x Render",
             "capt2": "Global Illumination Edits"
+        },{
+            "file": "assets/expression2/raytracer/moguses.png",
+            "title": "Suspicious pool party",
+            "capt1": "256x Render",
+            "capt2": "Faster Files"
         }
 
     ],
