@@ -247,7 +247,7 @@
             "capt2": "Circular Soft Shadows"
         },{
             "file": "assets/expression2/raytracer/goldencitypool.png",
-            "title": "gm_goldencity",
+            "title": "Golden City Water",
             "capt1": "256x Render",
             "capt2": "Global Illumination Edits"
         },{
@@ -261,16 +261,41 @@
             "capt1": "256x Render",
             "capt2": "Global Illumination Edits"
         },{
-            "file": "assets/expression2/raytracer/moguses.png",
-            "title": "Suspicious pool party",
+            "file": "assets/expression2/raytracer/torusballpit.png",
+            "title": "Torus Ballpit",
             "capt1": "256x Render",
-            "capt2": "Faster Files"
+            "capt2": "AO Performance Improvements"
+        },{
+            "file": "assets/expression2/raytracer/moguses.png",
+            "title": "Suspicious Pool Party",
+            "capt1": "256x Render",
+            "capt2": "End of the Line"
+        },{
+            "file": "assets/expression2/raytracer/utahteapot.png",
+            "title": "A Familiar Teapot",
+            "capt1": "256x Render",
+            "capt2": "End of the Line"
         }
 
     ],
 
     "512": [
         {
+            "file": "assets/expression2/raytracer/glowywoodball.png",
+            "title": "Level 3 Icosphere",
+            "capt1": "512x Render",
+            "capt2": "AO Performance Improvements"
+        },{
+            "file": "assets/expression2/raytracer/dodgeball_recovered.png",
+            "title": "E2 Dodgeball Arena",
+            "capt1": "512 x 511",
+            "capt2": "Recovered from a crashed render"
+        },{
+            "file": "assets/expression2/raytracer/goldencity-test.png",
+            "title": "Golden City Plaza",
+            "capt1": "512x Render",
+            "capt2": "Global Illumination Edits"
+        },{
             "file": "assets/expression2/raytracer/latenightvibes.png",
             "title": "Late Night Vibes",
             "capt1": "512x Render",
@@ -384,7 +409,7 @@
             "file": "assets/expression2/raytracer/picnic.png",
             "title": "Picnic Party",
             "capt1": "512x Render",
-            "capt2": "Testing the &quot;Leaves&quot; Shader"
+            "capt2": "Testing the \"Leaves\" Shader"
         },{
             "file": "assets/expression2/raytracer/prop_penumbras.png",
             "title": "Prop Penumbras",
