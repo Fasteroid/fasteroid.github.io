@@ -79,7 +79,9 @@ export const E2SyntaxHighlighter = {
         "try",
         "throw",
         "catch",
-        "event"
+        "event",
+        "switch",
+        "case"
     ],
 
     highlightTypes(txt: string) {
