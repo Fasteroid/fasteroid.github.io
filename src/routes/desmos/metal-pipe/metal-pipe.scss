@@ -1,0 +1,59 @@
+section {
+
+    .clickbait {
+        pointer-events: none;
+
+        position: relative;
+        top: 20px;
+        left: 20px;
+
+        @media screen and (max-width: 674px) {
+            top: 200px;
+        }
+
+        img {
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        div {
+            position: absolute;
+            top: 57px;
+            left: 13px;
+            font-size: 10px;
+            color: #000;
+        }
+    }
+
+    .audio {
+
+        display: flex;
+        flex-direction: column;
+        float: right;
+        padding: 0px 0px 15px 30px;
+
+        @media screen and (max-aspect-ratio: 1 / 1.2) {
+
+            float: none;
+
+            padding: 0px 0px 7px 0px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+
+        }
+        div {
+            text-align: center;
+            padding-bottom: 7px;
+        }
+        audio {
+            padding-bottom: 7px;
+        }
+    }
+
+}
