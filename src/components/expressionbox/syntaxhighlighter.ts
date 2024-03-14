@@ -9,6 +9,7 @@ const ignoreTagsPreproc = /(\<.*?\>.*?\<.*?\>)/.source
 let replaceIgnoreTags = function replaceIgnoreTags( text: string, innerRegex: RegExp, replace: (...args: string[]) => string ){
     
     let matcher = new RegExp(`${ignoreTagsPreproc}|${innerRegex.source}`,"g")
+
     return text.replace(matcher, function(){
         let shiftedArguments = [...arguments].slice(2,arguments.length-2); // we'll pass these on to replace
         if( !arguments[1] ){
@@ -291,11 +292,9 @@ export const E2SyntaxHighlighter = {
     },
 
     highlightKeywords(txt: string){
-        txt = replaceIgnoreTags(txt, /foreach/, () => "___FOREACH"); // for and foreach overlap
         for (const keyword of this.keywords) {
-            txt = replaceIgnoreTags(txt, new RegExp(keyword), () => `<e2key>${keyword}</e2key>`);
+            txt = replaceIgnoreTags(txt, new RegExp(`(\\\W)(${keyword})(\\\W)`), (a,b,c) => `${a}<e2key>${b}</e2key>${c}`);
         }
-        txt = txt.replaceAll("___FOREACH", "<e2key>foreach</e2key>");
         return txt
     }
 
