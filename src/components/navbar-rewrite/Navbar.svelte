@@ -56,11 +56,6 @@
                             </a>
                         {/each}
                     </div>
-                    <div class="tray width-enforcers">
-                        {#each main.getChildren() as dummy}
-                            <span>{dummy.pageData.title}</span>
-                        {/each}
-                    </div>
                 {/if}
             </div>
         {/each}
