@@ -33,7 +33,7 @@
             <div class="tray real-entries">
                 {#each pagelinks as link}
                     <a href="{link.url}" class="icons">
-                        <img src="{link.icon}" alt="{link.title}">
+                        <img src="{base}/{link.icon}" alt="{link.title}">
                         <span>{link.title}</span>
                     </a>
                 {/each}
@@ -41,7 +41,7 @@
             <div class="tray width-enforcers icons">
                 {#each pagelinks as dummy}
                     <a href="{dummy.url}" class="icons">
-                        <img src="{dummy.icon}" alt="{dummy.title}">
+                        <img src="{base}/{dummy.icon}" alt="{dummy.title}">
                         <span>{dummy.title}</span>
                     </a>
                 {/each}
