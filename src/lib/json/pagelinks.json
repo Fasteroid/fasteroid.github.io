@@ -1,10 +1,12 @@
 [
     {
         "url": "https://discord.com/users/276913653230469122/",
-        "title": "Discord"
+        "title": "Discord",
+        "icon": "assets/icons/discord.svg"
     },
     {
         "url": "https://github.com/Fasteroid/",
-        "title": "Github"
+        "title": "Github",
+        "icon": "assets/icons/github.svg"
     }
 ]
