@@ -657,7 +657,7 @@
 			"style": "coldfusion"
 		},
 		{
-			"name": "MySQL (MariaDB)",
+			"name": "MariaDB (MySQL)",
 			"x": 0.5044299721935726,
 			"y": 0.8492860959723982,
 			"parents": [
@@ -727,6 +727,34 @@
 				"Nice to work with, but the docs aren't always clear."
 			],
 			"style": "svelte"
+		},
+		{
+			"name": "C#",
+			"parents": [
+				{
+					"name": "Java",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"Like Java, but way easier to work with.",
+				"Unfortunately, the same cannot be said for the rest of the .NET ecosystem!"
+			],
+			"style": "csharp"
+		},
+		{
+			"name": "Microsoft SQL Server",
+			"parents": [
+				{
+					"name": "MariaDB (MySQL)",
+					"dist": 1
+				}
+			],
+			"desc": [
+				"An (arguably) less intuitive flavor of SQL.",
+				"It differs wildly from MySQL in certain areas."
+			],
+			"style": "mssql"
 		}
 	]
 }

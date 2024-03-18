@@ -294,6 +294,20 @@
     background-color: #664f36;
 }
 
+.csharp > .front {
+    background-image: url(base.$base + '/assets/skilltree/csharp.svg');
+}
+.csharp > div {
+    background-color: #2f2146;
+}
+
+.mssql > .front {
+    background-image: url(base.$base + '/assets/skilltree/mssql.svg');
+}
+.mssql > div {
+    background-color: #501e1c;
+}
+
 .invisible {
     display: none
 }
