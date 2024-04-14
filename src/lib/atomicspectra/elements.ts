@@ -18,17 +18,18 @@ const ELEMENT_NAMES = [
     'berkelium', 'californium', 'einsteinium'
 ]
 
-type SpectraLine = {
+export type SpectraLine = {
     wl: number,
     a:  number,
 }
 
+export type SpectraAtoms = {[atomic_number: number]: SpectraLine[]}
 
 async function main(){
     
     // const data = await get(`https://www.physics.nist.gov/PhysRefData/Handbook/Tables/${TEST_ELEMENT}table2.htm`);
 
-    let atoms: {[atomic_number: number]: SpectraLine[]} = {};
+    let atoms: SpectraAtoms = {};
 
     let promises: Promise<void>[] = [];
 
