@@ -5,7 +5,7 @@
 
 <svelte:head>
     <style lang="scss">
-        // @import "./e2-project.scss";
+        @import "./webdev-project.scss";
     </style>
 </svelte:head>
 
