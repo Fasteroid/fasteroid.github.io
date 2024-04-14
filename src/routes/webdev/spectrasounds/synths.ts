@@ -2,6 +2,20 @@ import spectra from "$lib/atomicspectra/spectra.json";
 import type { SpectraLine, SpectraAtoms } from "$lib/atomicspectra/types";
 import { browser } from "$app/environment";
 
+// https://www.desmos.com/calculator/oideopwllh
+
+const LOG2_20 = Math.log2(20);
+const MIN_VIS_FQ = 1 / 750; // violet
+const MAX_VIS_FQ = 1 / 380; // red
+
+function audibleMap( wl: number ){
+
+    const fq   = 1 / wl;
+    const map  = ( fq - MIN_VIS_FQ ) / ( MIN_VIS_FQ - MAX_VIS_FQ );
+    const midi = 115 * map / 12 + LOG2_20
+    return Math.pow(2, midi);
+
+}
 
 // Have to do this stupid crap so SSR doesn't witness the GainNode, otherwise it breaks
 export function load() {
@@ -34,7 +48,7 @@ export function load() {
             const lines = (spectra as SpectraAtoms)[atom];
             this._mul = 1 / lines.length;
             for( let line of lines ){
-                const osc = new OscillatorWithGainNode(context, 100000 / line.wl, line.a * 0.001);
+                const osc = new OscillatorWithGainNode(context, audibleMap(line.wl), line.a * 0.001);
                 osc.connect(this);
                 this._oscs.push(osc);
             }
