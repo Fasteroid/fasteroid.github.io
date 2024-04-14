@@ -1,0 +1,19 @@
+iframe {
+    border: none;
+    transform: translate(-12.5%, -12.5%) scale(0.75);
+    width: 133%;
+    height: 133%;
+}
+
+.iframe-aligner {
+    overflow: hidden;
+    height: 800px;
+    position: relative;
+}
+
+.dead-center {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
