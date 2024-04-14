@@ -55,16 +55,17 @@ export function load() {
         }
 
         public start(){
-            const t = this.context.currentTime + 0.1;
-            this.gain.setValueAtTime(0, this.context.currentTime);
-            this.gain.linearRampToValueAtTime(this._mul, t);
+            const t = this.context.currentTime;
+            this.gain.setValueAtTime(0, t);
+            this.gain.linearRampToValueAtTime(this._mul, t + 0.5);
             for( let osc of this._oscs ){
                 osc.start();
             }
         }
 
         public stop(when?: number){
-            const t = (when || this.context.currentTime) + 0.1;
+            const t = (when || this.context.currentTime);
+            this.gain.linearRampToValueAtTime(this._mul, t - 0.5);
             this.gain.linearRampToValueAtTime(0, t);
             for( let osc of this._oscs ){
                 osc.stop(t);
