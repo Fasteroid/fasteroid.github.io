@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Category": {
+            "enum": [
+                "actinide",
+                "alkali-metal",
+                "alkaline-metal",
+                "lanthanide",
+                "metalloid",
+                "noble-gas",
+                "nonmetal",
+                "post-transition-metal",
+                "synthetic",
+                "transition-metal"
+            ],
+            "type": "string"
+        }
+    },
+    "properties": {
+        "elements": {
+            "items": {
+                "properties": {
+                    "atomic_mass": {
+                        "type": "number"
+                    },
+                    "atomic_number": {
+                        "type": "number"
+                    },
+                    "category": {
+                        "$ref": "#/definitions/Category"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "spectra": {
+                        "items": {
+                            "properties": {
+                                "a": {
+                                    "type": "number"
+                                },
+                                "wl": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "a",
+                                "wl"
+                            ],
+                            "type": "object"
+                        },
+                        "type": "array"
+                    },
+                    "symbol": {
+                        "type": "string"
+                    },
+                    "table_x": {
+                        "type": "number"
+                    },
+                    "table_y": {
+                        "type": "number"
+                    }
+                },
+                "required": [
+                    "atomic_mass",
+                    "atomic_number",
+                    "category",
+                    "name",
+                    "spectra",
+                    "symbol",
+                    "table_x",
+                    "table_y"
+                ],
+                "type": "object"
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "elements"
+    ],
+    "type": "object"
+}
+

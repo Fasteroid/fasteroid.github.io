@@ -1,0 +1,1 @@
+npx typescript-json-schema ./types/native.ts PTable -o elements.schema.json --required

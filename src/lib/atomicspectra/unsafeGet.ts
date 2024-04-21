@@ -1,6 +1,6 @@
 import https from 'https';
 
-export let get: (url: string) => Promise<string>;
+export let unsafeGet: (url: string) => Promise<string>;
 {
     const AGENT = new https.Agent({
         rejectUnauthorized: false // This line tells Node.js to ignore certificate validation
@@ -11,7 +11,7 @@ export let get: (url: string) => Promise<string>;
         agent: AGENT
     };
     
-    get = (url: string): Promise<string> => {
+    unsafeGet = (url: string): Promise<string> => {
         return new Promise((resolve, reject) => {
             
             const split = url.split('/');
