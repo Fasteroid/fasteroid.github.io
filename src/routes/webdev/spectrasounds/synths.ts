@@ -1,6 +1,7 @@
-import spectra from "$lib/atomicspectra/spectra.json";
-import type { SpectraLine, SpectraAtoms } from "$lib/atomicspectra/types";
+import ptable from "$lib/atomicspectra/elements.json";
+import type { SpectraLine, Element } from "$lib/atomicspectra/types/native";
 import { browser } from "$app/environment";
+import { assertExists } from "$lib/uniqueid";
 
 // https://www.desmos.com/calculator/oideopwllh
 
@@ -41,23 +42,21 @@ export function load() {
     class AtomicSpectraNode extends GainNode {
 
         private _oscs: OscillatorWithGainNode[] = [];
-        private _mul:  number = 0;
+        private _amp:  GainNode;
 
-        constructor(context: AudioContext, atom: number) {
+        constructor(context: AudioContext, atom: Element) {
             super(context);
-            const lines = (spectra as SpectraAtoms)[atom];
-            this._mul = 1 / lines.length;
+            const lines = atom.spectra
+            this._amp = new GainNode(context, { gain: 1000 / lines.reduce( (acc, line) => acc + line.a, 0 ) });
             for( let line of lines ){
                 const osc = new OscillatorWithGainNode(context, audibleMap(line.wl), line.a * 0.001);
-                osc.connect(this);
+                osc.connect(this._amp);
                 this._oscs.push(osc);
             }
+            this._amp.connect(this);
         }
 
         public start(){
-            const t = this.context.currentTime;
-            this.gain.setValueAtTime(0, t);
-            this.gain.linearRampToValueAtTime(this._mul, t + 0.5);
             for( let osc of this._oscs ){
                 osc.start();
             }
@@ -65,8 +64,6 @@ export function load() {
 
         public stop(when?: number){
             const t = (when || this.context.currentTime);
-            this.gain.linearRampToValueAtTime(this._mul, t - 0.5);
-            this.gain.linearRampToValueAtTime(0, t);
             for( let osc of this._oscs ){
                 osc.stop(t);
             }
@@ -74,9 +71,8 @@ export function load() {
 
     }
 
-
     return {
         OscillatorWithGainNode: OscillatorWithGainNode,
-        AtomicSpectraNode:      AtomicSpectraNode
+        AtomicSpectraNode:      AtomicSpectraNode,
     }
 }
