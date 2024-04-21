@@ -18,6 +18,8 @@ const ELEMENT_NAMES = [
     'berkelium', 'californium', 'einsteinium'
 ]
 
+// const ELEMENT_NAMES = ['tantalum']
+
 export async function getSpectraLines(){
 
     return new Promise<SpectraLine[][]>( (resolve, reject) => {
@@ -34,15 +36,21 @@ export async function getSpectraLines(){
 
                 const $ = load(data);
         
-                const vacuumSpectraTable     = $('table').eq(2);
-                const vacuumSpectraTableRows = vacuumSpectraTable.find('tr').slice(3);
+                let airSpectraTable     = $('table').eq(3);
+                
+                if( airSpectraTable.find('tr').length == 0 ){ // vacuum didn't exist, so air is at index 2
+                    airSpectraTable = $('table').eq(2);
+                }
 
-                for (let i = 0; i < vacuumSpectraTableRows.length; i++){
-                    const row = vacuumSpectraTableRows.eq(i);
+                const aitSpectraTableRows = airSpectraTable.find('tr').slice(3);
+
+                for (let i = 0; i < aitSpectraTableRows.length; i++){
+                    const row = aitSpectraTableRows.eq(i);
                     const columns = row.find('td');
             
                     const a   = parseFloat(columns.eq(0).text());
                     const wl  = parseFloat(columns.eq(1).text());
+                    if( isNaN(a) || isNaN(wl) || (a == null) ) continue;
             
                     lines.push({ wl, a });
                 }
@@ -59,3 +67,4 @@ export async function getSpectraLines(){
 }
 
 
+// getSpectraLines();
