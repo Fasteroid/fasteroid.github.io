@@ -1,5 +1,5 @@
 import ptable from "$lib/atomicspectra/elements.json";
-import type { SpectraLine, Element } from "$lib/atomicspectra/types/native";
+import type { SpectraLine, Element, PTable } from "$lib/atomicspectra/types/native";
 import { browser } from "$app/environment";
 import { assertExists } from "$lib/uniqueid";
 
@@ -58,7 +58,6 @@ export function load() {
 
             for( let line of lines ){
                 const fq = audibleMap(line.wl);
-                console.log(line.wl * 0.1, fq)
                 const a  = line.a * 0.001;
                 if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
 
@@ -67,7 +66,6 @@ export function load() {
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
-            console.log(ampSum);
             this._amp.gain.value = 1000 / ampSum;
             this._amp.connect(this);
         }
@@ -87,8 +85,38 @@ export function load() {
 
     }
 
+    class VoiceManager {
+
+        public readonly context:  AudioContext;
+        private         _voices:  {[symbol: string]: AtomicSpectraNode} = {};
+
+        constructor(context: AudioContext) {
+            this.context = context;
+        }
+
+        public get(element: Element): AtomicSpectraNode {
+            const name = element.symbol;
+            if( this._voices[name] ) return this._voices[name];
+            const voice = this._voices[name] = new AtomicSpectraNode(this.context, element);
+            voice.start();
+            return voice;
+        }
+
+        public start(element: Element){
+            const voice = this.get(element);
+            voice.connect(this.context.destination);
+        }
+
+        public stop(element: Element){
+            const voice = this.get(element);
+            voice.disconnect();
+        }
+
+    }
+
     return {
         OscillatorWithGainNode: OscillatorWithGainNode,
         AtomicSpectraNode:      AtomicSpectraNode,
+        VoiceManager:           VoiceManager
     }
 }
