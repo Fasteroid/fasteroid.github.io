@@ -49,9 +49,11 @@ export function load() {
         private _oscs: OscillatorWithGainNode[] = [];
         private _amp:  GainNode;
 
+        public element: Element;
+
         constructor(context: AudioContext, atom: Element) {
             super(context);
-
+            this.element = atom;
             const lines = atom.spectra
             this._amp = new GainNode(context);
             let ampSum = 0;
@@ -66,7 +68,8 @@ export function load() {
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
-            this._amp.gain.value = 1000 / ampSum;
+            if(ampSum == 0){ return; } // don't error if all frequencies are out of range
+            this._amp.gain.value = 750 / ampSum;
             this._amp.connect(this);
         }
 
@@ -85,36 +88,48 @@ export function load() {
 
     }
 
+    interface PlayingAtomicSpectra extends AtomicSpectraNode {
+        timeout?: number;
+    }
+
     class VoiceManager {
 
         public readonly context:  AudioContext;
-        private         _voices:  {[symbol: string]: AtomicSpectraNode} = {};
+        private         _voices:  {[symbol: string]: PlayingAtomicSpectra} = {};
 
         constructor(context: AudioContext) {
             this.context = context;
         }
 
-        public get(element: Element): AtomicSpectraNode {
+        public get(element: Element): PlayingAtomicSpectra {
             const name = element.symbol;
             if( this._voices[name] ) return this._voices[name];
-            const voice = this._voices[name] = new AtomicSpectraNode(this.context, element);
+
+            const voice: PlayingAtomicSpectra = this._voices[name] = new AtomicSpectraNode(this.context, element);
             voice.start();
+            voice.gain.setValueAtTime(0, this.context.currentTime);
             return voice;
         }
 
         public start(element: Element){
             const voice = this.get(element);
+            voice.gain.setTargetAtTime(1, this.context.currentTime, 0.2);
             voice.connect(this.context.destination);
+            if( voice.timeout ) clearTimeout(voice.timeout);
         }
 
         public stop(element: Element){
             const voice = this.get(element);
-            voice.disconnect();
+            voice.gain.setTargetAtTime(0, this.context.currentTime, 0.2);
+            if( voice.timeout ) clearTimeout(voice.timeout);
+            voice.timeout = window.setTimeout(() => {
+                voice.disconnect();
+            }, 1000)
         }
 
         public stopAll(){
             for( let voice of Object.values(this._voices) ){
-                voice.disconnect();
+                this.stop(voice.element);
             }
         }
 
