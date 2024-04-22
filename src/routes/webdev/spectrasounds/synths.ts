@@ -6,13 +6,18 @@ import { assertExists } from "$lib/uniqueid";
 // https://www.desmos.com/calculator/oideopwllh
 
 const LOG2_20 = Math.log2(20);
-const MIN_VIS_FQ = 1 / 750; // violet
-const MAX_VIS_FQ = 1 / 380; // red
+
+const MIN_VIS_FQ = 1 / 750; // red
+const MAX_VIS_FQ = 1 / 380; // violet
+
+const MIN_AUDIBLE_FQ = 20;
+const MAX_AUDIBLE_FQ = 20000;
 
 function audibleMap( wl: number ){
 
-    const fq   = 1 / wl;
-    const map  = ( fq - MIN_VIS_FQ ) / ( MIN_VIS_FQ - MAX_VIS_FQ );
+    const fq   = 10 / wl;
+    const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
+
     const midi = 115 * map / 12 + LOG2_20
     return Math.pow(2, midi);
 
@@ -46,13 +51,24 @@ export function load() {
 
         constructor(context: AudioContext, atom: Element) {
             super(context);
+
             const lines = atom.spectra
-            this._amp = new GainNode(context, { gain: 1000 / lines.reduce( (acc, line) => acc + line.a, 0 ) });
+            this._amp = new GainNode(context);
+            let ampSum = 0;
+
             for( let line of lines ){
-                const osc = new OscillatorWithGainNode(context, audibleMap(line.wl), line.a * 0.001);
+                const fq = audibleMap(line.wl);
+                console.log(line.wl * 0.1, fq)
+                const a  = line.a * 0.001;
+                if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
+
+                const osc = new OscillatorWithGainNode(context, fq, a);
+                ampSum += line.a;
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
+            console.log(ampSum);
+            this._amp.gain.value = 1000 / ampSum;
             this._amp.connect(this);
         }
 
