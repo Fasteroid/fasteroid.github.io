@@ -112,6 +112,12 @@ export function load() {
             voice.disconnect();
         }
 
+        public stopAll(){
+            for( let voice of Object.values(this._voices) ){
+                voice.disconnect();
+            }
+        }
+
     }
 
     return {

@@ -19,20 +19,17 @@
         const voices = new synths.VoiceManager(master);
 
         for( const element of elements ){
-
-            // We want to smoothly fade if they spam the button, but opening an audiocontext for every element at once will be too expensive.
-            // TODO: VoiceManager class to manage this 
-
-            const html: HTMLElement = assertExists( UniqueIDs.getClient('element') );
+            if( !element.spectra ) continue; // skip elements without spectra, eg. rutherfordium
+            const html: HTMLElement = assertExists(element.name);
 
             html.addEventListener('mousedown', () => {
                 voices.start(element)
             });
-
-            html.addEventListener('mouseup', () => {
-                voices.stop(element)
-            });
         }
+
+        document.addEventListener('mouseup', (e) => { // if you drag off of something and release, we still want to stop all sounds
+            voices.stopAll();
+        });
     }
 
 </script>
@@ -52,7 +49,7 @@
             <br>
             <div class="ptable">
                 {#each elements as element}
-                    <div class="element" style="grid-column: {element.table_x}; grid-row: {element.table_y}" id={UniqueIDs.getServer("element")}>
+                    <div class="{element.spectra ? 'playable' : ''} element" style="grid-column: {element.table_x}; grid-row: {element.table_y}" id={element.name}>
                         {element.symbol}
                     </div>
                 {/each}
