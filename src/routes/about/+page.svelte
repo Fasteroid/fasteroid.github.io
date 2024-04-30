@@ -13,21 +13,24 @@
                 alt="A 3D-printed replica Expression 2 chip from Garry's Mod.">
                 Hi, I'm Fasteroid!  Nice to meet you!<br>
                 <br>
-                I'm a recent Computer Science graduate from <a href="https://www.wilmu.edu/">Wilmington University</a>.  
-                I'm currently looking work as a programmer, developer, or designer of computer related doohickeys.  I'm also
-                looking for a special someone who will tolerate loving the socially-awkward goofball I am.  I spoil you, you spoil me, ya know?<br>
+                I'm a Computer Science graduate from <a href="https://www.wilmu.edu/">Wilmington University</a>.  
+                While I have now finally found a job (and one that I love too), I'm still lacking in the social life department.
+                Many of my friends have moved on to other things, and I'm still trying to find meaning in the world besides just
+                work and video games.  Perhaps you, reader, could contribute to that meaning?  Or is that too optimistic?<br>
                 <br>
                 I began writing my first original lines of code early to mid 2014, in a little-known language
                 called Expression&nbsp;2 from the popular sandbox game <i>Garry's Mod</i>.  
                 Expression&nbsp;2 had a very steep learning 
                 curve to it at first due to its obscurity and narrow scope of applications, but by 2015 it had turned
-                into a massive power trip for me.  I'm still addicted today.
+                into a massive power trip for me.  While I'm not as active on Garry's Mod anymore, E2 is still my go-to 
+                whenever I need to test concepts in a 3D physics environment.  Maybe one of these days I'll learn a proper
+                game engine like Unreal and finally replace it once and for all.<br>
                 <div style="clear:both"></div>
             </div>
             <div class="p">
                 <img src="{base}/assets/aboutme/ody.jpg" style="float:right; max-height: 245px; margin-right: 0px;"
                 alt="2018 claiming of the Renatra Fusca Creativity Award at DE State Finals.">
-                My favorite experiences so far in life have been my adventures during Odyssey of the Mind, which is a 
+                My most memorable adventures were had during Odyssey of the Mind, which is a 
                 collaborative problem-solving extracurricular for creative thinkers.  Each year, teams of 5-7 choose
                 one of five long-term problems (which all involve some combination of acting and engineering),
                 and are assigned an 8-minute 'spontaneous' problem the day of the performance.<br>
@@ -40,15 +43,18 @@
                 Odyssey of the Mind taught me a lot—mainly that it usually isn't feasable for one person to work on everything.  
                 Different people have different strengths and weaknesses, and if one person does everything, they're bound to hit 
                 a weakness eventually.  In contrast, with good teamwork and good skill coverage, even an intelligent adversary
-                will struggle to pick something that truly defeats everyone on the team.
+                will struggle to pick something that truly defeats everyone on the team.<br>
+                <br>
+                I really miss those days.  The team has been scattered across the country, everyone is busy with their own lives now, and it
+                just generally feels impossible to keep in touch.<br>
                 <div style="clear:both"></div>
             </div>
             <div class="p">
                 <img src="{base}/assets/aboutme/gmodfriends.jpg" style="float:left; max-height: 245px; margin-left: 0px;" 
                 alt="Friends on E2 Beyond Infinity.">
-                I currently spend my days managing my two Garry's Mod servers, <i>E2 Beyond Infinity</i> and <i>Props Beyond Infinity</i>.  
-                One is a programming and scripting paradise with a small but devoted playerbase, and the other is a prop hunt server that
-                has yet to see itself full.<br>
+                My other fondest memories came from my two Garry's Mod servers, <i>E2 Beyond Infinity</i> and <i>Props Beyond Infinity</i>.  
+                One is a programming and scripting paradise with the occasional player or two, and the other is a prop hunt server that
+                has yet to see itself at max players.<br>
                 <br>
                 One of the coolest features of both these servers is the presence of a bidirectional Discord Relay I designed, which allows seamless two-way 
                 interaction between players on the Garry's Mod server and users in its Discord server.  This relay has proved to serve
@@ -66,8 +72,6 @@
                 Perhaps I can be of use to you!<br>
             </div>
             —Fast<br>
-            <br>
-            PS: SVELTE! SVELTE! SVELTE!
         </section>
     </div>
 </body>
