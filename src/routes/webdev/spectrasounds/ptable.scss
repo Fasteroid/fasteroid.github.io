@@ -1,5 +1,4 @@
-$base-unplayable: rgb(61, 48, 63);
-$base-playable:   rgb(79, 49, 97);
+@use "ptable-colors.scss" as *;
 
 .ptable {
 
@@ -14,6 +13,7 @@ $base-playable:   rgb(79, 49, 97);
     display: grid;
     grid-template-columns: repeat(18, 1fr);
     grid-template-rows: repeat(7, 1fr);
+
     grid-gap: 4px;
     
     aspect-ratio: 18 / 7;
@@ -21,8 +21,6 @@ $base-playable:   rgb(79, 49, 97);
     width: 100%;
 
     .element {
-
-        cursor: pointer;
 
         display: flex;
         flex-direction: column;
@@ -38,17 +36,18 @@ $base-playable:   rgb(79, 49, 97);
         padding: 5px;
 
         border-radius: 6px;
-        background-color: $base-unplayable;
+        background-color: color-mix(in srgb, var(--category-color), black 40%);
 
         &.playable {
-            background-color: $base-playable;
+            background-color: var(--category-color);
+            cursor: pointer;
 
             &:hover {
-                background-color: lighten($base-playable, 7%);
+                background-color: color-mix(in srgb, var(--category-color), white 18%);
             }
 
             &:active {
-                background-color: darken($base-playable, 7%);
+                background-color: color-mix(in srgb, var(--category-color), black 12%);
             }
         }
 

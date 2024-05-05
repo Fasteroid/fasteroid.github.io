@@ -49,7 +49,7 @@
             <br>
             <div class="ptable">
                 {#each elements as element}
-                    <div class="{element.spectra ? 'playable' : ''} element" style="grid-column: {element.table_x}; grid-row: {element.table_y}" id={element.name}>
+                    <div class="{element.spectra ? 'playable' : ''} {element.category} element" style="grid-column: {element.table_x}; grid-row: {element.table_y}" id={element.name}>
                         {element.symbol}
                     </div>
                 {/each}
