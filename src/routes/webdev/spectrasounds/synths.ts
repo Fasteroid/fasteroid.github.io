@@ -69,7 +69,7 @@ export function load() {
                 this._oscs.push(osc);
             }
             if(ampSum == 0){ return; } // don't error if all frequencies are out of range
-            this._amp.gain.value = 750 / ampSum;
+            this._amp.gain.value = 700 / ampSum;
             this._amp.connect(this);
         }
 
