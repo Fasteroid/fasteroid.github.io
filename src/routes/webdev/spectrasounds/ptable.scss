@@ -45,14 +45,12 @@
     user-select          : none;  /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 
     display: grid;
-    grid-template-columns: repeat(17, 1fr);
+    grid-template-columns: repeat(18, 1fr);
     grid-template-rows: repeat(9, 1fr);
 
-    width: min-content;
+    width: max-content;
 
     grid-gap: 4px;
-    
-    aspect-ratio: 16 / 9;
 
     @media screen and (max-width: 900px) {
         grid-gap: 2px;
