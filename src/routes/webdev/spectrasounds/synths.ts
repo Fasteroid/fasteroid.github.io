@@ -1,7 +1,4 @@
-import ptable from "$lib/atomicspectra/elements.json";
-import type { SpectraLine, Element, PTable } from "$lib/atomicspectra/types/native";
-import { browser } from "$app/environment";
-import { assertExists } from "$lib/uniqueid";
+import type { Element } from "$lib/atomicspectra/types/native";
 
 // https://www.desmos.com/calculator/oideopwllh
 
@@ -19,7 +16,8 @@ function audibleMap( wl: number ){
     const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
 
     const midi = 115 * map / 12 + LOG2_20
-    return Math.pow(2, midi);
+    // return Math.pow(2, midi);
+    return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
 
 }
 
@@ -69,7 +67,7 @@ export function load() {
                 this._oscs.push(osc);
             }
             if(ampSum == 0){ return; } // don't error if all frequencies are out of range
-            this._amp.gain.value = 700 / ampSum;
+            this._amp.gain.value = 500 / ampSum;
             this._amp.connect(this);
         }
 
