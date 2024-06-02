@@ -15,11 +15,21 @@
 
     if( browser ){
 
+        const FFT_WIDTH = 8192;
+        const BIN_WIDTH = FFT_WIDTH / 2;
+        const fftBuffer = new Float32Array(BIN_WIDTH);
+
+        let   analyzer: AnalyserNode;
+
         // Audio
         {
             const synths = load(); // SSR cannot witness this or it dies
             const master = new AudioContext();
-            const voices = new synths.VoiceManager(master);
+            analyzer = master.createAnalyser();
+            const voices = new synths.VoiceManager(master, analyzer);
+
+            analyzer.fftSize = FFT_WIDTH;
+            analyzer.connect(master.destination);
             
             const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
             let   easter_egg_timeout = 0;
@@ -68,20 +78,18 @@
             }
 
             const canvas = assertExists('gl-canvas') as HTMLCanvasElement;
-
             const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
             if( !gl ) throw new Error('WebGL2 not supported');
 
             const program = WebGLUtils.createProgram(gl, fragSource);
-
             WebGLUtils.setup2DFragmentShader(gl, program, canvas);
 
             const image = new Image();
-            image.src = `${base}/assets/webdev/spectrasounds/spectrum.png`;
+            image.src = `${base}/assets/webdev/spectrasounds/spectrum.png`; // load texture
             image.onload = () => {
 
                 const spectra_tex = WebGLUtils.createTexture(gl, image)!;
-                const fft_tex     = createFloat32ArrayTexture(1024)!;
+                const fft_tex     = createFloat32ArrayTexture(FFT_WIDTH)!;
 
                 const spectra_tex_location = gl.getUniformLocation(program, 'u_spectra');
                 const fft_tex_location     = gl.getUniformLocation(program, 'u_fft');
@@ -94,18 +102,11 @@
 
                 gl.activeTexture(gl.TEXTURE1);
                 gl.bindTexture(gl.TEXTURE_2D, fft_tex);
-
-                setInterval(() => {
-                    // random 1 x 1024 texture
-                    const test_data = new Float32Array(1024);
-                    for( let i = 0; i < 1024; i++ ){
-                        test_data[i] = Math.random();
-                    }
-                    updateFloat32ArrayTexture(fft_tex, test_data);
-                }, 100);
                 
                 function render() {
-                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    analyzer.getFloatFrequencyData(fftBuffer);
+                    updateFloat32ArrayTexture(fft_tex, fftBuffer);
+
                     gl.drawArrays(gl.TRIANGLES, 0, 6);
                     requestAnimationFrame(render);
                 }

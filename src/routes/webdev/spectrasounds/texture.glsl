@@ -22,7 +22,7 @@ void main() {
 
     vec2 spectra_sample = vec2( 
         uv.x,
-        uv.y - 1.0 + amp
+        uv.y - 1.0 + pow(10.0, amp * 0.0005)
     );
     
     gl_FragColor = texture2D(u_spectra, spectra_sample);

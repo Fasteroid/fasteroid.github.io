@@ -93,10 +93,12 @@ export function load() {
     class VoiceManager {
 
         public readonly context:  AudioContext;
+        public readonly analyzer: AnalyserNode;
         private         _voices:  {[symbol: string]: PlayingAtomicSpectra} = {};
 
-        constructor(context: AudioContext) {
-            this.context = context;
+        constructor(context: AudioContext, analyzer: AnalyserNode) {
+            this.context  = context;
+            this.analyzer = analyzer;
         }
 
         public get(element: Element): PlayingAtomicSpectra {
@@ -112,7 +114,7 @@ export function load() {
         public start(element: Element){
             const voice = this.get(element);
             voice.gain.setTargetAtTime(1, this.context.currentTime, 0.2);
-            voice.connect(this.context.destination);
+            voice.connect(this.analyzer);
             if( voice.timeout ) clearTimeout(voice.timeout);
         }
 
