@@ -50,36 +50,70 @@
 
         // Visual
         {
+
+            function createFloat32ArrayTexture(len: number){
+                const tex = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, len, 1, 0, gl.RED, gl.FLOAT, null);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                return tex;
+            }
+
+            function updateFloat32ArrayTexture(tex: WebGLTexture, data: Float32Array){
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length, 1, 0, gl.RED, gl.FLOAT, data);
+            }
+
             const canvas = assertExists('gl-canvas') as HTMLCanvasElement;
 
             const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
             if( !gl ) throw new Error('WebGL2 not supported');
 
             const program = WebGLUtils.createProgram(gl, fragSource);
+
             WebGLUtils.setup2DFragmentShader(gl, program, canvas);
 
             const image = new Image();
             image.src = `${base}/assets/webdev/spectrasounds/spectrum.png`;
             image.onload = () => {
-                const texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, texture);
+
+                const spectra_tex = WebGLUtils.createTexture(gl, image)!;
+                const fft_tex     = createFloat32ArrayTexture(1024)!;
+
+                const spectra_tex_location = gl.getUniformLocation(program, 'u_spectra');
+                const fft_tex_location     = gl.getUniformLocation(program, 'u_fft');
+
+                gl.uniform1i(spectra_tex_location, 0);
+                gl.uniform1i(fft_tex_location, 1);
                 
-                // Set the parameters so we can render any size image.
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, spectra_tex);
+
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, fft_tex);
+
+                setInterval(() => {
+                    // random 1 x 1024 texture
+                    const test_data = new Float32Array(1024);
+                    for( let i = 0; i < 1024; i++ ){
+                        test_data[i] = Math.random();
+                    }
+                    updateFloat32ArrayTexture(fft_tex, test_data);
+                }, 100);
                 
-                // Upload the image into the texture.
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                function render() {
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+                    requestAnimationFrame(render);
+                }
+                render();
+                
             }
-            
-            function render() {
-                gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                requestAnimationFrame(render);
-            }
-            render();
+
+
 
         }
 
