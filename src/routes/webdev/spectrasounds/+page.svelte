@@ -9,7 +9,7 @@
     import type { PTable } from '$lib/atomicspectra/types/native';
     import { WebGLUtils } from '$lib/webgl/utils';
 
-    import fragSource from './test.glsl?raw';
+    import fragSource from './texture.glsl?raw';
 
     const elements = (i_ptable as PTable).elements;
 
@@ -20,9 +20,8 @@
             const synths = load(); // SSR cannot witness this or it dies
             const master = new AudioContext();
             const voices = new synths.VoiceManager(master);
-            // https://commons.wikimedia.org/wiki/File:Linear_visible_spectrum.svg
             
-            const sigma_easter_egg   = new Audio(`${base}/assets/webdev/what_is_that_melody.mp3`);
+            const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
             let   easter_egg_timeout = 0;
             let   easter_egg_played  = false;
 
@@ -59,6 +58,22 @@
             const program = WebGLUtils.createProgram(gl, fragSource);
             WebGLUtils.setup2DFragmentShader(gl, program, canvas);
 
+            const image = new Image();
+            image.src = `${base}/assets/webdev/spectrasounds/spectrum.png`;
+            image.onload = () => {
+                const texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                
+                // Set the parameters so we can render any size image.
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                
+                // Upload the image into the texture.
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            }
+            
             function render() {
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
