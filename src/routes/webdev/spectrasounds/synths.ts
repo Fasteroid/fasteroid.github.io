@@ -1,4 +1,5 @@
 import type { Element } from "$lib/atomicspectra/types/native";
+import { logColor, quickNMtoHex } from "./debugging";
 
 // https://www.desmos.com/calculator/oideopwllh
 
@@ -11,14 +12,12 @@ const MIN_AUDIBLE_FQ = 20;
 const MAX_AUDIBLE_FQ = 20000;
 
 function audibleMap( wl: number ){
-
     const fq   = 10 / wl;
     const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
 
     const midi = 115 * map / 12 + LOG2_20
     // return Math.pow(2, midi);
     return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
-
 }
 
 // Have to do this stupid crap so SSR doesn't witness the GainNode, otherwise it breaks
@@ -27,13 +26,14 @@ export function load() {
     class OscillatorWithGainNode extends GainNode {
         private _osc: OscillatorNode;
     
-        constructor(context: AudioContext, frequency: number, gain: number) {
+        constructor(context: AudioContext, frequency: number, private wavelength: number, gain: number) {
             super(context, { gain: gain });
             this._osc = new OscillatorNode(context, { frequency: frequency, type: "sine" });
             this._osc.connect(this);
         }
     
         public start() {
+            logColor(this.wavelength / 10, this.gain.value);
             this._osc.start();
         }
     
@@ -61,13 +61,13 @@ export function load() {
                 const a  = line.a * 0.001;
                 if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
 
-                const osc = new OscillatorWithGainNode(context, fq, a);
-                ampSum += line.a;
+                const osc = new OscillatorWithGainNode(context, fq, line.wl, a);
+                ampSum += a;
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
             if(ampSum == 0){ return; } // don't error if all frequencies are out of range
-            this._amp.gain.value = 500 / ampSum;
+            this._amp.gain.value = 0.5 / ampSum;
             this._amp.connect(this);
         }
 

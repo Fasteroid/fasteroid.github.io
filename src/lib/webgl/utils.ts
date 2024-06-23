@@ -1,12 +1,11 @@
 
 export class WebGLUtils {
 
-    public static readonly DEFAULT_VERTEX_SHADER = `attribute vec4 a_position; void main() { gl_Position = a_position; }`;
-
     // Credits:
     // - https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html
     // - Github Copilot
-    public static createProgram(gl: WebGL2RenderingContext, fragmentSource: string, vertexSource: string = WebGLUtils.DEFAULT_VERTEX_SHADER ): WebGLProgram {
+
+    public static createProgram(gl: WebGL2RenderingContext, fragmentSource: string, vertexSource: string ): WebGLProgram {
         const program = gl.createProgram();
         if (!program) { throw new Error('Failed to create program'); }
 
@@ -36,38 +35,15 @@ export class WebGLUtils {
         return program;
     }
 
-    public static setup2DFragmentShader(gl: WebGL2RenderingContext, program: WebGLProgram, canvas: HTMLCanvasElement): void {
-        const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-
-        const positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            -1, -1,
-             1, -1,
-            -1,  1,
-            -1,  1,
-             1, -1,
-             1,  1,
-        ]), gl.STATIC_DRAW);
-    
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-        gl.useProgram(program);
-
-        // Set resolution uniform
-        const resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
-        gl.uniform2f(resolutionUniformLocation, canvas.width, canvas.height);
-    }
-
     public static createTexture(gl: WebGL2RenderingContext, image: TexImageSource): WebGLTexture {
         const texture = gl.createTexture();
         if (!texture) { throw new Error('Failed to create texture'); }
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         return texture;
     }
 }

@@ -68,6 +68,8 @@
 
     .element {
 
+        opacity: 0.5;
+
         & > div {
 
             --font-unit-size: calc( min(1.8vh, 0.9vw) );

@@ -9,115 +9,136 @@
     import type { PTable } from '$lib/atomicspectra/types/native';
     import { WebGLUtils } from '$lib/webgl/utils';
 
-    import fragSource from './texture.glsl?raw';
+    import testFrag     from './test_frag.glsl?raw';
+
+    import fragSource   from './main_frag.glsl?raw';
+    import vertexSource from './main_vert.glsl?raw';
 
     const elements = (i_ptable as PTable).elements;
-
+    
     if( browser ){
 
-        const FFT_WIDTH = 8192;
+        const FFT_WIDTH = 4096;
         const BIN_WIDTH = FFT_WIDTH / 2;
         const fftBuffer = new Float32Array(BIN_WIDTH);
 
-        let   analyzer: AnalyserNode;
+        // ----------- Audio -----------
 
-        // Audio
-        {
-            const synths = load(); // SSR cannot witness this or it dies
-            const master = new AudioContext();
-            analyzer = master.createAnalyser();
-            const voices = new synths.VoiceManager(master, analyzer);
+        const synths = load(); // SSR cannot witness this or it dies
+        const master = new AudioContext();
+        const analyzer = master.createAnalyser();
+        const voices = new synths.VoiceManager(master, analyzer);
 
-            analyzer.fftSize = FFT_WIDTH;
-            analyzer.connect(master.destination);
-            
-            const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
-            let   easter_egg_timeout = 0;
-            let   easter_egg_played  = false;
+        analyzer.fftSize = FFT_WIDTH;
+        analyzer.connect(master.destination);
+        analyzer.maxDecibels = 100;
+        analyzer.minDecibels = -100;
+        
+        const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
+        let   easter_egg_timeout = 0;
+        let   easter_egg_played  = false;
 
-            function playEasterEgg(){
-                if( easter_egg_played ) return;
-                easter_egg_played = true;
-                sigma_easter_egg.play();
-            }
+        function playEasterEgg(){
+            if( easter_egg_played ) return;
+            easter_egg_played = true;
+            sigma_easter_egg.play();
+        }
 
-            for( const element of elements ){
-                if( !element.spectra ) continue; // skip elements without spectra, eg. rutherfordium
-                const html: HTMLElement = assertExists(element.name);
+        for( const element of elements ){
+            if( !element.spectra ) continue; // skip elements without spectra, eg. rutherfordium
+            const html: HTMLElement = assertExists(element.name);
 
-                html.addEventListener('mousedown', () => {
-                    easter_egg_timeout = window.setTimeout( playEasterEgg, 1000 );
-                    voices.start(element)
-                });
-            }
-
-            document.addEventListener('mouseup', (e) => { // if you drag off of something and release, we still want to stop all sounds
-                window.clearTimeout(easter_egg_timeout);
-                sigma_easter_egg.pause();
-                voices.stopAll();
+            html.addEventListener('mousedown', () => {
+                easter_egg_timeout = window.setTimeout( playEasterEgg, 1000 );
+                voices.start(element)
             });
         }
 
-        // Visual
-        {
-
-            function createFloat32ArrayTexture(len: number){
-                const tex = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, len, 1, 0, gl.RED, gl.FLOAT, null);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                return tex;
-            }
-
-            function updateFloat32ArrayTexture(tex: WebGLTexture, data: Float32Array){
-                gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length, 1, 0, gl.RED, gl.FLOAT, data);
-            }
-
-            const canvas = assertExists('gl-canvas') as HTMLCanvasElement;
-            const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
-            if( !gl ) throw new Error('WebGL2 not supported');
-
-            const program = WebGLUtils.createProgram(gl, fragSource);
-            WebGLUtils.setup2DFragmentShader(gl, program, canvas);
-
-            const image = new Image();
-            image.src = `${base}/assets/webdev/spectrasounds/spectrum.png`; // load texture
-            image.onload = () => {
-
-                const spectra_tex = WebGLUtils.createTexture(gl, image)!;
-                const fft_tex     = createFloat32ArrayTexture(FFT_WIDTH)!;
-
-                const spectra_tex_location = gl.getUniformLocation(program, 'u_spectra');
-                const fft_tex_location     = gl.getUniformLocation(program, 'u_fft');
-
-                gl.uniform1i(spectra_tex_location, 0);
-                gl.uniform1i(fft_tex_location, 1);
-                
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, spectra_tex);
-
-                gl.activeTexture(gl.TEXTURE1);
-                gl.bindTexture(gl.TEXTURE_2D, fft_tex);
-                
-                function render() {
-                    analyzer.getFloatFrequencyData(fftBuffer);
-                    updateFloat32ArrayTexture(fft_tex, fftBuffer);
-
-                    gl.drawArrays(gl.TRIANGLES, 0, 6);
-                    requestAnimationFrame(render);
-                }
-                render();
-                
-            }
+        document.addEventListener('mouseup', (e) => { // if you drag off of something and release, we still want to stop all sounds
+            window.clearTimeout(easter_egg_timeout);
+            sigma_easter_egg.pause();
+            voices.stopAll();
+        });
 
 
+        // ----------- WebGL -----------
 
+        const canvas = assertExists('gl-canvas') as HTMLCanvasElement;
+        const gl = canvas.getContext('webgl2', {preserveDrawingBuffer: true}) as WebGL2RenderingContext;
+        if( !gl ) throw new Error('WebGL2 not supported');
+
+        const program = WebGLUtils.createProgram(gl, fragSource, vertexSource);
+            canvas.width = FFT_WIDTH;
+            canvas.height = 256;
+
+        function createFloat32ArrayTexture(len: number){
+            const tex = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, len, 1, 0, gl.RED, gl.FLOAT, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            return tex;
         }
 
+        function updateFloat32ArrayTexture(tex: WebGLTexture, data: Float32Array){
+            gl.bindTexture(gl.TEXTURE_2D, tex);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length, 1, 0, gl.RED, gl.FLOAT, data);
+        }
+
+        const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+        const positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+        const positions = [
+            -1, -1,
+             1, -1,
+            -1,  1,
+             1,  1,
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        gl.useProgram(program);
+
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+        const fft_tex = createFloat32ArrayTexture(FFT_WIDTH)!;
+
+        const fftUniform     = gl.getUniformLocation(program, 'u_fft');
+        const spectraUniform = gl.getUniformLocation(program, 'u_spectra');
+
+        gl.uniform1i(fftUniform, 0);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, fft_tex);
+
+        const img = new Image();
+        img.src = `${base}/assets/webdev/spectrasounds/spectra.png`;
+        img.onload = () => {
+
+            console.log('loaded')
+            gl.uniform1i(spectraUniform, 1);
+            const spectra_tex = WebGLUtils.createTexture(gl, img);
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, spectra_tex);
+
+            gl.activeTexture(gl.TEXTURE0); // set back to normal
+
+            function render() {
+                analyzer.getFloatFrequencyData(fftBuffer);
+                updateFloat32ArrayTexture(fft_tex, fftBuffer);
+
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(render);
+            }
+            render();
+        }
     }
 
 </script>
