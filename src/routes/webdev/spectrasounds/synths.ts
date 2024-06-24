@@ -33,7 +33,7 @@ export function load() {
         }
     
         public start() {
-            logColor(this.wavelength / 10, this.gain.value);
+            // logColor(this.wavelength / 10, this.gain.value);
             this._osc.start();
         }
     
@@ -124,7 +124,7 @@ export function load() {
             if( voice.timeout ) clearTimeout(voice.timeout);
             voice.timeout = window.setTimeout(() => {
                 voice.disconnect();
-            }, 1000)
+            }, 4000)
         }
 
         public stopAll(){

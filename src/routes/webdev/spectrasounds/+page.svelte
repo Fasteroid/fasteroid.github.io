@@ -32,7 +32,7 @@
         analyzer.fftSize = FFT_WIDTH;
         analyzer.connect(master.destination);
         analyzer.maxDecibels = 100;
-        analyzer.minDecibels = -100;
+        analyzer.minDecibels = -20;
         
         const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
         let   easter_egg_timeout = 0;
@@ -111,8 +111,13 @@
 
         const fft_tex = createFloat32ArrayTexture(FFT_WIDTH)!;
 
-        const fftUniform     = gl.getUniformLocation(program, 'u_fft');
-        const spectraUniform = gl.getUniformLocation(program, 'u_spectra');
+        const fftUniform        = gl.getUniformLocation(program, 'u_fft');
+        const spectraUniform    = gl.getUniformLocation(program, 'u_spectra');
+        const fftsizeUniform    = gl.getUniformLocation(program, 'u_fftsize');
+        const samplerateUniform = gl.getUniformLocation(program, 'u_samplerate');
+        
+        gl.uniform1f(fftsizeUniform, FFT_WIDTH);
+        gl.uniform1f(samplerateUniform, master.sampleRate);
 
         gl.uniform1i(fftUniform, 0);
         gl.activeTexture(gl.TEXTURE0);
