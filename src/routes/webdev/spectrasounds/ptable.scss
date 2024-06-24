@@ -1,18 +1,29 @@
 @use "ptable-colors.scss" as *;
 
+.grid-stack {
+    background-color: black;
+    display: grid;
+    height: 100%;
+    grid-template-areas: "stack";
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+
+    & > * {
+        grid-area: stack;
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+}
 
 .title {
     display: flex;
     align-items: center;
     flex-direction: column;
-    height: 100%;
     width: 100%;
-    grid-column: 1 / span 18;
-    grid-row: 1 / span 1;
     text-align: center;
     font-size: calc( min(11pt, 1.2vw) );
     line-height: 1.2;
-    background-color: black;
     padding-top: 15px;
 
     div {
@@ -26,14 +37,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: black;
 }
 
 .ptable {
 
     box-sizing: border-box;
-
-    background-color: black;
     padding: 15px;
 
     // ty stackoverflow: https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting
@@ -57,6 +65,8 @@
     }
 
     .element {
+
+        opacity: 0.9;
 
         & > div {
 

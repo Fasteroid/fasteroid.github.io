@@ -1,7 +1,5 @@
-import ptable from "$lib/atomicspectra/elements.json";
-import type { SpectraLine, Element, PTable } from "$lib/atomicspectra/types/native";
-import { browser } from "$app/environment";
-import { assertExists } from "$lib/uniqueid";
+import type { Element } from "$lib/atomicspectra/types/native";
+import { logColor, quickNMtoHex } from "./debugging";
 
 // https://www.desmos.com/calculator/oideopwllh
 
@@ -14,13 +12,12 @@ const MIN_AUDIBLE_FQ = 20;
 const MAX_AUDIBLE_FQ = 20000;
 
 function audibleMap( wl: number ){
-
     const fq   = 10 / wl;
     const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
 
     const midi = 115 * map / 12 + LOG2_20
-    return Math.pow(2, midi);
-
+    // return Math.pow(2, midi);
+    return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
 }
 
 // Have to do this stupid crap so SSR doesn't witness the GainNode, otherwise it breaks
@@ -29,13 +26,14 @@ export function load() {
     class OscillatorWithGainNode extends GainNode {
         private _osc: OscillatorNode;
     
-        constructor(context: AudioContext, frequency: number, gain: number) {
+        constructor(context: AudioContext, frequency: number, private wavelength: number, gain: number) {
             super(context, { gain: gain });
             this._osc = new OscillatorNode(context, { frequency: frequency, type: "sine" });
             this._osc.connect(this);
         }
     
         public start() {
+            // logColor(this.wavelength / 10, this.gain.value);
             this._osc.start();
         }
     
@@ -63,13 +61,13 @@ export function load() {
                 const a  = line.a * 0.001;
                 if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
 
-                const osc = new OscillatorWithGainNode(context, fq, a);
-                ampSum += line.a;
+                const osc = new OscillatorWithGainNode(context, fq, line.wl, a);
+                ampSum += a;
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
             if(ampSum == 0){ return; } // don't error if all frequencies are out of range
-            this._amp.gain.value = 700 / ampSum;
+            this._amp.gain.value = 0.5 / ampSum;
             this._amp.connect(this);
         }
 
@@ -95,10 +93,12 @@ export function load() {
     class VoiceManager {
 
         public readonly context:  AudioContext;
+        public readonly analyzer: AnalyserNode;
         private         _voices:  {[symbol: string]: PlayingAtomicSpectra} = {};
 
-        constructor(context: AudioContext) {
-            this.context = context;
+        constructor(context: AudioContext, analyzer: AnalyserNode) {
+            this.context  = context;
+            this.analyzer = analyzer;
         }
 
         public get(element: Element): PlayingAtomicSpectra {
@@ -114,7 +114,7 @@ export function load() {
         public start(element: Element){
             const voice = this.get(element);
             voice.gain.setTargetAtTime(1, this.context.currentTime, 0.2);
-            voice.connect(this.context.destination);
+            voice.connect(this.analyzer);
             if( voice.timeout ) clearTimeout(voice.timeout);
         }
 
@@ -124,7 +124,7 @@ export function load() {
             if( voice.timeout ) clearTimeout(voice.timeout);
             voice.timeout = window.setTimeout(() => {
                 voice.disconnect();
-            }, 1000)
+            }, 4000)
         }
 
         public stopAll(){
