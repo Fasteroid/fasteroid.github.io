@@ -15,6 +15,8 @@
     import vertexSource from './main_vert.glsl?raw';
 
     const elements = (i_ptable as PTable).elements;
+
+    const MAGIC_NUMBER = 0.855; // for some reason, the texture is ~0.855 times the size of the array (wtf?)
     
     if( browser ){
 
@@ -84,7 +86,7 @@
 
         function updateFloat32ArrayTexture(tex: WebGLTexture, data: Float32Array){
             gl.bindTexture(gl.TEXTURE_2D, tex);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length, 1, 0, gl.RED, gl.FLOAT, data);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length * MAGIC_NUMBER, 1, 0, gl.RED, gl.FLOAT, data);
         }
 
         const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
@@ -109,7 +111,7 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
         gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-        const fft_tex = createFloat32ArrayTexture(FFT_WIDTH)!;
+        const fft_tex = createFloat32ArrayTexture(BIN_WIDTH)!;
 
         const fftUniform        = gl.getUniformLocation(program, 'u_fft');
         const spectraUniform    = gl.getUniformLocation(program, 'u_spectra');
@@ -124,7 +126,7 @@
         gl.bindTexture(gl.TEXTURE_2D, fft_tex);
 
         const img = new Image();
-        img.src = `${base}/assets/webdev/spectrasounds/spectra.png`;
+        img.src = `${base}/assets/webdev/spectrasounds/spectra_380_to_780.png`;
         img.onload = () => {
 
             console.log('loaded')

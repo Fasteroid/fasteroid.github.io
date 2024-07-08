@@ -20,6 +20,10 @@ function audibleMap( wl: number ){
     return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
 }
 
+function ampToDB( amp: number ){
+    return 20 * Math.log10(amp);
+}
+
 // Have to do this stupid crap so SSR doesn't witness the GainNode, otherwise it breaks
 export function load() {
 
@@ -50,25 +54,40 @@ export function load() {
         public element: Element;
 
         constructor(context: AudioContext, atom: Element) {
+
             super(context);
             this.element = atom;
             const lines = atom.spectra
             this._amp = new GainNode(context);
-            let ampSum = 0;
 
+            if( lines.length === 0 ) return;
+
+            let ampSum = 0;
             for( let line of lines ){
                 const fq = audibleMap(line.wl);
-                const a  = line.a * 0.001;
                 if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
-
-                const osc = new OscillatorWithGainNode(context, fq, line.wl, a);
-                ampSum += a;
+                const osc = new OscillatorWithGainNode(context, fq, line.wl, line.a);
+                ampSum += line.a;
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
-            if(ampSum == 0){ return; } // don't error if all frequencies are out of range
-            this._amp.gain.value = 0.5 / ampSum;
+
+            this._amp.gain.value = 0.5 / Math.max(1,ampSum);
             this._amp.connect(this);
+
+        }
+
+        private debugFullRange(context: AudioContext): number {
+            const count = 40;
+            const lines = Array.from({length: count}, (_, i) => (i+1) / (count)); // for testing full frequency range
+            for( let line of lines ){
+                const fq = line * 20000;
+                const a  = 1;
+                const osc = new OscillatorWithGainNode(context, fq, line, a);
+                osc.connect(this._amp);
+                this._oscs.push(osc);
+            }
+            return lines.length;
         }
 
         public start(){
