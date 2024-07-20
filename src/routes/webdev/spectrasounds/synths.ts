@@ -9,27 +9,27 @@ const MIN_VIS_FQ = 1 / 780; // red
 const MAX_VIS_FQ = 1 / 380; // violet
 
 const MIN_AUDIBLE_FQ = 20;
-const MAX_AUDIBLE_FQ = 16000;
+export const MAX_AUDIBLE_FQ = 16000;
 
-/*
-    TODO: while this technically works, feeding the fft of this to the gpu and then unmapping it kills the resolution on the lower frequencies
-    (which my dumbass could have predicted if I thought about it for more than 2 seconds)
-
-    We might need to have two audio pipelines, one for FFT and one for listening to.
-*/
-
-function audibleMap( wl: number ){
+function baseMap( wl: number ){
     const fq   = 10 / wl;
-    const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ ); // 0 to 1 light frequencies
+    return ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
+}
 
-    const midi = 115 * map / 12 + LOG2_20
+function scientificMap( wl: number ){
+    return baseMap(wl) * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
+}
+
+function musicalMap( wl: number ){
+    const midi = 115 * baseMap(wl) / 12 + LOG2_20
     return Math.pow(2, midi);
-    // return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
 }
 
 function ampToDB( amp: number ){
     return 20 * Math.log10(amp);
 }
+
+export type MapFn = (x: number) => number;
 
 // Have to do this stupid crap so SSR doesn't witness the GainNode, otherwise it breaks
 export function load() {
@@ -58,23 +58,39 @@ export function load() {
         private _oscs: OscillatorWithGainNode[] = [];
         private _amp:  GainNode;
 
-        public element: Element;
 
-        constructor(context: AudioContext, atom: Element) {
+        constructor(context: AudioContext, public element: Element, mode: "musical" | "scientific") {
 
             super(context);
-            this.element = atom;
-            const lines = atom.spectra
+            const lines = element.spectra
             this._amp = new GainNode(context);
 
             if( lines.length === 0 ) return;
 
             let ampSum = 0;
+
+            // this.debugFullRange(context); // comment out loop below to use this
+
             for( let line of lines ){
-                const fq = audibleMap(line.wl);
+
+                let fq:  number;
+                let amp: number;
+
+                if( mode === "musical" ){
+                    fq  = musicalMap(line.wl);
+                    amp = line.a; // todo: see below, but we also need to apply loudness curves here for the human
+                }
+                else if( mode === "scientific" ){
+                    fq  = scientificMap(line.wl);
+                    amp = line.a; // todo: what units is this in?  do we need to map it to something else? (eg. linear)
+                }
+                else {
+                    throw "invalid mode";
+                }
+
                 if( fq < MIN_AUDIBLE_FQ || fq > MAX_AUDIBLE_FQ ) continue;
-                const osc = new OscillatorWithGainNode(context, fq, line.wl, line.a);
-                ampSum += line.a;
+                const osc = new OscillatorWithGainNode(context, fq, line.wl, amp);
+                ampSum += amp;
                 osc.connect(this._amp);
                 this._oscs.push(osc);
             }
@@ -88,7 +104,7 @@ export function load() {
             const count = 40;
             const lines = Array.from({length: count}, (_, i) => (i+1) / (count)); // for testing full frequency range
             for( let line of lines ){
-                const fq = line * 20000;
+                const fq = line * MAX_AUDIBLE_FQ;
                 const a  = 1;
                 const osc = new OscillatorWithGainNode(context, fq, line, a);
                 osc.connect(this._amp);
@@ -118,20 +134,15 @@ export function load() {
 
     class VoiceManager {
 
-        public readonly context:  AudioContext;
-        public readonly analyzer: AnalyserNode;
         private         _voices:  {[symbol: string]: PlayingAtomicSpectra} = {};
 
-        constructor(context: AudioContext, analyzer: AnalyserNode) {
-            this.context  = context;
-            this.analyzer = analyzer;
-        }
+        constructor(public readonly context: AudioContext, public readonly analyzer?: AnalyserNode) {}
 
         public get(element: Element): PlayingAtomicSpectra {
             const name = element.symbol;
             if( this._voices[name] ) return this._voices[name];
 
-            const voice: PlayingAtomicSpectra = this._voices[name] = new AtomicSpectraNode(this.context, element);
+            const voice: PlayingAtomicSpectra = this._voices[name] = new AtomicSpectraNode(this.context, element, this.analyzer ? "scientific" : "musical");
             voice.start();
             voice.gain.setValueAtTime(0, this.context.currentTime);
             return voice;
@@ -140,7 +151,7 @@ export function load() {
         public start(element: Element){
             const voice = this.get(element);
             voice.gain.setTargetAtTime(1, this.context.currentTime, 0.2);
-            voice.connect(this.analyzer);
+            this.analyzer ? voice.connect(this.analyzer) : voice.connect(this.context.destination);
             if( voice.timeout ) clearTimeout(voice.timeout);
         }
 

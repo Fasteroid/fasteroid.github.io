@@ -3,7 +3,7 @@
     import { browser } from '$app/environment';
     import { base } from "$app/paths";
     import { assertExists, UniqueIDs } from "$lib/uniqueid";
-    import { load } from './synths';
+    import { load, MAX_AUDIBLE_FQ } from './synths';
 
     import i_ptable from '$lib/atomicspectra/elements.json'
     import type { PTable } from '$lib/atomicspectra/types/native';
@@ -15,8 +15,6 @@
     import vertexSource from './main_vert.glsl?raw';
 
     const elements = (i_ptable as PTable).elements;
-
-    const MAGIC_NUMBER = 0.855; // for some reason, the texture is ~0.855 times the size of the array (wtf?)
     
     if( browser ){
 
@@ -26,13 +24,15 @@
 
         // ----------- Audio -----------
 
-        const synths = load(); // SSR cannot witness this or it dies
-        const master = new AudioContext();
+        const synths   = load(); // SSR cannot witness this or it dies
+        const master   = new AudioContext();
         const analyzer = master.createAnalyser();
-        const voices = new synths.VoiceManager(master, analyzer);
+
+        const sci_voices = new synths.VoiceManager(master, analyzer);
+        const mus_voices = new synths.VoiceManager(master);
 
         analyzer.fftSize = FFT_WIDTH;
-        analyzer.connect(master.destination);
+        // analyzer.connect(master.destination); // send analyzer to speakers
         analyzer.maxDecibels = 100;
         analyzer.minDecibels = -20;
         
@@ -52,14 +52,16 @@
 
             html.addEventListener('mousedown', () => {
                 easter_egg_timeout = window.setTimeout( playEasterEgg, 1000 );
-                voices.start(element)
+                sci_voices.start(element)
+                mus_voices.start(element)
             });
         }
 
         document.addEventListener('mouseup', (e) => { // if you drag off of something and release, we still want to stop all sounds
             window.clearTimeout(easter_egg_timeout);
             sigma_easter_egg.pause();
-            voices.stopAll();
+            sci_voices.stopAll();
+            mus_voices.stopAll();
         });
 
 
@@ -84,6 +86,7 @@
             return tex;
         }
 
+        const MAGIC_NUMBER = (2 * MAX_AUDIBLE_FQ / master.sampleRate); // at least I know how to calculate it now, but why?
         function updateFloat32ArrayTexture(tex: WebGLTexture, data: Float32Array){
             gl.bindTexture(gl.TEXTURE_2D, tex);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.R32F, data.length * MAGIC_NUMBER, 1, 0, gl.RED, gl.FLOAT, data);
@@ -166,11 +169,14 @@
                 <div>
                     <div class="title">
                         <div>
-                            <div>Every element produces a set of unique electromagnetic frequencies when excited.</div>
-                            <div>Of these sets, we perceive the visible spectrum—wavelengths ranging from 780nm to 380nm depending on who you ask.</div>
+                            <div>Every element emits a unique signature of electromagnetic waves when excited.</div>
+                            <div>We perceive a subset of these as light, ranging from 780nm to 380nm on average.</div>
                             <br>
-                            <div><i>But what if we could hear these frequencies?</i></div>
-                            <div><i>Click on an element to find out.</i></div>
+                            <div>Similarly, various things in life produce pressure waves when in action.</div>
+                            <div>We perceive a subset of these as sound, ranging from 20hz to 20khz on average.</div>
+                            <br>
+                            <div><i>But what if we swapped one for the other?</i></div>
+                            <div>Click an element to hear what it would sound like!</div>
                         </div>
                     </div>
                     <div class="wrapper">
@@ -185,6 +191,15 @@
                                     </div>
                                 </div>
                             {/each}
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div>
+                            <div>While hearing the true visible spectrum is impossible since it's MANY orders of magnitude</div>
+                            <div>too high-pitched, we CAN still map it onto the audible spectrum.</div>
+                            <br>
+                            <div>Here, I have mapped sounds logarithmically to visible frequencies.</div>
+                            <div>That way, you'll have a better idea of how it might have sounded if we evolved this way.</div>
                         </div>
                     </div>
                 </div>

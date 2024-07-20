@@ -16,7 +16,7 @@
     }
 }
 
-.title {
+%section-base {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -24,12 +24,22 @@
     text-align: center;
     font-size: calc( min(11pt, 1.2vw) );
     line-height: 1.2;
-    padding-top: 15px;
 
     div {
         // dont break
         white-space: nowrap;
     }
+}
+
+.title {
+    height: 5lh;
+    @extend %section-base;
+    padding-top: 15px;
+}
+
+.footer {
+    @extend %section-base;
+    padding-bottom: 15px;
 }
 
 .wrapper {
@@ -119,7 +129,7 @@
         box-sizing: border-box;
         padding: 3px;
 
-        max-width: calc(min(100%, 3.4vw));
+        max-width: calc(min(100%, 3.7vw));
 
 
         border-radius: 6px;

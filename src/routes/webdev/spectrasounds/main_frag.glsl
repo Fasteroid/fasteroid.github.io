@@ -17,7 +17,7 @@ const float BLOOM_WIDTH = 1.0 / 128.0;
 const float BLOOM_STEP  = 64.0;
 
 float dbToAmp(float db) {
-    return pow(20.0, (db + 80.0) / 18.0) * 0.7;
+    return pow(20.0, (db + 80.0) / 17.0) * 0.9;
 }
 
 float linearMap(float value, float inMin, float inMax, float outMin, float outMax) {
@@ -39,7 +39,7 @@ void main()
 
     for (float x = -1.0; x < 1.0; x+=1.0/BLOOM_STEP) {
         float weight = exp(-x*x*BLOOM_STEP);
-        float pick = unmap( uv.x + x * BLOOM_WIDTH );
+        float pick = uv.x + x * BLOOM_WIDTH;
         amp   += ( texture(u_fft, vec2( pick, 0 )).r + 150.0 ) * weight;
         total += weight;
     }
