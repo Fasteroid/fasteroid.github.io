@@ -55,9 +55,24 @@
                 sci_voices.start(element)
                 mus_voices.start(element)
             });
+
+            html.addEventListener('touchstart', (e) => {
+                easter_egg_timeout = window.setTimeout( playEasterEgg, 1000 );
+                sci_voices.start(element)
+                mus_voices.start(element)
+            });
+
+            html.addEventListener('contextmenu', (e)=>{e.preventDefault()})
         }
 
         document.addEventListener('mouseup', (e) => { // if you drag off of something and release, we still want to stop all sounds
+            window.clearTimeout(easter_egg_timeout);
+            sigma_easter_egg.pause();
+            sci_voices.stopAll();
+            mus_voices.stopAll();
+        });
+
+        document.addEventListener('touchend', (e) => { // if you drag off of something and release, we still want to stop all sounds
             window.clearTimeout(easter_egg_timeout);
             sigma_easter_egg.pause();
             sci_voices.stopAll();
