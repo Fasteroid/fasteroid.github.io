@@ -5,19 +5,26 @@ import { logColor, quickNMtoHex } from "./debugging";
 
 const LOG2_20 = Math.log2(20);
 
-const MIN_VIS_FQ = 1 / 750; // red
+const MIN_VIS_FQ = 1 / 780; // red
 const MAX_VIS_FQ = 1 / 380; // violet
 
 const MIN_AUDIBLE_FQ = 20;
-const MAX_AUDIBLE_FQ = 20000;
+const MAX_AUDIBLE_FQ = 16000;
+
+/*
+    TODO: while this technically works, feeding the fft of this to the gpu and then unmapping it kills the resolution on the lower frequencies
+    (which my dumbass could have predicted if I thought about it for more than 2 seconds)
+
+    We might need to have two audio pipelines, one for FFT and one for listening to.
+*/
 
 function audibleMap( wl: number ){
     const fq   = 10 / wl;
-    const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ );
+    const map  = ( fq - MIN_VIS_FQ ) / ( MAX_VIS_FQ - MIN_VIS_FQ ); // 0 to 1 light frequencies
 
     const midi = 115 * map / 12 + LOG2_20
-    // return Math.pow(2, midi);
-    return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
+    return Math.pow(2, midi);
+    // return map * (MAX_AUDIBLE_FQ - MIN_AUDIBLE_FQ) + MIN_AUDIBLE_FQ;
 }
 
 function ampToDB( amp: number ){

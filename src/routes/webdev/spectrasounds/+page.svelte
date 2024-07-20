@@ -167,7 +167,7 @@
                     <div class="title">
                         <div>
                             <div>Every element produces a set of unique electromagnetic frequencies when excited.</div>
-                            <div>Of these sets, we perceive the visible spectrum—wavelengths between 750nm and 380nm</div>
+                            <div>Of these sets, we perceive the visible spectrum—wavelengths ranging from 780nm to 380nm depending on who you ask.</div>
                             <br>
                             <div><i>But what if we could hear these frequencies?</i></div>
                             <div><i>Click on an element to find out.</i></div>
