@@ -152,16 +152,20 @@ export function load() {
             const voice = this.get(element);
             voice.gain.setTargetAtTime(1, this.context.currentTime, 0.2);
             this.analyzer ? voice.connect(this.analyzer) : voice.connect(this.context.destination);
-            if( voice.timeout ) clearTimeout(voice.timeout);
+            if( voice.timeout ){ 
+                clearTimeout(voice.timeout);
+                voice.timeout = undefined;
+            }
         }
 
         public stop(element: Element){
             const voice = this.get(element);
             voice.gain.setTargetAtTime(0, this.context.currentTime, 0.2);
-            if( voice.timeout ) clearTimeout(voice.timeout);
-            voice.timeout = window.setTimeout(() => {
-                voice.disconnect();
-            }, 4000)
+            if( voice.timeout === undefined )
+                voice.timeout = window.setTimeout(() => {
+                    voice.disconnect();
+                    voice.timeout = undefined;
+                }, 3500)
         }
 
         public stopAll(){
