@@ -490,6 +490,6 @@ void main()
     vec3 color2 = XYZtoRGB( XYZtoUniformRGBGamut( wavelengthToXYZ( wl ), 0.15 ) );
 
     vec3 color3 = pow(max(vec3(0),color2), vec3(1./2.2)); // with gamma
-    color3 = color3 * pow(uv.y * 2.0, 2.2/1.);
+    color3 = color3 * pow(uv.y * 1.5, 2.2/1.);
 	outColor = vec4(color3,1.);
 }

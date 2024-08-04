@@ -87,7 +87,7 @@
         if( !gl ) throw new Error('WebGL2 not supported');
 
         const program = WebGLUtils.createProgram(gl, fragSource, vertexSource);
-            canvas.width = FFT_WIDTH;
+            canvas.width  = FFT_WIDTH;
             canvas.height = 256;
 
         function createFloat32ArrayTexture(len: number){
@@ -144,7 +144,7 @@
         gl.bindTexture(gl.TEXTURE_2D, fft_tex);
 
         const img = new Image();
-        img.src = `${base}/assets/webdev/spectrasounds/spectra_380_to_780.png`;
+        img.src = `${base}/assets/webdev/spectrasounds/380_780_0.15_1.5.png`;
         img.onload = () => {
 
             console.log('loaded')
@@ -163,6 +163,21 @@
                 requestAnimationFrame(render);
             }
             render();
+        }
+
+        (window as any).devSaveSpectra = function() {
+            var MIME_TYPE = "image/png";
+
+            var imgURL = canvas.toDataURL(MIME_TYPE);
+
+            var dlLink = document.createElement('a');
+            dlLink.download = "spectra.png";
+            dlLink.href = imgURL;
+            dlLink.dataset.downloadurl = [MIME_TYPE, dlLink.download, dlLink.href].join(':');
+
+            document.body.appendChild(dlLink);
+            dlLink.click();
+            document.body.removeChild(dlLink);
         }
     }
 
