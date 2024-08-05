@@ -281,6 +281,12 @@
 
     "512": [
         {
+            "file": "assets/expression2/raytracer/autospleef.png",
+            "title": "Autospleef Terrain",
+            "capt1": "512x Render",
+            "capt2": "End of the Line"
+        },
+        {
             "file": "assets/expression2/raytracer/glowywoodball.png",
             "title": "Level 3 Icosphere",
             "capt1": "512x Render",
