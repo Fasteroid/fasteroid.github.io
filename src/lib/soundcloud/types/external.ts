@@ -1,32 +1,40 @@
-interface CreatorSubscriptionProduct {
+export interface CreatorSubscriptionProduct {
     id: string;
 }
   
-interface CreatorSubscription {
+export interface CreatorSubscription {
     product: CreatorSubscriptionProduct;
 }
   
-interface Visual {
+export interface Visual {
     urn:        string;
     entry_time: number;
     visual_url: string;
 }
   
-interface Visuals {
+export interface Visuals {
     urn:      string;
     enabled:  boolean;
     visuals:  Visual[];
     tracking: null; // seems to be always null
 }
   
-interface Badges {
+export interface Badges {
     pro:              boolean;
     creator_mid_tier: boolean;
     pro_unlimited:    boolean;
     verified:         boolean;
 }
+
+export interface User {
+    id:          number;
+    username:    string;
+    avatar_url:  string;
+    permalink_url:   string;
+    description: string;
+}
   
-interface SoundcloudUser {
+export interface FullUser extends User {
     visuals:               Visuals;
     creator_subscriptions: CreatorSubscription[];
     creator_subscription:  CreatorSubscription;
@@ -34,21 +42,21 @@ interface SoundcloudUser {
 
     verified:              boolean;
 
-    avatar_url:            string;
+    // avatar_url:            string;
     city:                  string;
     country_code:          string;
     created_at:            string;
-    description:           string;
+    // description:           string;
     first_name:            string;
     full_name:             string;
     kind:                  "user";
     last_modified:         string;
     last_name:             string;
-    permalink:             string;
+    // permalink:             string;
     permalink_url:         string;
     uri:                   string;
     urn:                   string;
-    username:              string;
+    // username:              string;
     station_urn:           string;
     station_permalink:     string;
 
@@ -59,8 +67,12 @@ interface SoundcloudUser {
     likes_count:           number;
     playlist_likes_count:  number;
     groups_count:          number;
-    id:                    number;
+    // id:                    number;
     comments_count:        number;
     followers_count:       number;
     followings_count:      number;
+}
+
+export interface FullUserCollection {
+    collection: FullUser[];
 }
