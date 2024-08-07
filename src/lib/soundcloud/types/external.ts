@@ -27,36 +27,40 @@ interface Badges {
 }
   
 interface SoundcloudUser {
-    avatar_url:            string;
-    city:                  string;
-    comments_count:        number;
-    country_code:          string;
-    created_at:            string;
+    visuals:               Visuals;
     creator_subscriptions: CreatorSubscription[];
     creator_subscription:  CreatorSubscription;
+    badges:                Badges;
+
+    verified:              boolean;
+
+    avatar_url:            string;
+    city:                  string;
+    country_code:          string;
+    created_at:            string;
     description:           string;
-    followers_count:       number;
-    followings_count:      number;
     first_name:            string;
     full_name:             string;
-    groups_count:          number;
-    id:                    number;
     kind:                  "user";
     last_modified:         string;
     last_name:             string;
-    likes_count:           number;
-    playlist_likes_count:  number;
     permalink:             string;
     permalink_url:         string;
-    playlist_count:        number;
-    reposts_count:         null;
-    track_count:           number;
     uri:                   string;
     urn:                   string;
     username:              string;
-    verified:              boolean;
-    visuals:               Visuals;
-    badges:                Badges;
     station_urn:           string;
     station_permalink:     string;
+
+    reposts_count:         null;
+
+    track_count:           number;
+    playlist_count:        number;
+    likes_count:           number;
+    playlist_likes_count:  number;
+    groups_count:          number;
+    id:                    number;
+    comments_count:        number;
+    followers_count:       number;
+    followings_count:      number;
 }
