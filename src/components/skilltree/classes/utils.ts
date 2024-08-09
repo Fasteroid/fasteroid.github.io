@@ -61,3 +61,63 @@ export function clamp(n: number, min: number, max: number): number {
     const ret = (n > max ? max : (n < min ? min : n));
     return isNaN(ret) ? 0 : ret;
 }
+
+export class Map2D<K, V> {
+
+    private mapMap = new Map<K, Map<K, V>>();
+
+    set(k1: K, k2: K, v: V){
+        let inner: Map<K, V>;
+        if(!this.mapMap.has(k1)){
+            inner = new Map<K, V>();
+            this.mapMap.set(k1, inner);
+        }
+        else {
+            inner = this.mapMap.get(k1)!;
+        }
+        inner.set(k2, v);
+    }
+
+    get(k1: K, k2: K): V | undefined {
+        return this.mapMap.get(k1)?.get(k2);
+    }
+
+    forEach(callback: (v: V, k1: K, k2: K) => void){
+        this.mapMap.forEach((inner, k1) => {
+            inner.forEach((v, k2) => {
+                callback(v, k1, k2);
+            })
+        })
+    }
+
+}
+
+export class Set2D<K> {
+
+    private mapMap = new Map<K, Set<K>>();
+
+    add(k1: K, k2: K){
+        let inner: Set<K>;
+        if(!this.mapMap.has(k1)){
+            inner = new Set<K>();
+            this.mapMap.set(k1, inner);
+        }
+        else {
+            inner = this.mapMap.get(k1)!;
+        }
+        inner.add(k2);
+    }
+
+    has(k1: K, k2: K): boolean {
+        return this.mapMap.get(k1)?.has(k2) ?? false;
+    }
+
+    forEach(callback: (k1: K, k2: K) => void){
+        this.mapMap.forEach((inner, k1) => {
+            inner.forEach(k2 => {
+                callback(k1, k2);
+            })
+        })
+    }
+
+}
