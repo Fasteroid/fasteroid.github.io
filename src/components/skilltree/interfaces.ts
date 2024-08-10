@@ -1,4 +1,4 @@
-import { GraphDataset, GraphEdgeData, GraphNodeData } from "../graph/interfaces";
+import type { GraphDataset, GraphEdgeData, GraphNodeData } from "../graph/interfaces";
 
 export type SkillTreeDataSet2 = GraphDataset<SkillTreeNodeData2, SkillTreeEdgeData>
 

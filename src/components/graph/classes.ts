@@ -1,6 +1,6 @@
 
 import { clamp, Map2D, Vec2 } from "../../lib/utils";
-import { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
+import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 
 /**
  * This new class encompasses the most basic functionalities
@@ -37,12 +37,12 @@ export abstract class GraphManager<
         edgeContainer: SVGSVGElement,
         data: GraphDataset<NodeData>
     ){
-        this.template  = template;
+        this.template      = template;
         this.nodeContainer = nodeContainer;
         this.edgeContainer = edgeContainer;
 
-        for(const id in data.nodes){
-            this.nodes.set(id, this.createNode(data.nodes[id]));
+        for(const nodeData of data.nodes){
+            this.nodes.set(nodeData.id, this.createNode(nodeData));
         }
 
         for(const edgeData of data.edges){
@@ -119,7 +119,6 @@ export abstract class GraphEdge<
         data:    EdgeData
     ){
         this.svg = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        this.svg.classList.add("graph-edge");
 
         this.from = manager.nodes.get(data.from) as Node;
         this.to   = manager.nodes.get(data.to)   as Node;
@@ -178,6 +177,8 @@ export abstract class GraphNode<
         this.html.hidden = false;
         this.html.id     = "";
         this.style       = this.html.style;
+
+        this.manager.nodeContainer.appendChild(this.html);
     }
 
     /**

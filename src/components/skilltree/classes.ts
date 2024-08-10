@@ -1,7 +1,7 @@
 import { clamp, Vec2 } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
-import { DynamicSkillTreeNodeData2, SkillTreeDataSet2, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeNodeData2 } from "./classes/interfaces";
-import { StaticSkillTreeNodeData2 } from "./interfaces";
+import type { DynamicSkillTreeNodeData2 as SkillTreeDynamicNodeData2, SkillTreeDataSet2, SkillTreeEdgeData, SkillTreeNodeData2 } from "./classes/interfaces";
+import type { StaticSkillTreeNodeData2 as SkillTreeStaticNodeData } from "./interfaces";
 
 function forceFalloff(d: number){
     return d<0?d*0.05:d*(0.05 + (d/500)*0.45);
@@ -28,9 +28,10 @@ export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData2, SkillTreeEdgeDa
 
     public dist: number;
 
-    constructor(private manager: SkillTreeManager, data: SkillTreeEdgeData){
+    constructor(private manager: SkillTreeManager2, data: SkillTreeEdgeData){
         super(manager, data);
         this.dist = data.dist;
+        this.svg.classList.add("tree-line");
     }
 
     public doForces() {
@@ -44,6 +45,13 @@ export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData2, SkillTreeEdgeDa
         parentNode.applyForce(-nx*fac,-ny*fac);        
     }
 
+    public getSerialized(): SkillTreeEdgeData {
+        return {
+            from: this.from.id,
+            to:   this.to.id,
+            dist: this.dist
+        }
+    }
 
 }
 
@@ -52,9 +60,9 @@ export abstract class SkillTreeNode2 extends GraphNode<SkillTreeNodeData2, Skill
     public abstract tier: number;
     public readonly type: "dynamic" | "static";
 
-    declare readonly manager: SkillTreeManager;
+    declare readonly manager: SkillTreeManager2;
 
-    constructor(manager: SkillTreeManager, data: SkillTreeNodeData2){
+    constructor(manager: SkillTreeManager2, data: SkillTreeNodeData2){
         super(manager, data);
 
         this.type = data.type;
@@ -76,19 +84,12 @@ export abstract class SkillTreeNode2 extends GraphNode<SkillTreeNodeData2, Skill
 
         this.html.addEventListener("mouseout", () => {
             for( const edge of this.edges ){
-                edge.svg.classList.toggle("false", true);
+                edge.svg.classList.toggle("thick", false);
             }
         })
     }
 
-    public getSerialized(): SkillTreeNodeData2 {
-        return {
-            id:   this.id,
-            x:    this.pos.x / this.manager.nodeContainer.clientWidth,
-            y:    this.pos.y / this.manager.nodeContainer.clientHeight,
-            type: this.type
-        }
-    }
+    public abstract getSerialized(): SkillTreeNodeData2;
 
 }
 
@@ -118,11 +119,13 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         return this._tier;
     }
 
-    constructor(manager: SkillTreeManager, data: DynamicSkillTreeNodeData2){
+    constructor(manager: SkillTreeManager2, data: SkillTreeDynamicNodeData2){
         super(manager, data);
 
         this.desc     = data.desc;
         this.cssClass = data.style;
+
+        this.html.classList.add(this.cssClass);
 
         if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
             this.homePos = new Vec2(data.x, data.y);
@@ -148,6 +151,9 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         
         this.html.addEventListener("mousedown",() => this.startDrag());
         this.html.addEventListener("touchstart",() => this.startDrag());
+
+        document.addEventListener("mouseup",() => this.stopDrag());
+        document.addEventListener("touchend",() => this.stopDrag());
         
         this.setPos( manager.nodeContainer.clientWidth * 0.5, 0 );
         this.applyForce( rand() * 10, rand() * 10 );
@@ -187,24 +193,27 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
 
     private doRepulsionForce(that: SkillTreeNode2) {
         const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
-        const nx = (that.pos.x-this.pos.x)/dist;
-        const ny = (that.pos.y-this.pos.y)/dist;
-        const fac = clamp((dist - this.manager.relativeDistance*NODE_DISTANCE)*0.03,-2,0);
-        this.applyForce(nx*fac,ny*fac);
-        that.applyForce(-nx*fac,-ny*fac);
+        let repulmul = 1.0
 
-        if(dist < this.manager.relativeDistance*0.8){ // if two nodes intersect, nudge them in the right directions
+        if(dist < this.manager.relativeDistance*0.9){ // if two nodes intersect, nudge them in the right directions
             const diff = (this.tier - that.tier) * 0.5;
             this.applyForce(0, diff);
-            that.applyForce(0, -diff);            
+            that.applyForce(0, -diff);
+            repulmul = 0.5;
         }        
+
+        const nx = (that.pos.x-this.pos.x)/dist;
+        const ny = (that.pos.y-this.pos.y)/dist;
+        const fac = clamp((dist - this.manager.relativeDistance*NODE_DISTANCE)*0.03,-2,0) * repulmul;
+        this.applyForce(nx*fac,ny*fac);
+        that.applyForce(-nx*fac,-ny*fac);
     }
 
     private doHomingForce(){
         if(this.homePos){
             const force = this.homePos.clone();
             force.x = force.x * this.manager.nodeContainer.clientWidth; // homePos is relative
-            force.y = force.y * this.manager.nodeContainer.clientWidth;
+            force.y = force.y * this.manager.nodeContainer.clientHeight;
             if(force.distance(this.pos) < this.manager.relativeDistance * 0.5 ){
                 this.homePos = undefined;
                 return;
@@ -262,6 +271,17 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         this.pos.addTo(this.vel.x, this.vel.y)
         this.setPos(this.pos.x, this.pos.y); // clamp
     }     
+
+    public getSerialized(): SkillTreeDynamicNodeData2 {
+        return {
+            id:    this.id,
+            x:     this.pos.x / this.manager.nodeContainer.clientWidth,
+            y:     this.pos.y / this.manager.nodeContainer.clientHeight,
+            type:  "dynamic",
+            desc:  this.desc,
+            style: this.cssClass
+        }
+    }
     
 }
 
@@ -272,7 +292,7 @@ export class SkillTreeStaticNode2 extends SkillTreeNode2 {
     public readonly x: number;
     public readonly y: number;
 
-    constructor(manager: SkillTreeManager, data: StaticSkillTreeNodeData2){
+    constructor(manager: SkillTreeManager2, data: SkillTreeStaticNodeData){
         super(manager, data);
         this.tier = data.tier;
         this.x    = data.x;
@@ -291,10 +311,20 @@ export class SkillTreeStaticNode2 extends SkillTreeNode2 {
         );
     }
 
+    public getSerialized(): SkillTreeStaticNodeData {
+        return {
+            id:   this.id,
+            x:    this.pos.x / this.manager.nodeContainer.clientWidth,
+            y:    this.pos.y / this.manager.nodeContainer.clientHeight,
+            type: "static",
+            tier: this.tier
+        }
+    }
+
 }
 
 
-export class SkillTreeManager 
+export class SkillTreeManager2
 extends GraphManager<
     SkillTreeNodeData2,
     SkillTreeEdgeData,
@@ -304,7 +334,7 @@ extends GraphManager<
 
     public relativeDistance = 120;
     public relativePadding  = 120;
-    public containerPos: Vec2;
+    public containerPos!: Vec2;
 
     private _firstNode: SkillTreeNode2;
 
@@ -315,21 +345,28 @@ extends GraphManager<
         super.handleResize();
     }
 
-    constructor(nodeContainer: HTMLElement, templateNode: HTMLElement, lineContainer: SVGSVGElement, data: SkillTreeDataSet2){
-        super(nodeContainer, templateNode, lineContainer, data);
+    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: SVGSVGElement, data: SkillTreeDataSet2){
+        super(templateNode, nodeContainer, lineContainer, data);
+        (window as any).manager = this;
         this._firstNode = this.nodes.values().next().value!;
-        this.containerPos = getPos(nodeContainer);
+        this.handleResize();
     }
 
     protected override createNode(data: SkillTreeNodeData2): SkillTreeNode2 {
         switch(data.type){
-            case "dynamic": return new SkillTreeDynamicNode2(this, data as DynamicSkillTreeNodeData2);
-            case "static":  return new SkillTreeStaticNode2(this, data as StaticSkillTreeNodeData2);
+            case "dynamic": return new SkillTreeDynamicNode2(this, data as SkillTreeDynamicNodeData2);
+            case "static":  return new SkillTreeStaticNode2(this, data as SkillTreeStaticNodeData);
         }
     }
 
     protected override createEdge(data: SkillTreeEdgeData): SkillTreeEdge {
         return new SkillTreeEdge(this, data);
+    }
+
+    public serialize(): SkillTreeDataSet2 {
+        const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
+        const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
+        return { nodes, edges };
     }
 
 }

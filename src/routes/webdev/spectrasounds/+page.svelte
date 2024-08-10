@@ -147,7 +147,6 @@
         img.src = `${base}/assets/webdev/spectrasounds/380_780_0.15_1.5.png`;
         img.onload = () => {
 
-            console.log('loaded')
             gl.uniform1i(spectraUniform, 1);
             const spectra_tex = WebGLUtils.createTexture(gl, img);
             gl.activeTexture(gl.TEXTURE1);

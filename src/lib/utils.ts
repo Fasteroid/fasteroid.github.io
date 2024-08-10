@@ -90,34 +90,16 @@ export class Map2D<K, V> {
         })
     }
 
-}
-
-export class Set2D<K> {
-
-    private mapMap = new Map<K, Set<K>>();
-
-    add(k1: K, k2: K){
-        let inner: Set<K>;
-        if(!this.mapMap.has(k1)){
-            inner = new Set<K>();
-            this.mapMap.set(k1, inner);
-        }
-        else {
-            inner = this.mapMap.get(k1)!;
-        }
-        inner.add(k2);
+    values(): V[] {
+        let ret: V[] = [];
+        this.forEach(v => ret.push(v));
+        return ret;
     }
 
-    has(k1: K, k2: K): boolean {
-        return this.mapMap.get(k1)?.has(k2) ?? false;
-    }
-
-    forEach(callback: (k1: K, k2: K) => void){
-        this.mapMap.forEach((inner, k1) => {
-            inner.forEach(k2 => {
-                callback(k1, k2);
-            })
-        })
+    keys(): [K, K][] {
+        let ret: [K, K][] = [];
+        this.forEach((_, k1, k2) => ret.push([k1, k2]));
+        return ret;
     }
 
 }

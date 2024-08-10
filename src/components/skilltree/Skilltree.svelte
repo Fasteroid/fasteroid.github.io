@@ -6,23 +6,28 @@
 </svelte:head>
 
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { SkillTreeManager, SkillTreeNodeManager } from "./classes/managers";
+    import { browser } from "$app/environment";
+    import { SkillTreeManager2 } from "./classes";
+    import type { SkillTreeDataSet2 } from "./interfaces";
+    import nodeDataset from "$lib/json/graph_skilltree.json"
 
-    if(browser) {
-        SkillTreeManager.setup(
-            document.querySelector(".node-container")!,
+    if( browser ) {
+
+        new SkillTreeManager2(
             document.getElementById("template-node")!,
+            document.querySelector(".node-container")!,
             document.getElementById("tree-lines")!.children[0]! as SVGSVGElement,
+            nodeDataset as SkillTreeDataSet2
         );
-        (window as any).SkillTreeManager = SkillTreeManager;
-        (window as any).SkillTreeNodeManager = SkillTreeNodeManager
+
     }
 </script>
 
 <section class="grid">
     <div class="line-container" id="tree-lines">
+
         <svg class="tree-line-container"></svg>
+
     </div>     
     <div class="node-container">
         
