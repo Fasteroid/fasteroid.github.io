@@ -1,7 +1,7 @@
 import { clamp, Vec2 } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
-import type { DynamicSkillTreeNodeData2 as SkillTreeDynamicNodeData2, SkillTreeDataSet2, SkillTreeEdgeData, SkillTreeNodeData2 } from "./classes/interfaces";
-import type { StaticSkillTreeNodeData2 as SkillTreeStaticNodeData } from "./interfaces";
+import type { DynamicSkillTreeNodeData as SkillTreeDynamicNodeData, SkillTreeDataSet, SkillTreeEdgeData, SkillTreeNodeData } from "./classes/interfaces";
+import type { StaticSkillTreeNodeData as SkillTreeStaticNodeData } from "./interfaces";
 
 function forceFalloff(d: number){
     return d<0?d*0.05:d*(0.05 + (d/500)*0.45);
@@ -24,11 +24,11 @@ const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
 const GRAVITY        = 1.5;
 
-export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData2, SkillTreeEdgeData, SkillTreeNode2> {
+export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData, SkillTreeEdgeData, SkillTreeNode> {
 
     public dist: number;
 
-    constructor(private manager: SkillTreeManager2, data: SkillTreeEdgeData){
+    constructor(private manager: SkillTreeManager, data: SkillTreeEdgeData){
         super(manager, data);
         this.dist = data.dist;
         this.svg.classList.add("tree-line");
@@ -55,14 +55,14 @@ export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData2, SkillTreeEdgeDa
 
 }
 
-export abstract class SkillTreeNode2 extends GraphNode<SkillTreeNodeData2, SkillTreeEdgeData, SkillTreeEdge> {
+export abstract class SkillTreeNode extends GraphNode<SkillTreeNodeData, SkillTreeEdgeData, SkillTreeEdge> {
 
     public abstract tier: number;
     public readonly type: "dynamic" | "static";
 
-    declare readonly manager: SkillTreeManager2;
+    declare readonly manager: SkillTreeManager;
 
-    constructor(manager: SkillTreeManager2, data: SkillTreeNodeData2){
+    constructor(manager: SkillTreeManager, data: SkillTreeNodeData){
         super(manager, data);
 
         this.type = data.type;
@@ -89,11 +89,11 @@ export abstract class SkillTreeNode2 extends GraphNode<SkillTreeNodeData2, Skill
         })
     }
 
-    public abstract getSerialized(): SkillTreeNodeData2;
+    public abstract getSerialized(): SkillTreeNodeData;
 
 }
 
-export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
+export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private canMouseOver: boolean = true;
     private mouseForce:   number  = 0;
@@ -119,7 +119,7 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         return this._tier;
     }
 
-    constructor(manager: SkillTreeManager2, data: SkillTreeDynamicNodeData2){
+    constructor(manager: SkillTreeManager, data: SkillTreeDynamicNodeData){
         super(manager, data);
 
         this.desc     = data.desc;
@@ -191,7 +191,7 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         this.vel.setTo(0,0);
     }
 
-    private doRepulsionForce(that: SkillTreeNode2) {
+    private doRepulsionForce(that: SkillTreeNode) {
         const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
         let repulmul = 1.0
 
@@ -272,7 +272,7 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
         this.setPos(this.pos.x, this.pos.y); // clamp
     }     
 
-    public getSerialized(): SkillTreeDynamicNodeData2 {
+    public getSerialized(): SkillTreeDynamicNodeData {
         return {
             id:    this.id,
             x:     this.pos.x / this.manager.nodeContainer.clientWidth,
@@ -285,14 +285,14 @@ export class SkillTreeDynamicNode2 extends SkillTreeNode2 {
     
 }
 
-export class SkillTreeStaticNode2 extends SkillTreeNode2 {
+export class SkillTreeStaticNode extends SkillTreeNode {
 
     public readonly tier: number;
 
     public readonly x: number;
     public readonly y: number;
 
-    constructor(manager: SkillTreeManager2, data: SkillTreeStaticNodeData){
+    constructor(manager: SkillTreeManager, data: SkillTreeStaticNodeData){
         super(manager, data);
         this.tier = data.tier;
         this.x    = data.x;
@@ -324,19 +324,19 @@ export class SkillTreeStaticNode2 extends SkillTreeNode2 {
 }
 
 
-export class SkillTreeManager2
+export class SkillTreeManager
 extends GraphManager<
-    SkillTreeNodeData2,
+    SkillTreeNodeData,
     SkillTreeEdgeData,
     SkillTreeEdge,
-    SkillTreeNode2
+    SkillTreeNode
 > {
 
     public relativeDistance = 120;
     public relativePadding  = 120;
     public containerPos!: Vec2;
 
-    private _firstNode: SkillTreeNode2;
+    private _firstNode: SkillTreeNode;
 
     protected override handleResize(){
         this.containerPos = getPos(this.nodeContainer);
@@ -345,17 +345,17 @@ extends GraphManager<
         super.handleResize();
     }
 
-    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: SVGSVGElement, data: SkillTreeDataSet2){
+    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: SVGSVGElement, data: SkillTreeDataSet){
         super(templateNode, nodeContainer, lineContainer, data);
         (window as any).manager = this;
         this._firstNode = this.nodes.values().next().value!;
         this.handleResize();
     }
 
-    protected override createNode(data: SkillTreeNodeData2): SkillTreeNode2 {
+    protected override createNode(data: SkillTreeNodeData): SkillTreeNode {
         switch(data.type){
-            case "dynamic": return new SkillTreeDynamicNode2(this, data as SkillTreeDynamicNodeData2);
-            case "static":  return new SkillTreeStaticNode2(this, data as SkillTreeStaticNodeData);
+            case "dynamic": return new SkillTreeDynamicNode(this, data as SkillTreeDynamicNodeData);
+            case "static":  return new SkillTreeStaticNode(this, data as SkillTreeStaticNodeData);
         }
     }
 
@@ -363,7 +363,7 @@ extends GraphManager<
         return new SkillTreeEdge(this, data);
     }
 
-    public serialize(): SkillTreeDataSet2 {
+    public serialize(): SkillTreeDataSet {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
         const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
         return { nodes, edges };

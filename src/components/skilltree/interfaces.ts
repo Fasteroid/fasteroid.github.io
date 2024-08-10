@@ -1,20 +1,20 @@
 import type { GraphDataset, GraphEdgeData, GraphNodeData } from "../graph/interfaces";
 
-export type SkillTreeDataSet2 = GraphDataset<SkillTreeNodeData2, SkillTreeEdgeData>
+export type SkillTreeDataSet = GraphDataset<SkillTreeNodeData, SkillTreeEdgeData>
 
-export interface SkillTreeNodeData2 extends GraphNodeData {
+export interface SkillTreeNodeData extends GraphNodeData {
     x?:   number,
     y?:   number,
     type: "dynamic" | "static",
 }
 
-export interface DynamicSkillTreeNodeData2 extends SkillTreeNodeData2 {
+export interface DynamicSkillTreeNodeData extends SkillTreeNodeData {
     desc:  string[],
     style: string
     type:  "dynamic"
 }
 
-export interface StaticSkillTreeNodeData2 extends SkillTreeNodeData2 {
+export interface StaticSkillTreeNodeData extends SkillTreeNodeData {
     x:    number,
     y:    number,
     tier: number

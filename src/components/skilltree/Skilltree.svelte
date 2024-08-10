@@ -7,17 +7,17 @@
 
 <script lang="ts">
     import { browser } from "$app/environment";
-    import { SkillTreeManager2 } from "./classes";
-    import type { SkillTreeDataSet2 } from "./interfaces";
+    import { SkillTreeManager } from "./classes";
+    import type { SkillTreeDataSet } from "./interfaces";
     import nodeDataset from "$lib/json/graph_skilltree.json"
 
     if( browser ) {
 
-        new SkillTreeManager2(
+        new SkillTreeManager(
             document.getElementById("template-node")!,
             document.querySelector(".node-container")!,
             document.getElementById("tree-lines")!.children[0]! as SVGSVGElement,
-            nodeDataset as SkillTreeDataSet2
+            nodeDataset as SkillTreeDataSet
         );
 
     }
