@@ -6,26 +6,25 @@ import { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
  * This new class encompasses the most basic functionalities
  * of the old SkillTreeNodeManager class.
  * 
- * @param Data - Minimum specs for node data in this graph.
- * @param Node - Minimum specs for node methods in this graph.  Leave blank for bare minimum.
- * @param Edge - Minimum specs for edge methods in this graph.  Leave blank for bare minimum.
+ * @param NodeData - Minimum specs for node data in this graph.
+ * @param EdgeData - Minimum specs for edge data in this graph.
+ * @param Edge - Minimum specs for edge methods in this graph.
+ * @param Node - Minimum specs for node methods in this graph.
  */
 export abstract class GraphManager<
-    NodeData extends GraphNodeData = GraphNodeData,
-    EdgeData extends GraphEdgeData = GraphEdgeData,
-    Edge     extends GraphEdge<EdgeData> = GraphEdge<EdgeData>,
-    Node     extends GraphNode<NodeData, Edge> = GraphNode<NodeData, Edge>
+    NodeData extends GraphNodeData,
+    EdgeData extends GraphEdgeData,
+    Edge     extends GraphEdge<NodeData, EdgeData>,
+    Node     extends GraphNode<NodeData, EdgeData, Edge>
 > {
+    
     public readonly template:  HTMLElement;
 
     public readonly nodeContainer: HTMLElement;
     public readonly edgeContainer: SVGSVGElement;
 
-    public readonly nodes: Map<string | number, Node>   = new Map();
-    public readonly edges: Map2D<string | number, Edge> = new Map2D(); // from, to
-
-    protected abstract createNode(data: NodeData): Node;
-    protected abstract createEdge(data: GraphEdgeData): Edge;
+    public readonly nodes: Map<string, Node>   = new Map();
+    public readonly edges: Map2D<string, Edge> = new Map2D(); // from, to
 
     private _frame = () => {
         this.nodes.forEach( node => node.render() );
@@ -59,6 +58,9 @@ export abstract class GraphManager<
             }
         }
 
+        this.oldH = this.nodeContainer.clientHeight;
+        this.oldW = this.nodeContainer.clientWidth;
+
         setInterval( () => {
             this.nodes.forEach( node => node.doForces() )
             this.edges.forEach( edge => edge.doForces() )
@@ -66,21 +68,53 @@ export abstract class GraphManager<
             this.nodes.forEach( node => node.clampToContainer() )
             requestAnimationFrame(this._frame);
         } , 16);
+
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+    }
+
+    protected abstract createNode(data: NodeData): Node;
+
+    protected abstract createEdge(data: GraphEdgeData): Edge;
+
+    private oldW: number;
+    private oldH: number;
+
+    protected handleResize(){
+        this.nodes.forEach( node => {
+            node.setPos(
+                node.pos.x * this.nodeContainer.clientWidth / this.oldW,
+                node.pos.y * this.nodeContainer.clientHeight / this.oldH
+            )
+        });
+        this.nodes.forEach( node => node.render() );
+        this.edges.forEach( edge => edge.render() );
+        this.oldW = this.nodeContainer.clientWidth;
     }
 
 }
 
-export abstract class GraphEdge<EdgeData extends GraphEdgeData = GraphEdgeData> {
+export abstract class GraphEdge<
+    NodeData extends GraphNodeData,
+    EdgeData extends GraphEdgeData
+> {
 
-    protected svg: SVGLineElement;
+    // Local type alias using the generic parameter
+    public readonly svg: SVGLineElement;
 
-    protected from: GraphNode;
-    protected to:   GraphNode;
+    public readonly from: GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>;
+    public readonly to:   GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>;
 
     public bidirectional: boolean = false;
 
     constructor(
-        manager: GraphManager<GraphNodeData, EdgeData, GraphEdge>,
+        manager: GraphManager<
+                    NodeData, 
+                    EdgeData, 
+                    GraphEdge<NodeData, EdgeData>, 
+                    GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>
+                >,
         data:    EdgeData
     ){
         this.svg = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -113,29 +147,39 @@ export abstract class GraphEdge<EdgeData extends GraphEdgeData = GraphEdgeData> 
  * This should be enough to get a simulation running.
  */
 export abstract class GraphNode<
-    NodeData extends GraphNodeData = GraphNodeData, 
-    Edge     extends GraphEdge = GraphEdge
+    NodeData extends GraphNodeData, 
+    EdgeData extends GraphEdgeData,
+    Edge     extends GraphEdge<NodeData, EdgeData>
 >{
 
     public pos: Vec2 = new Vec2();
     public vel: Vec2 = new Vec2();
 
     public readonly html: HTMLElement;
-    public readonly id:  string | number;
+    public readonly id:   string;
 
     public readonly edges: Edge[] = [];
 
-    private _style: CSSStyleDeclaration;
-    private readonly manager: GraphManager<NodeData>;
+    public readonly style:   CSSStyleDeclaration;
+
+    public readonly data: NodeData
 
     constructor(
-        manager: GraphManager<NodeData>, 
+        public readonly manager: GraphManager<
+                    NodeData,
+                    EdgeData,
+                    Edge,
+                    GraphNode<NodeData, EdgeData, Edge>
+        >, 
         data: NodeData
     ){
-        this.manager = manager;
-        this.id      = data.id;
-        this.html    = manager.template.cloneNode(true) as HTMLElement;
-        this._style  = this.html.style;
+        this.manager     = manager;
+        this.id          = data.id;
+        this.html        = manager.template.cloneNode(true) as HTMLElement;
+        this.html.hidden = false;
+        this.html.id     = "";
+        this.style       = this.html.style;
+        this.data        = data;
     }
 
     /**
@@ -170,8 +214,8 @@ export abstract class GraphNode<
      * Same as old render method.
      */
     public render(){
-        this._style.left = `${Math.round(this.pos.x)}px`;
-        this._style.top  = `${Math.round(this.pos.y)}px`;
+        this.style.left = `${Math.round(this.pos.x)}px`;
+        this.style.top  = `${Math.round(this.pos.y)}px`;
     }
 
     public clampToContainer(){

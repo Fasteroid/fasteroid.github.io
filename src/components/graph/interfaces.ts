@@ -5,15 +5,15 @@ export interface GraphDataset<
     NodeData extends GraphNodeData = GraphNodeData,
     EdgeData extends GraphEdgeData = GraphEdgeData
 > {
-    nodes: { [key: string | number]: NodeData }
+    nodes: { [key: string]: NodeData }
     edges: EdgeData[]
 }
 
 export interface GraphNodeData {
-    id: string | number
+    id: string
 }
 
 export interface GraphEdgeData {
-    from: string | number
-    to:   string | number
+    from: string
+    to:   string
 }
