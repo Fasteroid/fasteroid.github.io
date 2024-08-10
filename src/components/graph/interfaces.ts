@@ -1,9 +1,12 @@
 /**
  * Dataset for a graph of nodes. Associates data and relations with node IDs.
  */
-export interface GraphNodeDataset<T extends GraphNodeData> {
-    nodes: { [key: string | number]: T }
-    edges: GraphEdgeData[]
+export interface GraphDataset<
+    NodeData extends GraphNodeData = GraphNodeData,
+    EdgeData extends GraphEdgeData = GraphEdgeData
+> {
+    nodes: { [key: string | number]: NodeData }
+    edges: EdgeData[]
 }
 
 export interface GraphNodeData {
@@ -11,6 +14,6 @@ export interface GraphNodeData {
 }
 
 export interface GraphEdgeData {
-    node1: string | number
-    node2: string | number
+    from: string | number
+    to:   string | number
 }

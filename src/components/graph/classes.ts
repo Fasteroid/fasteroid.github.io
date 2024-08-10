@@ -1,6 +1,6 @@
 
-import { clamp, Vec2 } from "../../lib/utils";
-import { GraphEdgeData, GraphNodeData, GraphNodeDataset } from "./interfaces";
+import { clamp, Map2D, Vec2 } from "../../lib/utils";
+import { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 
 /**
  * This new class encompasses the most basic functionalities
@@ -11,20 +11,20 @@ import { GraphEdgeData, GraphNodeData, GraphNodeDataset } from "./interfaces";
  * @param Edge - Minimum specs for edge methods in this graph.  Leave blank for bare minimum.
  */
 export abstract class GraphManager<
-    Data     extends GraphNodeData = GraphNodeData,
+    NodeData extends GraphNodeData = GraphNodeData,
     EdgeData extends GraphEdgeData = GraphEdgeData,
     Edge     extends GraphEdge<EdgeData> = GraphEdge<EdgeData>,
-    Node     extends GraphNode<Data, Edge> = GraphNode<Data, Edge>
+    Node     extends GraphNode<NodeData, Edge> = GraphNode<NodeData, Edge>
 > {
     public readonly template:  HTMLElement;
 
     public readonly nodeContainer: HTMLElement;
     public readonly edgeContainer: SVGSVGElement;
 
-    public readonly nodes: Map<string | number, Node> = new Map();
-    public readonly edges: Edge[] = [];
+    public readonly nodes: Map<string | number, Node>   = new Map();
+    public readonly edges: Map2D<string | number, Edge> = new Map2D(); // from, to
 
-    protected abstract createNode(data: Data): Node;
+    protected abstract createNode(data: NodeData): Node;
     protected abstract createEdge(data: GraphEdgeData): Edge;
 
     private _frame = () => {
@@ -36,7 +36,7 @@ export abstract class GraphManager<
         template: HTMLElement, 
         nodeContainer: HTMLElement,
         edgeContainer: SVGSVGElement,
-        data: GraphNodeDataset<Data>
+        data: GraphDataset<NodeData>
     ){
         this.template  = template;
         this.nodeContainer = nodeContainer;
@@ -47,10 +47,16 @@ export abstract class GraphManager<
         }
 
         for(const edgeData of data.edges){
-            let edge = this.createEdge(edgeData);
-            this.nodes.get(edgeData.node1)!.edges.push(edge);
-            this.nodes.get(edgeData.node2)!.edges.push(edge);
-            this.edges.push(edge);
+            let edge = this.edges.get(edgeData.to, edgeData.from);
+            if( edge ){ // does the other direction exist?
+                edge.bidirectional = true; // mark as bidirectional; no need to create a new edge
+            }
+            else {
+                edge = this.createEdge(edgeData);
+                this.nodes.get(edgeData.from)!.edges.push(edge);
+                this.nodes.get(edgeData.to)!.edges.push(edge);
+                this.edges.set(edgeData.from, edgeData.to, edge);
+            }
         }
 
         setInterval( () => {
@@ -68,18 +74,20 @@ export abstract class GraphEdge<EdgeData extends GraphEdgeData = GraphEdgeData> 
 
     protected svg: SVGLineElement;
 
-    protected node1: GraphNode;
-    protected node2: GraphNode;
+    protected from: GraphNode;
+    protected to:   GraphNode;
+
+    public bidirectional: boolean = false;
 
     constructor(
-        manager: GraphManager<GraphNodeData, EdgeData, GraphEdge, GraphNode>,
+        manager: GraphManager<GraphNodeData, EdgeData, GraphEdge>,
         data:    EdgeData
     ){
         this.svg = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this.svg.classList.add("graph-edge");
 
-        this.node1 = manager.nodes.get(data.node1)!;
-        this.node2 = manager.nodes.get(data.node2)!;
+        this.from = manager.nodes.get(data.from)!;
+        this.to   = manager.nodes.get(data.to)!;
 
         manager.edgeContainer.appendChild(this.svg);
     }
@@ -90,10 +98,10 @@ export abstract class GraphEdge<EdgeData extends GraphEdgeData = GraphEdgeData> 
     public abstract doForces(): void;
 
     public render(){
-        this.svg.setAttribute("x1", `${this.node1.pos.x}`);
-        this.svg.setAttribute("y1", `${this.node1.pos.y}`);
-        this.svg.setAttribute("x2", `${this.node2.pos.x}`);
-        this.svg.setAttribute("y2", `${this.node2.pos.y}`);
+        this.svg.setAttribute("x1", `${this.from.pos.x}`);
+        this.svg.setAttribute("y1", `${this.from.pos.y}`);
+        this.svg.setAttribute("x2", `${this.to.pos.x}`);
+        this.svg.setAttribute("y2", `${this.to.pos.y}`);
     }
 
 }
@@ -105,8 +113,8 @@ export abstract class GraphEdge<EdgeData extends GraphEdgeData = GraphEdgeData> 
  * This should be enough to get a simulation running.
  */
 export abstract class GraphNode<
-    Data extends GraphNodeData = GraphNodeData, 
-    Edge extends GraphEdge = GraphEdge
+    NodeData extends GraphNodeData = GraphNodeData, 
+    Edge     extends GraphEdge = GraphEdge
 >{
 
     public pos: Vec2 = new Vec2();
@@ -118,11 +126,11 @@ export abstract class GraphNode<
     public readonly edges: Edge[] = [];
 
     private _style: CSSStyleDeclaration;
-    private readonly manager: GraphManager<Data>;
+    private readonly manager: GraphManager<NodeData>;
 
     constructor(
-        manager: GraphManager<Data>, 
-        data: Data
+        manager: GraphManager<NodeData>, 
+        data: NodeData
     ){
         this.manager = manager;
         this.id      = data.id;
