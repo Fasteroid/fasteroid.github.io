@@ -14,7 +14,7 @@ import { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 export abstract class GraphManager<
     NodeData extends GraphNodeData,
     EdgeData extends GraphEdgeData,
-    Edge     extends GraphEdge<NodeData, EdgeData>,
+    Edge     extends GraphEdge<NodeData, EdgeData, Node>,
     Node     extends GraphNode<NodeData, EdgeData, Edge>
 > {
     
@@ -97,14 +97,15 @@ export abstract class GraphManager<
 
 export abstract class GraphEdge<
     NodeData extends GraphNodeData,
-    EdgeData extends GraphEdgeData
+    EdgeData extends GraphEdgeData,
+    Node     extends GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData, Node>>
 > {
 
     // Local type alias using the generic parameter
     public readonly svg: SVGLineElement;
 
-    public readonly from: GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>;
-    public readonly to:   GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>;
+    public readonly from: Node;
+    public readonly to:   Node;
 
     public bidirectional: boolean = false;
 
@@ -112,16 +113,16 @@ export abstract class GraphEdge<
         manager: GraphManager<
                     NodeData, 
                     EdgeData, 
-                    GraphEdge<NodeData, EdgeData>, 
-                    GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData>>
+                    GraphEdge<NodeData, EdgeData, Node>, 
+                    GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData, Node>>
                 >,
         data:    EdgeData
     ){
         this.svg = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this.svg.classList.add("graph-edge");
 
-        this.from = manager.nodes.get(data.from)!;
-        this.to   = manager.nodes.get(data.to)!;
+        this.from = manager.nodes.get(data.from) as Node;
+        this.to   = manager.nodes.get(data.to)   as Node;
 
         manager.edgeContainer.appendChild(this.svg);
     }
@@ -149,7 +150,7 @@ export abstract class GraphEdge<
 export abstract class GraphNode<
     NodeData extends GraphNodeData, 
     EdgeData extends GraphEdgeData,
-    Edge     extends GraphEdge<NodeData, EdgeData>
+    Edge     extends GraphEdge<NodeData, EdgeData, GraphNode<NodeData, EdgeData, Edge>>
 >{
 
     public pos: Vec2 = new Vec2();
