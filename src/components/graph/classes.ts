@@ -163,8 +163,6 @@ export abstract class GraphNode<
 
     public readonly style:   CSSStyleDeclaration;
 
-    public readonly data: NodeData
-
     constructor(
         public readonly manager: GraphManager<
                     NodeData,
@@ -180,11 +178,11 @@ export abstract class GraphNode<
         this.html.hidden = false;
         this.html.id     = "";
         this.style       = this.html.style;
-        this.data        = data;
     }
 
     /**
      * Called once per simulation frame; updates velocity via {@link applyForce} calls.
+     * You should not apply edge-derived forces here; the manager does that for you.
      */
     public abstract doForces(): void;
 
