@@ -1,7 +1,6 @@
 import { clamp, Vec2 } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
-import type { DynamicSkillTreeNodeData as SkillTreeDynamicNodeData, SkillTreeDataSet, SkillTreeEdgeData, SkillTreeNodeData } from "./classes/interfaces";
-import type { StaticSkillTreeNodeData as SkillTreeStaticNodeData } from "./interfaces";
+import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
 
 function forceFalloff(d: number){
     return d<0?d*0.05:d*(0.05 + (d/500)*0.45);

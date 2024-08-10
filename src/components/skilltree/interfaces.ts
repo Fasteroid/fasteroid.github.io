@@ -8,13 +8,13 @@ export interface SkillTreeNodeData extends GraphNodeData {
     type: "dynamic" | "static",
 }
 
-export interface DynamicSkillTreeNodeData extends SkillTreeNodeData {
+export interface SkillTreeDynamicNodeData extends SkillTreeNodeData {
     desc:  string[],
     style: string
     type:  "dynamic"
 }
 
-export interface StaticSkillTreeNodeData extends SkillTreeNodeData {
+export interface SkillTreeStaticNodeData extends SkillTreeNodeData {
     x:    number,
     y:    number,
     tier: number
