@@ -1,7 +1,7 @@
 import { NODE_DISTANCE } from "./constants";
 import { SkillTreeLineManager, SkillTreeManager, SkillTreeNodeManager } from "./managers";
 import type { SkillTreeNode } from "./treenode";
-import { clamp } from "./utils";
+import { clamp } from "../../../lib/utils";
 
 export class SkillTreeLine {
     

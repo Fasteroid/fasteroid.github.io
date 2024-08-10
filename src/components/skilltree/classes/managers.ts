@@ -1,7 +1,7 @@
 import { NODE_DISTANCE, NODE_PADDING } from "./constants";
 import { SkillTreeLine } from "./treeline";
 import { DynamicSkillTreeNode, SkillTreeNode, StaticSkillTreeNode } from "./treenode";
-import { Vec2 } from "./utils";
+import { Vec2 } from "../../../lib/utils";
 
 import SkillTreeData from "$lib/json/skilltree.json"
 import type { DynamicSkillTreeNodeData, StaticSkillTreeNodeData } from "./interfaces";

@@ -1,4 +1,5 @@
-import { clamp, Map2D, Set2D, Vec2 } from "../utils";
+
+import { clamp, Vec2 } from "../../lib/utils";
 import { GraphEdgeData, GraphNodeData, GraphNodeDataset } from "./interfaces";
 
 /**

@@ -2,7 +2,7 @@ import { GRAVITY, NODE_BOB_FORCE, NODE_DISTANCE, NODE_MAX_VEL } from "./constant
 import type { DynamicSkillTreeNodeData, SkillTreeNodeData, SkillTreeParentRef, StaticSkillTreeNodeData } from "./interfaces";
 import { SkillTreeManager, SkillTreeNodeManager, SkillTreeLineManager } from "./managers";
 import type { SkillTreeLine as SkillTreeLink } from "./treeline";
-import { clamp, Vec2 } from "./utils";
+import { clamp, Vec2 } from "../../../lib/utils";
 
 function rand(): number {
     return Math.random() * 2 - 1
