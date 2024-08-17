@@ -93,6 +93,26 @@ export abstract class GraphManager<
         this.oldW = this.nodeContainer.clientWidth;
     }
 
+    /**
+     * Converts global document-space coordinates into local graph-space coordinates.
+     * @param x 
+     * @param y 
+     */
+    public toLocal(x: number, y: number): Vec2 {
+        
+        const rect = this.nodeContainer.getBoundingClientRect();
+        const style = window.getComputedStyle(this.nodeContainer);
+
+        const scaleX = parseFloat(style.width) / rect.width;
+        const scaleY = parseFloat(style.height) / rect.height;
+
+        return new Vec2(
+            (x - rect.left) * scaleX,
+            (y - rect.top) * scaleY
+        );
+
+    }
+
 }
 
 export abstract class GraphEdge<
