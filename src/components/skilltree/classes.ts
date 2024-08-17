@@ -6,13 +6,6 @@ function forceFalloff(d: number){
     return d<0?d*0.05:d*(0.05 + (d/500)*0.45);
 }
 
-function getPos(el: any /*HTMLElement*/) { // cursed function from stackoverflow, don't ask me how it works
-    for (var lx=0, ly=0;
-        el != null;
-        lx += el.offsetLeft, ly += el.offsetTop, el = el.offsetParent);
-    return new Vec2(lx, ly);
-}
-
 function rand(): number {
     return Math.random() * 2 - 1
 }
@@ -188,19 +181,9 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     }
 
     private dragEvent(e: MouseEvent | TouchEvent){
-        // thanks random blog: https://www.horuskol.net/blog/2020-08-15/drag-and-drop-elements-on-touch-devices/
-        if( e instanceof MouseEvent ){ // mouse event
-            this.setPos(
-                e.clientX - this.manager.containerPos.x, 
-                e.clientY - this.manager.containerPos.y + window.scrollY
-            );
-        }
-        else{ // touch event
-            this.setPos(
-                e.changedTouches[0].clientX - this.manager.containerPos.x, 
-                e.changedTouches[0].clientY - this.manager.containerPos.y + window.scrollY
-            );
-        }
+        let event: MouseEvent | Touch = ( e instanceof TouchEvent ) ? e.touches[0] : e;
+        this.pos = this.manager.toLocal(event.clientX, event.clientY);
+
         this.vel.setTo(0,0);
     }
 
@@ -272,7 +255,6 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
             this.doRepulsionForce(that);
         }
 
-        this.doWallForce();
         this.doHomingForce();
     }
 
@@ -347,12 +329,10 @@ extends GraphManager<
 
     public relativeDistance = 120;
     public relativePadding  = 120;
-    public containerPos!: Vec2;
 
     private _firstNode: SkillTreeNode;
 
     protected override handleResize(){
-        this.containerPos = getPos(this.nodeContainer);
         this.relativeDistance = NODE_DISTANCE * this._firstNode.html.clientWidth;
         this.relativePadding  = NODE_PADDING  * this._firstNode.html.clientWidth;
         super.handleResize();

@@ -1,4 +1,5 @@
 
+import { parse } from "svelte/compiler";
 import { clamp, compileShader, Map2D, die, Vec2, Color } from "../../lib/utils";
 import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
@@ -79,7 +80,6 @@ export abstract class GraphManager<
             this.nodes.forEach( node => node.doForces() )
             this.edges.forEach( edge => edge.doForces() )
             this.nodes.forEach( node => node.doPositioning() )
-            this.nodes.forEach( node => node.clampToContainer() )
             requestAnimationFrame(this._frame);
         } , 16);
 
@@ -147,8 +147,13 @@ export abstract class GraphManager<
     private render(){
 
         this.nodes.forEach( node => node.render() );
+        
+        let selfBox    = this.nodeContainer.getBoundingClientRect();
+        let parentBox  = this.nodeContainer.parentElement!.getBoundingClientRect();
 
-        this.gl_ctx.viewport(0, 0, this.nodeContainer.clientWidth, this.nodeContainer.clientHeight);
+        let style = window.getComputedStyle(this.nodeContainer);
+        this.gl_ctx.viewport(0, 0, parseFloat(style.width), parseFloat(style.height));
+
         this.gl_ctx.clearColor(0.0, 0.0, 0.0, 0.0);  // White background
         this.gl_ctx.clear(this.gl_ctx.COLOR_BUFFER_BIT);
     
@@ -160,7 +165,8 @@ export abstract class GraphManager<
         const positions: number[] = [];
         const colors:    number[] = [];
         for(const edge of this.edges.values()){
-            for(const vert of edge.verts){
+            for(let vert of edge.verts){
+                vert = this.toParent(vert.x, vert.y);
                 positions.push(vert.x, vert.y);
                 colors.push(edge.color.r, edge.color.g, edge.color.b, edge.color.a);
             }
@@ -191,6 +197,22 @@ export abstract class GraphManager<
         return new Vec2(
             (x - rect.left) * scaleX,
             (y - rect.top) * scaleY
+        );
+
+    }
+
+    public toParent(x: number, y: number): Vec2 {
+        
+        const thisRect = this.nodeContainer.getBoundingClientRect();
+        const parentRect = this.nodeContainer.parentElement!.getBoundingClientRect();
+        const style = window.getComputedStyle(this.nodeContainer);
+
+        const scaleX = thisRect.width / parseFloat(style.width);
+        const scaleY = thisRect.height / parseFloat(style.height);
+
+        return new Vec2(
+            x * scaleX + thisRect.left - parentRect.left,
+            y * scaleY + thisRect.top - parentRect.top
         );
 
     }
@@ -336,12 +358,12 @@ export abstract class GraphNode<
      * Same as old render method.
      */
     public render(){
-        let rect = this.html.getBoundingClientRect();
-        
+        let style = window.getComputedStyle(this.html);
+
         // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
         this.style.transform = `translate(
-            ${Math.round(this.pos.x) - Math.round(rect.width / 2)}px, 
-            ${Math.round(this.pos.y) - Math.round(rect.height / 2)}px
+            ${Math.round(this.pos.x) - Math.round( parseFloat(style.width)/2 )}px, 
+            ${Math.round(this.pos.y) - Math.round( parseFloat(style.height)/2 )}px
         )`;
     }
 

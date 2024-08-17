@@ -2,29 +2,29 @@
     "nodes": [
         {
             "id": "ENGINEERING",
-            "x": 0.6333,
-            "y": 0.0125,
+            "x": 0.55,
+            "y": 0.03,
             "tier": 0,
             "type": "static"
         },
         {
             "id": "COMPUTER SCIENCE",
-            "x": 0.3666,
-            "y": 0.0125,
+            "x": 0.3,
+            "y": 0.06,
             "tier": 0,
             "type": "static"
         },
         {
             "id": "DIGITAL MEDIA",
-            "x": 0.9,
-            "y": 0.0125,
+            "x": 0.8,
+            "y": 0.06,
             "tier": 0,
             "type": "static"
         },
         {
             "id": "ADVANCED MATHEMATICS",
             "x": 0.10000000000000002,
-            "y": 0.3333333333333333,
+            "y": 0.5,
             "tier": 3,
             "type": "static"
         },
