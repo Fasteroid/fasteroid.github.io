@@ -234,8 +234,13 @@ export abstract class GraphNode<
      * Same as old render method.
      */
     public render(){
-        this.style.left = `${Math.round(this.pos.x)}px`;
-        this.style.top  = `${Math.round(this.pos.y)}px`;
+        let rect = this.html.getBoundingClientRect();
+        
+        // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
+        this.style.transform = `translate(
+            ${Math.round(this.pos.x) - Math.round(rect.width / 2)}px, 
+            ${Math.round(this.pos.y) - Math.round(rect.height / 2)}px
+        )`;
     }
 
     public clampToContainer(){
