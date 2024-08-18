@@ -6,6 +6,7 @@
 }
 
 .grid {
+    padding: 0px;
     height: calc( var(--node-size) * 20 + 0.7in );
     background-image: url(base.$base + "/assets/grid.png");
 }

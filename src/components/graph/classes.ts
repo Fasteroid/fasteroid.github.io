@@ -1,6 +1,7 @@
 
-import { clamp, Map2D, Vec2 } from "../../lib/utils";
+import { clamp, compileShader, Map2D, die, Vec2 } from "../../lib/utils";
 import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
+import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 
 /**
  * This new class encompasses the most basic functionalities
@@ -27,9 +28,20 @@ export abstract class GraphManager<
     public readonly edges: Map2D<string, Edge> = new Map2D(); // from, to
 
     private _frame = () => {
-        this.nodes.forEach( node => node.render() );
-        // this.edges.forEach( edge => edge.render() );
+        this.render();
     }
+
+    // ----- webgl -----
+    private gl_ctx:     WebGL2RenderingContext;
+    private gl_program: WebGLProgram;
+
+    private gl_positionAttributeLocation: GLint;
+    private gl_resolutionUniformLocation: WebGLUniformLocation;
+
+    private gl_vertexBuffer:              WebGLBuffer;
+    private gl_vertexArray:               WebGLVertexArrayObject;
+
+    // -----------------
 
     constructor(
         template: HTMLElement, 
@@ -72,6 +84,27 @@ export abstract class GraphManager<
         window.addEventListener('resize', () => {
             this.handleResize();
         });
+
+        this.gl_ctx = this.edgeContainer.getContext("webgl2") as WebGL2RenderingContext;
+
+        const vertex   = compileShader(this.gl_ctx, this.gl_ctx.VERTEX_SHADER, VERTEX_SHADER);
+        const fragment = compileShader(this.gl_ctx, this.gl_ctx.FRAGMENT_SHADER, FRAGMENT_SHADER);
+
+        this.gl_program = this.gl_ctx.createProgram() ?? die("Failed to create program");
+        this.gl_ctx.attachShader(this.gl_program, vertex);
+        this.gl_ctx.attachShader(this.gl_program, fragment);
+        this.gl_ctx.linkProgram(this.gl_program);
+    
+        this.gl_positionAttributeLocation = this.gl_ctx.getAttribLocation(this.gl_program, "a_position");
+        this.gl_resolutionUniformLocation = this.gl_ctx.getUniformLocation(this.gl_program, "u_resolution") ?? die("Failed to get uniform location");    
+
+        this.gl_vertexBuffer = this.gl_ctx.createBuffer()      ?? die("Failed to create buffer");
+        this.gl_vertexArray  = this.gl_ctx.createVertexArray() ?? die("Failed to create vertex array");
+
+        this.gl_ctx.bindVertexArray(this.gl_vertexArray);
+        this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_vertexBuffer);
+        this.gl_ctx.enableVertexAttribArray(this.gl_positionAttributeLocation);
+        this.gl_ctx.vertexAttribPointer(this.gl_positionAttributeLocation, 2, this.gl_ctx.FLOAT, false, 0, 0);        
     }
 
     protected abstract createNode(data: NodeData): Node;
@@ -80,7 +113,6 @@ export abstract class GraphManager<
 
     private oldW: number;
     private oldH: number;
-
     protected handleResize(){
         this.nodes.forEach( node => {
             node.setPos(
@@ -91,6 +123,35 @@ export abstract class GraphManager<
         this.nodes.forEach( node => node.render() );
         // this.edges.forEach( edge => edge.render() );
         this.oldW = this.nodeContainer.clientWidth;
+        this.oldH = this.nodeContainer.clientHeight;
+
+        this.edgeContainer.width  = this.nodeContainer.clientWidth;
+        this.edgeContainer.height = this.nodeContainer.clientHeight
+    }
+
+    private render(){
+
+        this.nodes.forEach( node => node.render() );
+
+        this.gl_ctx.viewport(0, 0, this.nodeContainer.clientWidth, this.nodeContainer.clientHeight);
+        this.gl_ctx.clearColor(0.0, 0.0, 0.0, 0.0);  // White background
+        this.gl_ctx.clear(this.gl_ctx.COLOR_BUFFER_BIT);
+    
+        this.gl_ctx.useProgram(this.gl_program);
+        this.gl_ctx.bindVertexArray(this.gl_vertexArray);
+    
+        this.gl_ctx.uniform2f(this.gl_resolutionUniformLocation, this.nodeContainer.clientWidth, this.nodeContainer.clientHeight);
+    
+        const positions: number[] = [];
+        for(const edge of this.edges.values()){
+            positions.push(edge.from.pos.x, edge.from.pos.y);
+            positions.push(edge.to.pos.x, edge.to.pos.y);
+        }
+
+        this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_vertexBuffer);
+        this.gl_ctx.bufferData(this.gl_ctx.ARRAY_BUFFER, new Float32Array(positions), this.gl_ctx.DYNAMIC_DRAW);
+    
+        this.gl_ctx.drawArrays(this.gl_ctx.LINES, 0, positions.length / 2);  
     }
 
     /**

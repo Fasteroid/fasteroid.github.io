@@ -103,3 +103,25 @@ export class Map2D<K, V> {
     }
 
 }
+
+export function compileShader(ctx: WebGL2RenderingContext, type: GLenum, source: string) {
+    const shader = ctx.createShader(type);
+
+    console.log(shader)
+
+    if( shader === null ) throw "Failed to compile shader";
+
+    ctx.shaderSource(shader, source);
+    ctx.compileShader(shader);
+
+    if( !ctx.getShaderParameter(shader, ctx.COMPILE_STATUS) ){
+        console.error('An error occurred compiling the shaders: ' + ctx.getShaderInfoLog(shader));
+        throw "Failed to compile shader";
+    }
+
+    return shader;
+}
+
+export function die(msg: string): never {
+    throw msg;
+}
