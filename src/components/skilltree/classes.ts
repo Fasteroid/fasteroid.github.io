@@ -25,12 +25,16 @@ const GRAVITY        = 1.5;
 
 export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData, SkillTreeEdgeData, SkillTreeNode> {
 
+    public hovered: boolean = false;
     public dist: number;
+
+    public get width() {
+        return this.hovered ? 2 : 1;
+    }
 
     constructor(private manager: SkillTreeManager, data: SkillTreeEdgeData){
         super(manager, data);
         this.dist = data.dist;
-        this.svg.classList.add("tree-line");
     }
 
     public doForces() {
@@ -77,13 +81,13 @@ export abstract class SkillTreeNode extends GraphNode<SkillTreeNodeData, SkillTr
         // TODO: edge.hovered
         this.html.addEventListener("mouseover", () => {
             for( const edge of this.edges ){
-                edge.svg.classList.toggle("thick", true);
+                edge.hovered = true;
             }
         })
 
         this.html.addEventListener("mouseout", () => {
             for( const edge of this.edges ){
-                edge.svg.classList.toggle("thick", false);
+                edge.hovered = false;
             }
         })
     }
@@ -344,7 +348,7 @@ extends GraphManager<
         super.handleResize();
     }
 
-    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: SVGSVGElement, data: SkillTreeDataSet){
+    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
         super(templateNode, nodeContainer, lineContainer, data);
         (window as any).manager = this;
         this._firstNode = this.nodes.values().next().value!;

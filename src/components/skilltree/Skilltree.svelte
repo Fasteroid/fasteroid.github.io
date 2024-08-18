@@ -16,19 +16,15 @@
         new SkillTreeManager(
             document.getElementById("template-node")!,
             document.querySelector(".node-container")!,
-            document.getElementById("tree-lines")!.children[0]! as SVGSVGElement,
+            document.querySelector(".lines-container")!,
             nodeDataset as SkillTreeDataSet
         );
 
     }
 </script>
 
-<section class="grid">
-    <div class="line-container" id="tree-lines">
-
-        <svg class="tree-line-container"></svg>
-
-    </div>     
+<section class="stack grid">
+    <canvas class="lines-container" style="background-color: red;"/>   
     <div class="node-container">
         
         <!-- template cell -->

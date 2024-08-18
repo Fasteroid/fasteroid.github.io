@@ -21,20 +21,20 @@ export abstract class GraphManager<
     public readonly template:  HTMLElement;
 
     public readonly nodeContainer: HTMLElement;
-    public readonly edgeContainer: SVGSVGElement;
+    public readonly edgeContainer: HTMLCanvasElement;
 
     public readonly nodes: Map<string, Node>   = new Map();
     public readonly edges: Map2D<string, Edge> = new Map2D(); // from, to
 
     private _frame = () => {
         this.nodes.forEach( node => node.render() );
-        this.edges.forEach( edge => edge.render() );
+        // this.edges.forEach( edge => edge.render() );
     }
 
     constructor(
         template: HTMLElement, 
         nodeContainer: HTMLElement,
-        edgeContainer: SVGSVGElement,
+        edgeContainer: HTMLCanvasElement,
         data: GraphDataset<NodeData>
     ){
         this.template      = template;
@@ -89,7 +89,7 @@ export abstract class GraphManager<
             )
         });
         this.nodes.forEach( node => node.render() );
-        this.edges.forEach( edge => edge.render() );
+        // this.edges.forEach( edge => edge.render() );
         this.oldW = this.nodeContainer.clientWidth;
     }
 
@@ -121,13 +121,11 @@ export abstract class GraphEdge<
     Node     extends GraphNode<NodeData, EdgeData, GraphEdge<NodeData, EdgeData, Node>>
 > {
 
-    // Local type alias using the generic parameter
-    public readonly svg: SVGLineElement;
-
     public readonly from: Node;
     public readonly to:   Node;
 
     public bidirectional: boolean = false;
+    public abstract width: number;
 
     constructor(
         manager: GraphManager<
@@ -138,12 +136,8 @@ export abstract class GraphEdge<
                 >,
         data:    EdgeData
     ){
-        this.svg = document.createElementNS("http://www.w3.org/2000/svg", "line");
-
         this.from = manager.nodes.get(data.from) as Node;
         this.to   = manager.nodes.get(data.to)   as Node;
-
-        manager.edgeContainer.appendChild(this.svg);
     }
 
     /**
@@ -151,12 +145,12 @@ export abstract class GraphEdge<
      */
     public abstract doForces(): void;
 
-    public render(){
-        this.svg.setAttribute("x1", `${this.from.pos.x}`);
-        this.svg.setAttribute("y1", `${this.from.pos.y}`);
-        this.svg.setAttribute("x2", `${this.to.pos.x}`);
-        this.svg.setAttribute("y2", `${this.to.pos.y}`);
-    }
+    // public render(){
+    //     this.svg.setAttribute("x1", `${this.from.pos.x}`);
+    //     this.svg.setAttribute("y1", `${this.from.pos.y}`);
+    //     this.svg.setAttribute("x2", `${this.to.pos.x}`);
+    //     this.svg.setAttribute("y2", `${this.to.pos.y}`);
+    // }
 
 }
 

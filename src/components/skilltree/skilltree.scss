@@ -1,22 +1,12 @@
 @use "vars/base.scss" as base;
+@use "../graph/graph.scss" as graph;
 
 :root {
     --node-size: min(1.35in, 12vw)
 }
 
-.node-container, .line-container {
-    height: 100%;
-    width: 100%;
-    position: relative;
-    grid-area: inner-div;
-}
-  
 .grid {
     height: calc( var(--node-size) * 20 + 0.7in );
-    display: grid;
-    place-items: left;
-    grid-template-areas: "inner-div";
-    padding: 0.7in;
     background-image: url(base.$base + "/assets/grid.png");
 }
   
