@@ -1,6 +1,10 @@
 // Learned this trick in lua, I wonder if it makes things faster in JS too?
 const sqrt = Math.sqrt;
 
+/**
+ * NOTE: For memory efficiency, most of these methods self-modify.
+ *       Access the 'copy' field to get a new 
+ */
 export class Vec2 {
 
     x: number;
@@ -19,7 +23,7 @@ export class Vec2 {
         return sqrt(this.distanceSqr(that));
     }
 
-    normalize(){
+    normalize(): number {
         const length = this.length();
         this.scaleBy(1 / length);
         return length
@@ -33,26 +37,76 @@ export class Vec2 {
         return this.x * that.x + this.y * that.y;
     }
 
-    addTo(x: number, y: number){
+    add(x: number, y: number): Vec2 {
         this.x += x;
         this.y += y;
+        return this;
     }
 
-    addToV(that: Vec2){
-        this.addTo(that.x, that.y);
+    sub(x: number, y: number): Vec2 {
+        this.x -= x;
+        this.y -= y;
+        return this;
     }
 
-    clone() {
+    addV(that: Vec2): Vec2 {
+        return this.add(that.x, that.y);
+    }
+
+    subV(that: Vec2): Vec2 {
+        return this.sub(that.x, that.y);
+    }
+
+    get copy() {
         return new Vec2(this.x, this.y)
     }
 
-    setTo(x: number, y: number){
+    setTo(x: number, y: number): Vec2 {
         this.x = x;
         this.y = y;
+        return this;
     }
 
-    scaleBy(mag: number){
-        this.setTo(this.x * mag, this.y * mag)
+    scaleBy(mag: number): Vec2{
+        return this.setTo(this.x * mag, this.y * mag)
+    }
+
+    rotate(angle: number): Vec2{
+        const x = this.x;
+        const y = this.y;
+        this.x = x * Math.cos(angle) - y * Math.sin(angle);
+        this.y = x * Math.sin(angle) + y * Math.cos(angle);
+        return this;
+    }
+
+    pivot90CCW(): Vec2 {
+        const x = this.x;
+        this.x = -this.y;
+        this.y = x;
+        return this;
+    }
+
+    pivot90CW(): Vec2 {
+        const x = this.x;
+        this.x = this.y;
+        this.y = -x;
+        return this;
+    }
+
+}
+
+export class Color {
+    
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+
+    constructor(r: number = 0, g: number = 0, b: number = 0, a: number = 1){
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
     }
 
 }

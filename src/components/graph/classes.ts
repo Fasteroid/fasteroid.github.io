@@ -1,5 +1,5 @@
 
-import { clamp, compileShader, Map2D, die, Vec2 } from "../../lib/utils";
+import { clamp, compileShader, Map2D, die, Vec2, Color } from "../../lib/utils";
 import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 
@@ -144,14 +144,15 @@ export abstract class GraphManager<
     
         const positions: number[] = [];
         for(const edge of this.edges.values()){
-            positions.push(edge.from.pos.x, edge.from.pos.y);
-            positions.push(edge.to.pos.x, edge.to.pos.y);
+            for(const vert of edge.verts){
+                positions.push(vert.x, vert.y);
+            }
         }
 
         this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_vertexBuffer);
         this.gl_ctx.bufferData(this.gl_ctx.ARRAY_BUFFER, new Float32Array(positions), this.gl_ctx.DYNAMIC_DRAW);
     
-        this.gl_ctx.drawArrays(this.gl_ctx.LINES, 0, positions.length / 2);  
+        this.gl_ctx.drawArrays(this.gl_ctx.TRIANGLES, 0, positions.length / 2);  
     }
 
     /**
@@ -186,7 +187,9 @@ export abstract class GraphEdge<
     public readonly to:   Node;
 
     public bidirectional: boolean = false;
+
     public abstract width: number;
+    public abstract color: Color;
 
     constructor(
         manager: GraphManager<
@@ -206,12 +209,36 @@ export abstract class GraphEdge<
      */
     public abstract doForces(): void;
 
-    // public render(){
-    //     this.svg.setAttribute("x1", `${this.from.pos.x}`);
-    //     this.svg.setAttribute("y1", `${this.from.pos.y}`);
-    //     this.svg.setAttribute("x2", `${this.to.pos.x}`);
-    //     this.svg.setAttribute("y2", `${this.to.pos.y}`);
-    // }
+    public get normal(): Vec2 {
+        let ret = this.to.pos.copy
+        ret.subV(this.from.pos);
+        ret.normalize();
+        return ret;
+    }
+
+    /** Two counterclockwise triangles */
+    public get verts(): Vec2[] {
+
+        const to   = this.to.pos;
+        const from = this.from.pos;
+
+        const norm = this.normal;
+        norm.scaleBy(this.width / 2);
+
+        const offset = norm.copy;
+        offset.pivot90CCW();
+
+        return [
+            from.copy.subV(offset),
+            from.copy.addV(offset),
+            to.copy.addV(offset),
+
+            to.copy.addV(offset),
+            to.copy.subV(offset),
+            from.copy.subV(offset)
+        ]
+
+    }
 
 }
 
@@ -282,7 +309,7 @@ export abstract class GraphNode<
      * Same as old applyForce method.
      */
     public applyForce(x: number, y: number){
-        this.vel.addTo(x,y);
+        this.vel.add(x,y);
     }
 
     /**

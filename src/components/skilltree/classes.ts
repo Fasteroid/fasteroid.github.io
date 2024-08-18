@@ -214,7 +214,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private doHomingForce(){
         if(this.homePos){
-            const force = this.homePos.clone();
+            const force = this.homePos.copy;
             force.x = force.x * this.manager.nodeContainer.clientWidth; // homePos is relative
             force.y = force.y * this.manager.nodeContainer.clientHeight;
             if(force.distance(this.pos) < this.manager.relativeDistance * 0.5 ){
@@ -222,13 +222,13 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                 return;
             }
             force.scaleBy(-1);
-            force.addToV(this.pos);
+            force.addV(this.pos);
             force.scaleBy(-1);
             const speed = force.normalize();
             force.scaleBy(clamp(speed, 0, 15));
-            const damp = this.vel.clone();
+            const damp = this.vel.copy;
             damp.scaleBy(-0.2);
-            force.addToV(damp);
+            force.addV(damp);
             this.applyForce(force.x, force.y);
         }        
     }
@@ -271,7 +271,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         let speed = this.vel.normalize();
         speed = Math.min(speed + 0.01, NODE_MAX_VEL);
         this.vel.scaleBy(speed * 0.9)
-        this.pos.addTo(this.vel.x, this.vel.y)
+        this.pos.add(this.vel.x, this.vel.y)
         this.setPos(this.pos.x, this.pos.y); // clamp
     }     
 

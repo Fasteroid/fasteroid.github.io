@@ -24,7 +24,7 @@
 </script>
 
 <section class="stack grid">
-    <canvas class="lines-container" style="background-color: red;"/>   
+    <canvas class="lines-container"/>   
     <div class="node-container">
         
         <!-- template cell -->
