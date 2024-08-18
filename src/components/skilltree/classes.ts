@@ -1,4 +1,4 @@
-import { clamp, Vec2 } from "$lib/utils";
+import { clamp, Color, Vec2 } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
 
@@ -28,13 +28,23 @@ export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData, SkillTreeEdgeDat
     public hovered: boolean = false;
     public dist: number;
 
-    public get width() {
-        return this.hovered ? 2 : 1;
+    public static readonly thin = 4;
+    public static readonly thick = 9;
+
+    public width: number = SkillTreeEdge.thin;
+
+    private _frame = () => {
+        this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2), SkillTreeEdge.thin, SkillTreeEdge.thick);
+        requestAnimationFrame(this._frame);
     }
+
+    public static readonly WHITE = new Color(1,1,1);
+    public color = SkillTreeEdge.WHITE;
 
     constructor(private manager: SkillTreeManager, data: SkillTreeEdgeData){
         super(manager, data);
         this.dist = data.dist;
+        requestAnimationFrame(this._frame);
     }
 
     public doForces() {

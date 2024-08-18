@@ -177,5 +177,6 @@ export function compileShader(ctx: WebGL2RenderingContext, type: GLenum, source:
 }
 
 export function die(msg: string): never {
+    console.error(msg);
     throw msg;
 }

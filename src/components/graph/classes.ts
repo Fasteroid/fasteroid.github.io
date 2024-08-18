@@ -37,7 +37,9 @@ export abstract class GraphManager<
 
     private gl_positionAttributeLocation: GLint;
     private gl_resolutionUniformLocation: WebGLUniformLocation;
+    private gl_colorAttributeLocation:    GLint;
 
+    private gl_colorBuffer:               WebGLBuffer;
     private gl_vertexBuffer:              WebGLBuffer;
     private gl_vertexArray:               WebGLVertexArrayObject;
 
@@ -94,17 +96,30 @@ export abstract class GraphManager<
         this.gl_ctx.attachShader(this.gl_program, vertex);
         this.gl_ctx.attachShader(this.gl_program, fragment);
         this.gl_ctx.linkProgram(this.gl_program);
-    
-        this.gl_positionAttributeLocation = this.gl_ctx.getAttribLocation(this.gl_program, "a_position");
-        this.gl_resolutionUniformLocation = this.gl_ctx.getUniformLocation(this.gl_program, "u_resolution") ?? die("Failed to get uniform location");    
 
-        this.gl_vertexBuffer = this.gl_ctx.createBuffer()      ?? die("Failed to create buffer");
+        if( !this.gl_ctx.getProgramParameter(this.gl_program, this.gl_ctx.LINK_STATUS) ){
+            die("Failed to link program: " + this.gl_ctx.getProgramInfoLog(this.gl_program));
+        }
+    
+        this.gl_positionAttributeLocation = this.gl_ctx.getAttribLocation(this.gl_program,  "a_position");
+        this.gl_colorAttributeLocation    = this.gl_ctx.getAttribLocation(this.gl_program,  "a_color")
+        this.gl_resolutionUniformLocation = this.gl_ctx.getUniformLocation(this.gl_program, "u_resolution") ?? die("Failed to get resolution uniform location");    
+
+        this.gl_vertexBuffer = this.gl_ctx.createBuffer()      ?? die("Failed to create position buffer");
+        this.gl_colorBuffer  = this.gl_ctx.createBuffer()      ?? die("Failed to create color buffer");
         this.gl_vertexArray  = this.gl_ctx.createVertexArray() ?? die("Failed to create vertex array");
 
+        // position buffer
         this.gl_ctx.bindVertexArray(this.gl_vertexArray);
         this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_vertexBuffer);
         this.gl_ctx.enableVertexAttribArray(this.gl_positionAttributeLocation);
         this.gl_ctx.vertexAttribPointer(this.gl_positionAttributeLocation, 2, this.gl_ctx.FLOAT, false, 0, 0);        
+
+        // color buffer
+        this.gl_ctx.bindVertexArray(this.gl_vertexArray);
+        this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_colorBuffer);
+        this.gl_ctx.enableVertexAttribArray(this.gl_colorAttributeLocation);
+        this.gl_ctx.vertexAttribPointer(this.gl_colorAttributeLocation, 4, this.gl_ctx.FLOAT, false, 0, 0);
     }
 
     protected abstract createNode(data: NodeData): Node;
@@ -143,14 +158,19 @@ export abstract class GraphManager<
         this.gl_ctx.uniform2f(this.gl_resolutionUniformLocation, this.nodeContainer.clientWidth, this.nodeContainer.clientHeight);
     
         const positions: number[] = [];
+        const colors:    number[] = [];
         for(const edge of this.edges.values()){
             for(const vert of edge.verts){
                 positions.push(vert.x, vert.y);
+                colors.push(edge.color.r, edge.color.g, edge.color.b, edge.color.a);
             }
         }
 
         this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_vertexBuffer);
         this.gl_ctx.bufferData(this.gl_ctx.ARRAY_BUFFER, new Float32Array(positions), this.gl_ctx.DYNAMIC_DRAW);
+
+        this.gl_ctx.bindBuffer(this.gl_ctx.ARRAY_BUFFER, this.gl_colorBuffer);
+        this.gl_ctx.bufferData(this.gl_ctx.ARRAY_BUFFER, new Float32Array(colors), this.gl_ctx.DYNAMIC_DRAW);
     
         this.gl_ctx.drawArrays(this.gl_ctx.TRIANGLES, 0, positions.length / 2);  
     }
