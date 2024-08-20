@@ -81,8 +81,6 @@ export abstract class SkillTreeNode extends GraphNode<SkillTreeNodeData, SkillTr
             { duration: 250 }
         )
 
-        // TODO: WebGL edges
-        // TODO: edge.hovered
         this.html.addEventListener("mouseover", () => {
             for( const edge of this.edges ){
                 edge.hovered = true;
