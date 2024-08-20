@@ -3,6 +3,8 @@ import { parse } from "svelte/compiler";
 import { clamp, compileShader, Map2D, die, Vec2, Color } from "../../lib/utils";
 import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
+import type { PanZoom, PanZoomOptions } from "panzoom";
+import Panzoom from "panzoom";
 
 /**
  * This new class encompasses the most basic functionalities
@@ -28,8 +30,11 @@ export abstract class GraphManager<
     public readonly nodes: Map<string, Node>   = new Map();
     public readonly edges: Map2D<string, Edge> = new Map2D(); // from, to
 
+    public readonly panzoom?: PanZoom;
+
     private _frame = () => {
         this.render();
+        window.setTimeout(this._frame, 16); // 60fps
     }
 
     // ----- webgl -----
@@ -43,18 +48,22 @@ export abstract class GraphManager<
     private gl_colorBuffer:               WebGLBuffer;
     private gl_vertexBuffer:              WebGLBuffer;
     private gl_vertexArray:               WebGLVertexArrayObject;
-
     // -----------------
 
     constructor(
         template: HTMLElement, 
         nodeContainer: HTMLElement,
         edgeContainer: HTMLCanvasElement,
-        data: GraphDataset<NodeData>
+        data: GraphDataset<NodeData>,
+        panzoom?: PanZoomOptions
     ){
         this.template      = template;
         this.nodeContainer = nodeContainer;
         this.edgeContainer = edgeContainer;
+
+        if(panzoom){
+            this.panzoom = Panzoom(nodeContainer, panzoom);
+        }
 
         for(const nodeData of data.nodes){
             this.nodes.set(nodeData.id, this.createNode(nodeData));
@@ -76,12 +85,9 @@ export abstract class GraphManager<
         this.oldH = this.nodeContainer.clientHeight;
         this.oldW = this.nodeContainer.clientWidth;
 
-        setInterval( () => {
-            this.nodes.forEach( node => node.doForces() )
-            this.edges.forEach( edge => edge.doForces() )
-            this.nodes.forEach( node => node.doPositioning() )
-            requestAnimationFrame(this._frame);
-        } , 16);
+
+        requestAnimationFrame(this._frame);
+
 
         window.addEventListener('resize', () => {
             this.handleResize();
@@ -147,6 +153,9 @@ export abstract class GraphManager<
     private render(){
 
         this.nodes.forEach( node => node.render() );
+        this.nodes.forEach( node => node.doForces() )
+        this.edges.forEach( edge => edge.doForces() )
+        this.nodes.forEach( node => node.doPositioning() )
         
         let selfBox    = this.nodeContainer.getBoundingClientRect();
         let parentBox  = this.nodeContainer.parentElement!.getBoundingClientRect();

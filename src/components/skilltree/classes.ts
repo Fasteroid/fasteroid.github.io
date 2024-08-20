@@ -1,4 +1,5 @@
 import { clamp, Color, Vec2 } from "$lib/utils";
+import { PanZoomOptions } from "panzoom";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
 
@@ -166,6 +167,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     }
 
     private startDrag(){
+        this.manager.panzoom?.pause();
         this.dragListener = ((ev: MouseEvent | TouchEvent) => this.dragEvent(ev));
         this.html.classList.toggle("grabbed",true);
         document.addEventListener("mousemove",this.dragListener);
@@ -174,6 +176,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private stopDrag(){
         if(!this.dragListener) return;
+        this.manager.panzoom?.resume();
         document.removeEventListener("mousemove",this.dragListener);
         document.removeEventListener("touchmove",this.dragListener);
         this.html.classList.toggle("grabbed",false);
@@ -256,6 +259,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         }
 
         this.doHomingForce();
+        this.doWallForce();
     }
 
     public doPositioning(){
@@ -356,10 +360,21 @@ extends GraphManager<
         return new SkillTreeEdge(this, data);
     }
 
-    public serialize(): SkillTreeDataSet {
+    public serialize(): void {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
         const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
-        return { nodes, edges };
+        
+        const json = JSON.stringify({ nodes, edges }, undefined, 4);
+
+        let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json));
+            element.setAttribute('download', 'graph_skilltree.json');
+          
+            element.style.display = 'none';
+            document.body.appendChild(element);
+          
+            element.click();
+        document.body.removeChild(element);
     }
 
 }

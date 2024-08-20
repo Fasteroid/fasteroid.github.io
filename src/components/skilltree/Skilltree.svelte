@@ -18,26 +18,18 @@
             document.getElementById("template-node")!,
             document.querySelector(".node-container")!,
             document.querySelector(".lines-container")!,
-            nodeDataset as SkillTreeDataSet
-        );
-
-
-        const canvas = document.getElementById("panzoom")!;
-
-        const panzoom = Panzoom(canvas, {
-            minZoom: 1, // no zoom for this one
-            maxZoom: 1,
-            bounds: true,
-            boundsPadding: 0.9,
-            beforeMouseDown(e) {
-                const target = e.target as HTMLElement;
-                return target.closest(".node") !== null;
-            },
-            beforeWheel(e) {
-                return true; // no block on wheel
+            nodeDataset as SkillTreeDataSet,
+            {
+                minZoom: 1, // no zoom for this one
+                maxZoom: 1,
+                bounds: true,
+                boundsPadding: 0.9,
+                beforeWheel(e) {
+                    return true; // no zoom for this one
+                }
             }
-        });
-
+        );
+        
     }
 </script>
 
