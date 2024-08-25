@@ -21,7 +21,9 @@
 <nav>
     <div class="home">
         <span>
-            <span class="glowy">FAST'S CODE CREATIONS</span>
+            <a href="https://github.com/Fasteroid/fasteroid.github.io">
+                <span class="glowy">FAST'S CODE CREATIONS</span>
+            </a>
             <a class="minecraftsplash" href="https://svelte.dev">Now with Svelte!</a>
         </span>
     </div>

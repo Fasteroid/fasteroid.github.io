@@ -6,25 +6,36 @@
 </svelte:head>
 
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import { SkillTreeManager, SkillTreeNodeManager } from "./classes/managers";
+    import { browser } from "$app/environment";
+    import { SkillTreeManager } from "./classes";
+    import type { SkillTreeDataSet } from "./interfaces";
+    import nodeDataset from "$lib/json/graph_skilltree.json"
+    import Panzoom from "panzoom";
 
-    if(browser) {
-        SkillTreeManager.setup(
-            document.querySelector(".node-container")!,
+    if( browser ) {
+
+        new SkillTreeManager(
             document.getElementById("template-node")!,
-            document.getElementById("tree-lines")!.children[0]! as SVGSVGElement,
+            document.querySelector(".node-container")!,
+            document.querySelector(".lines-container")!,
+            nodeDataset as SkillTreeDataSet,
+            {
+                minZoom: 1, // no zoom for this one
+                maxZoom: 1,
+                bounds: true,
+                boundsPadding: 0.9,
+                beforeWheel(e) {
+                    return true; // no zoom for this one
+                }
+            }
         );
-        (window as any).SkillTreeManager = SkillTreeManager;
-        (window as any).SkillTreeNodeManager = SkillTreeNodeManager
+        
     }
 </script>
 
-<section class="grid">
-    <div class="line-container" id="tree-lines">
-        <svg class="tree-line-container"></svg>
-    </div>     
-    <div class="node-container">
+<section class="stack grid">
+    <canvas class="lines-container"/>   
+    <div class="node-container" id="panzoom">
         
         <!-- template cell -->
         <div class="node" id="template-node" hidden>

@@ -14,9 +14,11 @@
                 Hi, I'm Fasteroid!  Nice to meet you!<br>
                 <br>
                 I'm a Computer Science graduate from <a href="https://www.wilmu.edu/">Wilmington University</a>.  
-                While I have now finally found a job (and one that I love too), I'm still lacking in the social life department.
-                Many of my friends have moved on to other things, and I'm still trying to find meaning in the world besides just
-                work and video games.  Perhaps you, reader, could contribute to that meaning?  Or is that too optimistic?<br>
+                I currently work for two companies (one officially, the other cuz they're best friends with the first)
+                and perform a hybrid of programming and engineering work to the beat of my own drum.  I could not
+                have asked for a more perfect profession—in fact sometimes I even get survivor's guilt from it!—why me?
+                So few people get to do what they love for a living—and even those that do are often burdened by bureacracy.  
+                I somehow am one of the lucky few that doesn't have either of these problems.  I wish I could share it somehow.<br>
                 <br>
                 I began writing my first original lines of code early to mid 2014, in a little-known language
                 called Expression&nbsp;2 from the popular sandbox game <i>Garry's Mod</i>.  
@@ -42,8 +44,9 @@
                 <br>
                 Odyssey of the Mind taught me a lot—mainly that it usually isn't feasable for one person to work on everything.  
                 Different people have different strengths and weaknesses, and if one person does everything, they're bound to hit 
-                a weakness eventually.  In contrast, with good teamwork and good skill coverage, even an intelligent adversary
-                will struggle to pick something that truly defeats everyone on the team.<br>
+                a weakness eventually.  In contrast, with good teamwork and good skill coverage, due to the
+                <a href="https://en.wikipedia.org/wiki/Swiss_cheese_model">swiss cheese model</a>, it is almost impossible to
+                pick a challenge that truly defeats everyone on the team.<br>
                 <br>
                 I really miss those days.  The team has been scattered across the country, everyone is busy with their own lives now, and it
                 just generally feels impossible to keep in touch.<br>
@@ -65,7 +68,9 @@
                 This machine runs Linux instead of Windows, and server performance has been significantly better ever since this change.  Most E2 scripts 
                 (which run serverside) run with half the CPU time they used to use.
                 The server also tolerates the other crap we put it through a lot better now, such as spawning hundreds of physics entities in confined spaces.  
-                Some people say my server is dead, but I'm four years in and still occasionally get new players.  I think it's been a success.<br>
+                It's mostly dead now, but it still occasionally sees new players, and I still do hang out on it with friends from time to time.  It also barely
+                costs anything to run, so I don't plan on closing it any time soon.<br>
+                <br>
                 <div style="clear:both"></div>
                 That's the end of my TL;DR.<br>
                 If I've piqued your interest at all, you should check out my <a href="./about/skilltree">technical skill tree</a> and learn more about what I can do.  

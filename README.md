@@ -1,38 +1,28 @@
-# create-svelte
+# Welcome!
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+My name is Fasteroid, and you've just discovered the source code to my portfolio website!<br>
 
 ## Building
 
-To create a production version of your app:
-
+This site is built with SvelteKit and Vite. &nbsp;To build, run this:
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+If you want to just run the prebuild scripts without doing a full build, this command is for you:
+```bash
+npm run prebuild
+```
+These do things like [automatically mapping the site](https://github.com/Fasteroid/fasteroid.github.io/blob/new/src/building/treebuilder.ts) so I don't have to manually manage what's in the navbar.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## Developing
+Most of the time all you'll need to do is run this:
+```bash
+npm run dev
+```
+Sometimes you'll also have to run the prebuild scripts for a change to show up.
+
+## Deploying
+Provided you have the Github Pages environment on and github actions enabled, pushing to ~~main~~ *new* will automatically trigger a re-deployment. &nbsp;To avoid unnecessary deployments, you should consider committing to any other branch until you're ready to push a new feature.
+
+Special thanks to [@Penca53](https://github.com/Penca53) for figuring out how to deploy SvelteKit to Github Pages.
