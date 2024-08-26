@@ -1,16 +1,8 @@
+import { GraphDataset, GraphEdgeData, GraphNodeData } from "../../../components/graph/interfaces";
 import type { User } from "./external";
 
-export type UserFollowings = User & {
-    following: User[]
-}
+export type SoundcloudNodeData = GraphNodeData & Omit<User, 'id'>;
 
-export type FollowerMapNode = {
-    id:       number;
-    incoming: number[];
-    outgoing: number[];
-}
+export type SoundcloudEdgeData = GraphEdgeData & { both: boolean };
 
-export type FollowerMap = {
-    users: {[id: number]: User}
-    nodes: {[id: number]: FollowerMapNode}
-}
+export type SoundcloudGraphDataset = GraphDataset<SoundcloudNodeData, SoundcloudEdgeData>

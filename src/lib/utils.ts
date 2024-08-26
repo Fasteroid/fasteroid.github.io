@@ -132,8 +132,16 @@ export class Map2D<K, V> {
         inner.set(k2, v);
     }
 
+    has(k1: K, k2: K): boolean {
+        return this.mapMap.get(k1)?.has(k2) ?? false;
+    }
+
     get(k1: K, k2: K): V | undefined {
         return this.mapMap.get(k1)?.get(k2);
+    }
+
+    delete(k1: K, k2: K){
+        this.mapMap.get(k1)?.delete(k2);
     }
 
     forEach(callback: (v: V, k1: K, k2: K) => void){
@@ -153,6 +161,46 @@ export class Map2D<K, V> {
     keys(): [K, K][] {
         let ret: [K, K][] = [];
         this.forEach((_, k1, k2) => ret.push([k1, k2]));
+        return ret;
+    }
+
+}
+
+export class Set2D<K> {
+
+    private setSet: Map<K, Set<K>> = new Map<K, Set<K>>();
+
+    add(k1: K, k2: K){
+        let inner: Set<K>;
+        if(!this.setSet.has(k1)){
+            inner = new Set<K>();
+            this.setSet.set(k1, inner);
+        }
+        else {
+            inner = this.setSet.get(k1)!;
+        }
+        inner.add(k2);
+    }
+
+    has(k1: K, k2: K): boolean {
+        return this.setSet.get(k1)?.has(k2) ?? false;
+    }
+
+    delete(k1: K, k2: K){
+        this.setSet.get(k1)?.delete(k2);
+    }
+
+    forEach(callback: (k1: K, k2: K) => void){
+        this.setSet.forEach((inner, k1) => {
+            inner.forEach(k2 => {
+                callback(k1, k2);
+            })
+        })
+    }
+
+    keys(): [K, K][] {
+        let ret: [K, K][] = [];
+        this.forEach((k1, k2) => ret.push([k1, k2]));
         return ret;
     }
 

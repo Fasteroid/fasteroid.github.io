@@ -27,11 +27,11 @@ export interface Badges {
 }
 
 export interface User {
-    id:          number;
-    username:    string;
-    avatar_url:  string;
-    permalink_url:   string;
-    description: string;
+    id:            number;
+    username:      string;
+    avatar_url:    string;
+    permalink_url: string;
+    description:   string;
 }
   
 export interface FullUser extends User {
