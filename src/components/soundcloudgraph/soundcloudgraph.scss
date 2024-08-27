@@ -1,0 +1,16 @@
+@use "vars/base.scss" as base;
+@use "../graph/graph.scss" as graph;
+
+.grid {
+    padding: 0px;
+    aspect-ratio: 1 / 1;
+    background-image: url(base.$base + "/assets/grid.png");
+}
+  
+.node {
+    width: 32px;
+    height: 32px;
+    background-color: blue;
+    font-size: 8px;
+    position: absolute;
+}

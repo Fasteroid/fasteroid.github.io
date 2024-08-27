@@ -343,8 +343,11 @@ export abstract class GraphNode<
     /**
      * Called after {@link doForces} to update position based on velocity.
     */ 
-    public abstract doPositioning(): void;
-
+    public doPositioning(){
+        this.vel.scaleBy(0.99)
+        this.pos.addV(this.vel);
+        this.clampToContainer();
+    }
 
     /**
      * Same as old setPos method.  Auto-clamps to container.

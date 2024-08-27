@@ -260,7 +260,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         this.doWallForce();
     }
 
-    public doPositioning(){
+    public override doPositioning(){
         if(this.dragListener){ return }
         let speed = this.vel.normalize();
         speed = Math.min(speed + 0.01, NODE_MAX_VEL);
@@ -301,7 +301,7 @@ export class SkillTreeStaticNode extends SkillTreeNode {
 
     public doForces(){ }
 
-    public doPositioning(){ 
+    public override doPositioning(){ 
         this.setPos(
             this.x * this.manager.nodeContainer.clientWidth,
             this.y * this.manager.nodeContainer.clientHeight
