@@ -13,4 +13,11 @@
     background-color: blue;
     font-size: 8px;
     position: absolute;
+    line-height: 1;
+}
+
+.artist {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

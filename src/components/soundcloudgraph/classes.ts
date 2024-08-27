@@ -19,6 +19,12 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     public doForces() {
         const childNode  = this.from!;
         const parentNode = this.to!;
+        const dist = childNode.pos.distance(parentNode.pos) + 0.1;
+        const nx = (parentNode.pos.x-childNode.pos.x)/dist;
+        const ny = (parentNode.pos.y-childNode.pos.y)/dist;
+        const fac = clamp( dist - 64.0, -32.0, 32.0 ) * 0.05;
+        childNode.applyForce(nx*fac,ny*fac);
+        parentNode.applyForce(-nx*fac,-ny*fac);   
     }
 
     public getSerialized(): SoundcloudEdgeData {
@@ -38,11 +44,15 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private homePos?: Vec2;
     private data: SoundcloudNodeData;
 
+    public root: boolean;
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
         super(manager, data);
         this.data = data;
 
-        this.applyForce( Math.random() - 0.5, Math.random() - 0.5 );
+        this.root = data.root ?? false;
+
+        this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
         this.setPos( manager.nodeContainer.clientWidth * 0.5, manager.nodeContainer.clientHeight * 0.5 );
 
         if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
@@ -53,9 +63,36 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     // abstract implementations
+    public override setPos(x: number, y: number): void {
+        this.pos.setTo(x, y);
+    }
+
+    private doRepulsionForce(that: SoundcloudNode) {
+        const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
+        let repulmul = 1.0
+
+        const nx = (that.pos.x-this.pos.x)/dist;
+        const ny = (that.pos.y-this.pos.y)/dist;
+        const fac = clamp((dist - 200.0)*0.03,-2,0) * repulmul;
+        this.applyForce(nx*fac,ny*fac);
+        that.applyForce(-nx*fac,-ny*fac);
+    }
+
+    public override doPositioning(){
+        this.vel.scaleBy(0.8)
+        this.pos.addV(this.vel);
+    }
 
     public doForces(){ 
-        // TODO: implement
+        if( this.root ){
+            this.vel.addV( this.pos.copy.scaleBy(-0.2) );
+        }
+
+
+        for( const that of this.manager.nodes.values() ){
+            if( that === this ) continue; // don't repel self lol
+            this.doRepulsionForce(that);
+        }
     }
 
     public getSerialized(): SoundcloudNodeData {
@@ -64,6 +101,16 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             x: this.pos.x / this.manager.nodeContainer.clientWidth,
             y: this.pos.y / this.manager.nodeContainer.clientHeight,
         }
+    }
+
+    public override render(){
+        let style = window.getComputedStyle(this.html);
+
+        // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
+        this.style.transform = `translate(
+            ${this.pos.x - parseFloat(style.width)/2 }px, 
+            ${this.pos.y - parseFloat(style.height)/2 }px
+        )`;
     }
     
 }
@@ -79,7 +126,13 @@ extends GraphManager<
 
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){
-        super(templateNode, nodeContainer, lineContainer, data);
+        super(templateNode, nodeContainer, lineContainer, data, {
+                bounds: false,
+                zoomDoubleClickSpeed: 1,
+                zoomSpeed: 0.1,
+                minZoom: 0.1,
+                maxZoom: 10,
+        });
         (window as any).manager = this;
         this.handleResize();
     }
