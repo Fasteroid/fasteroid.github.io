@@ -104,13 +104,11 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
-        let style = window.getComputedStyle(this.html);
-
         // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
         this.style.transform = `translate(
-            ${this.pos.x - parseFloat(style.width)/2 }px, 
-            ${this.pos.y - parseFloat(style.height)/2 }px
-        )`;
+            ${this.pos.x}px, 
+            ${this.pos.y}px
+        ) translate(-50%, -50%)`;
     }
     
 }

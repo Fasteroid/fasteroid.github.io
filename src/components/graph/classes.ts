@@ -6,6 +6,8 @@ import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 import type { PanZoom, PanZoomOptions } from "panzoom";
 import Panzoom from "panzoom";
 
+type WidthHeight = { width: number, height: number };
+
 /**
  * This new class encompasses the most basic functionalities
  * of the old SkillTreeNodeManager class.
@@ -32,9 +34,45 @@ export abstract class GraphManager<
 
     public readonly panzoom?: PanZoom;
 
-    private _frame = () => {
+    private _selfBox?: DOMRect;
+    public get selfBox(): DOMRect {
+        if(this._selfBox === undefined) this._selfBox = this.nodeContainer.getBoundingClientRect();
+        return this._selfBox;
+    }
+
+    private _parentBox?: DOMRect;
+    public get parentBox(): DOMRect {
+        if(this._parentBox === undefined) this._parentBox = this.nodeContainer.parentElement!.getBoundingClientRect();
+        return this._parentBox;
+    }
+
+    private _selfComputedSize?: { width: number, height: number };
+    public get selfComputedSize(): WidthHeight {
+        if(this._selfComputedSize === undefined){
+            let style = window.getComputedStyle(this.nodeContainer);
+            this._selfComputedSize = {
+                width:  parseFloat(style.width),
+                height: parseFloat(style.height)
+            }
+        }
+        return this._selfComputedSize;
+    }
+
+    private invalidateCache(){
+        this._selfBox = undefined;
+        this._parentBox = undefined;
+        this._selfComputedSize = undefined;
+    }
+
+    private _draw = () => {
+        this._selfBox = undefined;
         this.render();
-        window.setTimeout(this._frame, 16); // 60fps
+    }
+
+    private _sim = () => {
+        window.setTimeout(this._sim, 30); // 60fps
+        window.requestAnimationFrame(this._draw)
+        this.simulate();
     }
 
     // ----- webgl -----
@@ -63,6 +101,9 @@ export abstract class GraphManager<
 
         if(panzoom){
             this.panzoom = Panzoom(nodeContainer, panzoom);
+
+            // lmao no types for this
+            this.panzoom.on("transform", this._draw);
         }
 
         for(const nodeData of data.nodes){
@@ -86,10 +127,10 @@ export abstract class GraphManager<
         this.oldW = this.nodeContainer.clientWidth;
 
 
-        requestAnimationFrame(this._frame);
-
+        requestAnimationFrame(this._sim);
 
         window.addEventListener('resize', () => {
+            this.invalidateCache();
             this.handleResize();
         });
 
@@ -142,7 +183,6 @@ export abstract class GraphManager<
             )
         });
         this.nodes.forEach( node => node.render() );
-        // this.edges.forEach( edge => edge.render() );
         this.oldW = this.nodeContainer.clientWidth;
         this.oldH = this.nodeContainer.clientHeight;
 
@@ -151,17 +191,10 @@ export abstract class GraphManager<
     }
 
     private render(){
-
         this.nodes.forEach( node => node.render() );
-        this.nodes.forEach( node => node.doForces() )
-        this.edges.forEach( edge => edge.doForces() )
-        this.nodes.forEach( node => node.doPositioning() )
-        
-        let selfBox    = this.nodeContainer.getBoundingClientRect();
-        let parentBox  = this.nodeContainer.parentElement!.getBoundingClientRect();
 
-        let style = window.getComputedStyle(this.nodeContainer);
-        this.gl_ctx.viewport(0, 0, parseFloat(style.width), parseFloat(style.height));
+        let style = this.selfComputedSize;
+        this.gl_ctx.viewport(0, 0, style.width, style.height);
 
         this.gl_ctx.clearColor(0.0, 0.0, 0.0, 0.0);  // White background
         this.gl_ctx.clear(this.gl_ctx.COLOR_BUFFER_BIT);
@@ -190,6 +223,12 @@ export abstract class GraphManager<
         this.gl_ctx.drawArrays(this.gl_ctx.TRIANGLES, 0, positions.length / 2);  
     }
 
+    private simulate(){
+        this.nodes.forEach( node => node.doForces() );
+        this.edges.forEach( edge => edge.doForces() );
+        this.nodes.forEach( node => node.doPositioning() );
+    }
+
     /**
      * Converts global document-space coordinates into local graph-space coordinates.
      * @param x 
@@ -197,11 +236,11 @@ export abstract class GraphManager<
      */
     public toLocal(x: number, y: number): Vec2 {
         
-        const rect = this.nodeContainer.getBoundingClientRect();
-        const style = window.getComputedStyle(this.nodeContainer);
+        const rect  = this.selfBox;
+        const style = this.selfComputedSize;
 
-        const scaleX = parseFloat(style.width) / rect.width;
-        const scaleY = parseFloat(style.height) / rect.height;
+        const scaleX = style.width / rect.width;
+        const scaleY = style.height / rect.height;
 
         return new Vec2(
             (x - rect.left) * scaleX,
@@ -211,19 +250,17 @@ export abstract class GraphManager<
     }
 
     public toParent(x: number, y: number): Vec2 {
-        
-        const thisRect = this.nodeContainer.getBoundingClientRect();
-        const parentRect = this.nodeContainer.parentElement!.getBoundingClientRect();
-        const style = window.getComputedStyle(this.nodeContainer);
+        const thisRect = this.selfBox;
+        const parentRect = this.parentBox;
+        const style = this.selfComputedSize;
 
-        const scaleX = thisRect.width / parseFloat(style.width);
-        const scaleY = thisRect.height / parseFloat(style.height);
+        const scaleX = thisRect.width / style.width;
+        const scaleY = thisRect.height / style.height;
 
         return new Vec2(
             x * scaleX + thisRect.left - parentRect.left,
             y * scaleY + thisRect.top - parentRect.top
         );
-
     }
 
 }
@@ -317,10 +354,10 @@ export abstract class GraphNode<
 
     constructor(
         public readonly manager: GraphManager<
-                    NodeData,
-                    EdgeData,
-                    Edge,
-                    GraphNode<NodeData, EdgeData, Edge>
+            NodeData,
+            EdgeData,
+            Edge,
+            GraphNode<NodeData, EdgeData, Edge>
         >, 
         data: NodeData
     ){
@@ -370,13 +407,13 @@ export abstract class GraphNode<
      * Same as old render method.
      */
     public render(){
-        let style = window.getComputedStyle(this.html);
 
         // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
         this.style.transform = `translate(
-            ${Math.round(this.pos.x) - Math.round( parseFloat(style.width)/2 )}px, 
-            ${Math.round(this.pos.y) - Math.round( parseFloat(style.height)/2 )}px
-        )`;
+            ${Math.round(this.pos.x)}px, 
+            ${Math.round(this.pos.y)}px
+        )
+        translate(-50%, -50%)`;
     }
 
     public clampToContainer(){
