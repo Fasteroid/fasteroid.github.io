@@ -16,6 +16,18 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         super(manager, data);
     }
 
+    public override get verts(): Vec2[] {
+        const size = this.manager.selfComputedSize;
+        const x = size.width * 0.5;
+        const y = size.height * 0.5;
+        const original = super.verts;
+        for( let vert of original ){
+            vert.x += x;
+            vert.y += y;
+        }
+        return original;
+    }
+
     public doForces() {
         const childNode  = this.from!;
         const parentNode = this.to!;
@@ -41,8 +53,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     declare readonly manager: SoundcloudGraphManager;
 
-    private homePos?: Vec2;
     private data: SoundcloudNodeData;
+
+    private homePos?: Vec2;
 
     public root: boolean;
 
@@ -53,7 +66,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.root = data.root ?? false;
 
         this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
-        this.setPos( manager.nodeContainer.clientWidth * 0.5, manager.nodeContainer.clientHeight * 0.5 );
 
         if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
             this.homePos = new Vec2(data.x, data.y);
@@ -78,17 +90,16 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         that.applyForce(-nx*fac,-ny*fac);
     }
 
+    private doCenterSeekingForce(){
+
+    }
+
     public override doPositioning(){
         this.vel.scaleBy(0.8)
         this.pos.addV(this.vel);
     }
 
     public doForces(){ 
-        if( this.root ){
-            this.vel.addV( this.pos.copy.scaleBy(-0.2) );
-        }
-
-
         for( const that of this.manager.nodes.values() ){
             if( that === this ) continue; // don't repel self lol
             this.doRepulsionForce(that);
@@ -104,11 +115,14 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
-        // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
-        this.style.transform = `translate(
-            ${this.pos.x}px, 
-            ${this.pos.y}px
-        ) translate(-50%, -50%)`;
+        const size = this.manager.selfComputedSize;
+        this.style.transform = `
+        translate(
+            ${this.pos.x + size.width / 2}px, 
+            ${this.pos.y + size.height / 2}px
+        ) 
+        translate(-50%, -50%)
+        `;
     }
     
 }

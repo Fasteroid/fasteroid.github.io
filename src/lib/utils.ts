@@ -1,6 +1,9 @@
 // Learned this trick in lua, I wonder if it makes things faster in JS too?
 const sqrt = Math.sqrt;
 
+/** This doesn't really mean it's immutable, but it will prevent accidental changes via the many mutator methods. */
+export type ImmutableVec2 = Omit<Vec2, 'add' | 'sub' | 'addV' | 'subV' | 'setTo' | 'scaleBy' | 'normalize' | 'pivot90CCW' | 'pivot90CW' | 'rotate' | 'x' | 'y'> & { readonly x: number, readonly y: number };
+
 /**
  * NOTE: For memory efficiency, most of these methods self-modify.
  *       Access the 'copy' field to get a new 
@@ -10,7 +13,7 @@ export class Vec2 {
     x: number;
     y: number;
     
-    constructor(x: number = 0, y: number = 0) {
+    constructor(x: number = 0, y: number = 0){
         this.x = x;
         this.y = y;
     }
@@ -19,8 +22,8 @@ export class Vec2 {
         return sqrt(this.x**2 + this.y**2);
     }
     
-    distance(that: Vec2): number {
-        return sqrt(this.distanceSqr(that));
+    distance(that: ImmutableVec2): number {
+        return sqrt( this.distanceSqr(that) );
     }
 
     normalize(): number {
@@ -29,11 +32,17 @@ export class Vec2 {
         return length
     }
 
-    distanceSqr(that: Vec2): number {
+    clampLength(min: number, max: number): Vec2 {
+        const length = this.normalize();
+        this.scaleBy( clamp(length, min, max) );
+        return this;
+    }
+
+    distanceSqr(that: ImmutableVec2): number {
         return (this.x - that.x)**2 + (this.y - that.y)**2;
     }
 
-    dot(that: Vec2): number {
+    dot(that: ImmutableVec2): number {
         return this.x * that.x + this.y * that.y;
     }
 
@@ -49,11 +58,11 @@ export class Vec2 {
         return this;
     }
 
-    addV(that: Vec2): Vec2 {
+    addV(that: ImmutableVec2): Vec2 {
         return this.add(that.x, that.y);
     }
 
-    subV(that: Vec2): Vec2 {
+    subV(that: ImmutableVec2): Vec2 {
         return this.sub(that.x, that.y);
     }
 
@@ -227,4 +236,24 @@ export function compileShader(ctx: WebGL2RenderingContext, type: GLenum, source:
 export function die(msg: string): never {
     console.error(msg);
     throw msg;
+}
+
+/** 
+ * Property decorator.
+ * 
+ * Once the property is set, it is locked in and cannot be changed.
+*/
+export function SetOnce() {
+    return function(target: any, key: string) {
+        let dirty = false;
+        let val = target[key];
+        Object.defineProperty(target, key, {
+            get: () => val,
+            set: (v: any) => {
+                if(dirty) throw `Property ${key} is read-only`;
+                val = v;
+                dirty = true;
+            }
+        })
+    }
 }

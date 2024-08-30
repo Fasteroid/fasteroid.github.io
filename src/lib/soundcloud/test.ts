@@ -23,7 +23,6 @@ function toNode( u: FullUser ): SoundcloudNodeData {
 const me = await getUser(FASTEROID_ID);
 
 const direct_following_list: FullUser[] = await getFollowing(FASTEROID_ID).then( (collection: FullUserCollection) => collection.collection );
-direct_following_list.push(me);
 
 const direct_following_lookup: {[id: number]: FullUser} = {};
 for( let user of direct_following_list ){
@@ -33,12 +32,11 @@ for( let user of direct_following_list ){
 const edges: SoundcloudEdgeData[] = [];
 
 for( let user of direct_following_list ){
+    if( user.id === FASTEROID_ID ) continue;
     const linked_direct_following: FullUser[] = (await getFollowing(user.id)).collection.filter( u => u.id in direct_following_lookup ); // could be me too
-
     for( let linked of linked_direct_following ){
-        
+        if( linked.id === FASTEROID_ID ) continue;
         edges.push({from: user.id.toString(), to: linked.id.toString()});
-
     }
 }
 
