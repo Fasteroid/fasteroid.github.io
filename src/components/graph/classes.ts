@@ -66,11 +66,12 @@ export abstract class GraphManager<
 
     private _draw = () => {
         this._selfBox = undefined;
+        this._parentBox = undefined;
         this.render();
     }
 
     private _sim = () => {
-        window.setTimeout(this._sim, 30); // 60fps
+        window.setTimeout(this._sim, 16); // 60fps
         window.requestAnimationFrame(this._draw)
         this.simulate();
     }
