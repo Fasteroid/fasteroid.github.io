@@ -26,10 +26,10 @@ export class Vec2 {
         return sqrt( this.distanceSqr(that) );
     }
 
-    normalize(): number {
+    normalize(): Vec2 {
         const length = this.length();
         this.scaleBy(1 / length);
-        return length
+        return this;
     }
 
     clampLength(min: number, max: number): Vec2 {
@@ -215,6 +215,9 @@ export class Set2D<K> {
     }
 
 }
+
+
+
 
 export function compileShader(ctx: WebGL2RenderingContext, type: GLenum, source: string) {
     const shader = ctx.createShader(type);

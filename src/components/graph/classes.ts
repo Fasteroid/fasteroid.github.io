@@ -34,6 +34,10 @@ export abstract class GraphManager<
 
     public readonly panzoom?: PanZoom;
 
+    protected get frametime(): number {
+        return 16; // 60fps
+    }
+
     private _selfBox?: DOMRect;
     public get selfBox(): DOMRect {
         if(this._selfBox === undefined) this._selfBox = this.nodeContainer.getBoundingClientRect();
@@ -71,7 +75,7 @@ export abstract class GraphManager<
     }
 
     private _sim = () => {
-        window.setTimeout(this._sim, 16); // 60fps
+        window.setTimeout(this._sim, this.frametime); // 60fps
         window.requestAnimationFrame(this._draw)
         this.simulate();
     }
@@ -342,6 +346,7 @@ export abstract class GraphNode<
     EdgeData extends GraphEdgeData,
     Edge     extends GraphEdge<NodeData, EdgeData, GraphNode<NodeData, EdgeData, Edge>>
 >{
+    protected data: NodeData;
 
     public pos: Vec2 = new Vec2();
     public vel: Vec2 = new Vec2();
@@ -368,6 +373,8 @@ export abstract class GraphNode<
         this.html.hidden = false;
         this.html.id     = "";
         this.style       = this.html.style;
+
+        this.data        = data;
 
         this.manager.nodeContainer.appendChild(this.html);
     }
@@ -401,7 +408,7 @@ export abstract class GraphNode<
      * Same as old applyForce method.
      */
     public applyForce(x: number, y: number){
-        this.vel.add(x,y);
+        this.vel.add(x, y);
     }
 
     /**

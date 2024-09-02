@@ -8,16 +8,38 @@
 }
   
 .node {
-    width: 32px;
-    height: 32px;
-    background-color: blue;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background-image: url(base.$base + "/assets/soundcloud/no-art.png");
+    background-size: contain;
     font-size: 8px;
     position: absolute;
     line-height: 1;
 }
 
 .artist {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+    * {
+        height: 100%;
+        width: 100%;
+    
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        text-align: center;
+    }
+
+    .text-outline {
+        -webkit-text-stroke: 2px black;
+    }
+
+    .text-main {
+        color: white;
+        text-decoration: none;
+        cursor: pointer;
+        
+    }
+
 }

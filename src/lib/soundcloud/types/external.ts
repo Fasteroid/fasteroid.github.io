@@ -73,6 +73,7 @@ export interface FullUser extends User {
     followings_count:      number;
 }
 
-export interface FullUserCollection {
+export interface FollowingsAPIResponse {
     collection: FullUser[];
+    next_href: string | null;
 }

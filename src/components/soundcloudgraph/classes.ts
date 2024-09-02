@@ -4,6 +4,8 @@ import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
 
+const abs = Math.abs
+const sqrt = Math.sqrt
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
@@ -31,10 +33,10 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     public doForces() {
         const childNode  = this.from!;
         const parentNode = this.to!;
-        const dist = childNode.pos.distance(parentNode.pos) + 0.1;
+        const dist = childNode.pos.distance(parentNode.pos) + 5;
         const nx = (parentNode.pos.x-childNode.pos.x)/dist;
         const ny = (parentNode.pos.y-childNode.pos.y)/dist;
-        const fac = clamp( dist - 64.0, -32.0, 32.0 ) * 0.05;
+        const fac = clamp( dist - 100, 0, 15 ) * 0.05;
         childNode.applyForce(nx*fac,ny*fac);
         parentNode.applyForce(-nx*fac,-ny*fac);   
     }
@@ -46,6 +48,51 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
+    // degree, actual_path => number of ways
+    private connectivities: Map<number, number> = new Map();
+
+    private getExtendedConnectivity(degree: number): number {
+
+        let start = this.from;
+
+        let precalc = this.connectivities.get(degree);
+        if( precalc !== undefined ) return precalc;
+
+        if( degree === 1 ) {
+            let strength = this.bidirectional ? 2 : 1;
+            this.connectivities.set(degree, strength);
+            return strength;
+        }
+        else {
+            let strength = this.getExtendedConnectivity(degree - 1);
+            
+            let explored: Set<SoundcloudNode> = new Set();
+            let leaves:   SoundcloudNode[] = start.neighbors;
+
+            for (let i = 1; i < degree; i++) {
+                let newleaves: SoundcloudNode[] = [];
+                for( let leaf of leaves ){
+                    explored.add(leaf);
+                    for( let air of leaf.neighbors ){
+                        if( !explored.has(air) ){
+                            newleaves.push(air);
+                        }
+                    }
+                }
+                leaves = newleaves
+            }
+            
+            for( let leaf of leaves ){
+                let direct = leaf.edges.find( (edge) => edge.from === start || edge.to === start );
+                if( direct ){
+                    strength += direct.bidirectional ? 2 : 1;
+                }
+            }
+            return strength;
+        }
+
+    }
+
 }
 
 
@@ -53,25 +100,35 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     declare readonly manager: SoundcloudGraphManager;
 
-    private data: SoundcloudNodeData;
-
-    private homePos?: Vec2;
-
-    public root: boolean;
-
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
-        super(manager, data);
-        this.data = data;
 
-        this.root = data.root ?? false;
+        super(manager, data);
 
         this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
+        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
 
-        if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
-            this.homePos = new Vec2(data.x, data.y);
-        }
+        (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = data.username;
+        this.html.style.backgroundImage = `url(${data.avatar_url})`;
 
-        (this.html.querySelector(".artist")! as HTMLDivElement).innerText = data.username;
+        let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
+        textMain.innerText = data.username;
+        textMain.addEventListener('click', () => {
+            if( this.manager.cancelUrlOpen ) return;
+            window.open(data.permalink_url, '_blank', 'noopener, noreferrer');
+        });
+
+        // stuff for debugging
+        (window as any).SoundcloudArtists = (window as any).SoundcloudArtists ?? {};
+        (window as any).SoundcloudArtists[ data.username ] = this;
+        
+    }
+
+    private _neighbors!: SoundcloudNode[];
+
+    public get neighbors(): SoundcloudNode[] {
+        return this._neighbors ?? (
+            this._neighbors = this.edges.map( (edge) => (edge.from === this ? edge.to : edge.from) )
+        )
     }
 
     // abstract implementations
@@ -80,22 +137,23 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doRepulsionForce(that: SoundcloudNode) {
-        const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
-        let repulmul = 1.0
 
-        const nx = (that.pos.x-this.pos.x)/dist;
-        const ny = (that.pos.y-this.pos.y)/dist;
-        const fac = clamp((dist - 200.0)*0.03,-2,0) * repulmul;
-        this.applyForce(nx*fac,ny*fac);
-        that.applyForce(-nx*fac,-ny*fac);
+        let dist = this.pos.distanceSqr(that.pos) + 5;
+        
+        dist = sqrt(dist);
+
+        const f = this.pos.copy.subV(that.pos).scaleBy(-4000 / (dist ** 3)); // normalize dir, then apply inverse square law
+
+        that.vel.addV(f);
+        this.vel.subV(f);
     }
 
     private doCenterSeekingForce(){
-
+        this.vel.addV( this.pos.copy.clampLength(0, 100).scaleBy(-0.001) );
     }
 
     public override doPositioning(){
-        this.vel.scaleBy(0.8)
+        this.vel.scaleBy(0.4)
         this.pos.addV(this.vel);
     }
 
@@ -104,6 +162,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             if( that === this ) continue; // don't repel self lol
             this.doRepulsionForce(that);
         }
+        // this.doCenterSeekingForce();
     }
 
     public getSerialized(): SoundcloudNodeData {
@@ -136,6 +195,11 @@ extends GraphManager<
     SoundcloudNode
 > {
 
+    protected get frametime(){
+        return 30;
+    }
+
+    public cancelUrlOpen: boolean = false;
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){
         super(templateNode, nodeContainer, lineContainer, data, {
@@ -147,6 +211,17 @@ extends GraphManager<
         });
         (window as any).manager = this;
         this.handleResize();
+
+        this.panzoom!.on('pan', () => {
+            this.cancelUrlOpen = true;
+        });
+
+        this.panzoom!.on('panend', () => {
+            setTimeout(() => {
+                this.cancelUrlOpen = false;
+            }, 0);
+        });
+
     }
 
     protected override createNode(data: SoundcloudNodeData): SoundcloudNode {
@@ -173,5 +248,6 @@ extends GraphManager<
             element.click();
         document.body.removeChild(element);
     }
+    
 
 }

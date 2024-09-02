@@ -16,7 +16,7 @@
             document.getElementById("template-node")!,
             document.querySelector(".node-container")!,
             document.querySelector(".lines-container")!,
-            nodeDataset as SoundcloudGraphDataset
+            nodeDataset as SoundcloudGraphDataset,
         );
         
     }
@@ -28,7 +28,10 @@
         
         <!-- template cell -->
         <div class="node" id="template-node" hidden>
-            <div class="artist"></div>
+            <div class="stack artist">
+                <div class="text-outline">b</div>
+                <div class="text-main">a</div>
+            </div>
         </div>
 
     </div>        
