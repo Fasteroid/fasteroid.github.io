@@ -33,8 +33,9 @@ export class Vec2 {
     }
 
     clampLength(min: number, max: number): Vec2 {
-        const length = this.normalize();
-        this.scaleBy( clamp(length, min, max) );
+        const length = this.length();
+        const new_length = clamp(length, min, max);
+        this.scaleBy( new_length / length );
         return this;
     }
 
