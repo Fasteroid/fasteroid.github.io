@@ -30,17 +30,6 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         return original;
     }
 
-    public doForces() {
-        const childNode  = this.from!;
-        const parentNode = this.to!;
-        const dist = childNode.pos.distance(parentNode.pos) + 5;
-        const nx = (parentNode.pos.x-childNode.pos.x)/dist;
-        const ny = (parentNode.pos.y-childNode.pos.y)/dist;
-        const fac = clamp( dist - 100, 0, 15 ) * 0.05;
-        childNode.applyForce(nx*fac,ny*fac);
-        parentNode.applyForce(-nx*fac,-ny*fac);   
-    }
-
     public getSerialized(): SoundcloudEdgeData {
         return {
             from: this.from.id,
@@ -54,6 +43,7 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     private getExtendedConnectivity(degree: number): number {
 
         let start = this.from;
+        let end   = this.to;
 
         let precalc = this.connectivities.get(degree);
         if( precalc !== undefined ) return precalc;
@@ -83,14 +73,32 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
             }
             
             for( let leaf of leaves ){
-                let direct = leaf.edges.find( (edge) => edge.from === start || edge.to === start );
+                let direct = leaf.edges.find( (edge) => edge.from === end || edge.to === end );
                 if( direct ){
                     strength += direct.bidirectional ? 2 : 1;
                 }
             }
+
+            strength = Math.log10(strength );
+
+            this.connectivities.set(degree, strength);
+
             return strength;
         }
 
+    }
+
+    public doForces() {
+        const childNode  = this.from!;
+        const parentNode = this.to!;
+
+        const dist = childNode.pos.distance(parentNode.pos);
+        let factor = clamp(dist * 0.05, 0, 1)
+        const dir  = childNode.pos.copy.subV(parentNode.pos).scaleBy(factor / dist);
+
+        this.from!.vel.subV(dir);
+        this.to!.vel.addV(dir);
+        
     }
 
 }
@@ -105,7 +113,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         super(manager, data);
 
         this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
-        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
+        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(400);
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = data.username;
         this.html.style.backgroundImage = `url(${data.avatar_url})`;
@@ -137,19 +145,16 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doRepulsionForce(that: SoundcloudNode) {
+        let dist = this.pos.distance(that.pos) + 5;
 
-        let dist = this.pos.distanceSqr(that.pos) + 5;
-        
-        dist = sqrt(dist);
-
-        const f = this.pos.copy.subV(that.pos).scaleBy(-4000 / (dist ** 3)); // normalize dir, then apply inverse square law
+        const f = this.pos.copy.subV(that.pos).scaleBy(-40000 / (dist**3))
 
         that.vel.addV(f);
         this.vel.subV(f);
     }
 
     private doCenterSeekingForce(){
-        this.vel.addV( this.pos.copy.clampLength(0, 100).scaleBy(-0.001) );
+        this.vel.addV( this.pos.copy.clampLength(0, 100).scaleBy(-0.1) );
     }
 
     public override doPositioning(){
@@ -162,7 +167,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             if( that === this ) continue; // don't repel self lol
             this.doRepulsionForce(that);
         }
-        // this.doCenterSeekingForce();
+        this.doCenterSeekingForce();
     }
 
     public getSerialized(): SoundcloudNodeData {

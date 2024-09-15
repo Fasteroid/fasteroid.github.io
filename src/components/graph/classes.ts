@@ -34,10 +34,6 @@ export abstract class GraphManager<
 
     public readonly panzoom?: PanZoom;
 
-    protected get frametime(): number {
-        return 16; // 60fps
-    }
-
     private _selfBox?: DOMRect;
     public get selfBox(): DOMRect {
         if(this._selfBox === undefined) this._selfBox = this.nodeContainer.getBoundingClientRect();
@@ -69,15 +65,15 @@ export abstract class GraphManager<
     }
 
     private _draw = () => {
-        this._selfBox = undefined;
-        this._parentBox = undefined;
         this.render();
+        window.requestAnimationFrame(this._draw);
     }
 
     private _sim = () => {
-        window.setTimeout(this._sim, this.frametime); // 60fps
-        window.requestAnimationFrame(this._draw)
         this.simulate();
+        window.requestAnimationFrame(() => {
+            window.setTimeout(this._sim, 16); // 60fps
+        });
     }
 
     // ----- webgl -----
@@ -108,7 +104,7 @@ export abstract class GraphManager<
             this.panzoom = Panzoom(nodeContainer, panzoom);
 
             // lmao no types for this
-            this.panzoom.on("transform", this._draw);
+            this.panzoom.on("transform", () => this.render());
         }
 
         for(const nodeData of data.nodes){
@@ -133,6 +129,7 @@ export abstract class GraphManager<
 
 
         requestAnimationFrame(this._sim);
+        requestAnimationFrame(this._draw);
 
         window.addEventListener('resize', () => {
             this.invalidateCache();
@@ -196,6 +193,9 @@ export abstract class GraphManager<
     }
 
     private render(){
+        this._selfBox = undefined;
+        this._parentBox = undefined;
+
         this.nodes.forEach( node => node.render() );
 
         let style = this.selfComputedSize;
