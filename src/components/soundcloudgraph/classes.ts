@@ -113,7 +113,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
         textMain.innerText = data.username;
-        textMain.addEventListener('click', () => {
+
+        this.html.addEventListener('click', () => {
             if( this.manager.cancelUrlOpen ) return;
             window.open(data.permalink_url, '_blank', 'noopener, noreferrer');
         });
