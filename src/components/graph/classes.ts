@@ -6,6 +6,7 @@ import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 import type { PanZoom, PanZoomOptions } from "panzoom";
 import Panzoom from "panzoom";
 
+
 type WidthHeight = { width: number, height: number };
 
 /**

@@ -1,28 +1,67 @@
 import { clamp, Color, Vec2 } from "$lib/utils";
+import type { ImmutableVec2 } from "$lib/utils";
 import { PanZoomOptions } from "panzoom";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
+import { base } from "$app/paths";
 
 const abs = Math.abs
 const sqrt = Math.sqrt
+const max = Math.max
+const pow = Math.pow
+
+const EDGE_MIN_LENGTH             = 2;     // to avoid NaN if nodes are very close
+const AMBIENT_REPEL_STRENGTH      = 40000; // inverse square multiplier
+const FAR_AWAY_FROM_CENTER_THRESH = 800;  // min "far" distance
+
+const EDGE_RATE                   = 0.1;
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
-    public width: number = 3;
+    public get width() {
+        return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
+    }
 
-    public static readonly WHITE = new Color(1,1,1);
-    public color = SoundcloudEdge.WHITE;
+    public static readonly WHITE = new Color(1, 1, 1);
+    public static readonly GRAY  = new Color(0.5, 0.5, 0.5);
+    public get color() {
+        return this.bidirectional ? SoundcloudEdge.WHITE : SoundcloudEdge.GRAY;
+    }
 
     constructor(private manager: SoundcloudGraphManager, data: SoundcloudEdgeData){
         super(manager, data);
     }
 
     public override get verts(): Vec2[] {
+
+        if( this.width === 0 ) return [];
+
+        let original: Vec2[];
+
+        if( this.bidirectional ){
+            original = super.verts;
+        }
+        else { // arrows
+            const to   = this.to.pos;
+            const from = this.from.pos;
+
+            const norm = this.normal;
+            norm.scaleBy(this.width / 2);
+    
+            const offset = norm.copy;
+            offset.pivot90CCW();
+
+            original = [
+                from.copy.addV(offset),
+                from.copy.subV(offset),
+                to.copy
+            ]
+        }
+
         const size = this.manager.selfComputedSize;
         const x = size.width * 0.5;
         const y = size.height * 0.5;
-        const original = super.verts;
         for( let vert of original ){
             vert.x += x;
             vert.y += y;
@@ -37,68 +76,16 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
-    // degree, actual_path => number of ways
-    private connectivities: Map<number, number> = new Map();
-
-    private getExtendedConnectivity(degree: number): number {
-
-        let start = this.from;
-        let end   = this.to;
-
-        let precalc = this.connectivities.get(degree);
-        if( precalc !== undefined ) return precalc;
-
-        if( degree === 1 ) {
-            let strength = this.bidirectional ? 2 : 1;
-            this.connectivities.set(degree, strength);
-            return strength;
-        }
-        else {
-            let strength = this.getExtendedConnectivity(degree - 1);
-            
-            let explored: Set<SoundcloudNode> = new Set();
-            let leaves:   SoundcloudNode[] = start.neighbors;
-
-            for (let i = 1; i < degree; i++) {
-                let newleaves: SoundcloudNode[] = [];
-                for( let leaf of leaves ){
-                    explored.add(leaf);
-                    for( let air of leaf.neighbors ){
-                        if( !explored.has(air) ){
-                            newleaves.push(air);
-                        }
-                    }
-                }
-                leaves = newleaves
-            }
-            
-            for( let leaf of leaves ){
-                let direct = leaf.edges.find( (edge) => edge.from === end || edge.to === end );
-                if( direct ){
-                    strength += direct.bidirectional ? 2 : 1;
-                }
-            }
-
-            strength = Math.log10(strength );
-
-            this.connectivities.set(degree, strength);
-
-            return strength;
-        }
-
-    }
-
     public doForces() {
         const childNode  = this.from!;
         const parentNode = this.to!;
 
         const dist = childNode.pos.distance(parentNode.pos);
-        let factor = clamp(dist * 0.05, 0, 1)
-        const dir  = childNode.pos.copy.subV(parentNode.pos).scaleBy(factor / dist);
+        let factor = clamp(dist * 0.05, 0, 1) * (this.bidirectional ? 2 : 1);
+        const dir  = childNode.pos.copy.subV(parentNode.pos).scaleBy(factor * (1 + this.width * 2) / dist);
 
         this.from!.vel.subV(dir);
         this.to!.vel.addV(dir);
-        
     }
 
 }
@@ -108,15 +95,21 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     declare readonly manager: SoundcloudGraphManager;
 
+    private _edgeWidth: number = 0;
+    private _isHovered: boolean = false;
+    public get edgeWidth() {
+        return this._edgeWidth;
+    }
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
 
         this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
-        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(400);
+        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = data.username;
-        this.html.style.backgroundImage = `url(${data.avatar_url})`;
+        this.html.style.backgroundImage = `url(${data.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
 
         let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
         textMain.innerText = data.username;
@@ -125,9 +118,13 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             window.open(data.permalink_url, '_blank', 'noopener, noreferrer');
         });
 
-        // stuff for debugging
-        (window as any).SoundcloudArtists = (window as any).SoundcloudArtists ?? {};
-        (window as any).SoundcloudArtists[ data.username ] = this;
+        this.html.addEventListener('mouseenter', () => {
+            this._isHovered = true;
+        });
+
+        this.html.addEventListener('mouseleave', () => {
+            this._isHovered = false;
+        });
         
     }
 
@@ -145,20 +142,26 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doRepulsionForce(that: SoundcloudNode) {
-        let dist = this.pos.distance(that.pos) + 5;
+        let dist = this.pos.distance(that.pos) + EDGE_MIN_LENGTH;
 
-        const f = this.pos.copy.subV(that.pos).scaleBy(-40000 / (dist**3))
+        const f = this.pos.copy.subV(that.pos).scaleBy( 
+            (-AMBIENT_REPEL_STRENGTH / (dist**3))
+        )
 
         that.vel.addV(f);
         this.vel.subV(f);
     }
 
     private doCenterSeekingForce(){
-        this.vel.addV( this.pos.copy.clampLength(0, 100).scaleBy(-0.1) );
+        const len = this.pos.length();
+        const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
+        this.vel.addV( this.pos.copy.scaleBy(scale * -0.1) );
     }
 
     public override doPositioning(){
-        this.vel.scaleBy(0.4)
+        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this._isHovered ? 1 : -1), 0, 1);
+        let stillness = Math.pow(2, this._edgeWidth * 10);
+        this.vel.scaleBy(0.4 * (1 / stillness));
         this.pos.addV(this.vel);
     }
 
@@ -226,6 +229,12 @@ extends GraphManager<
                 this.cancelUrlOpen = false;
             }, 0);
         });
+
+        this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
+
+        window.setTimeout(() => {
+            this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
+        }, 1000);
 
     }
 

@@ -8,27 +8,35 @@
 }
   
 .node {
+
     width: 48px;
     height: 48px;
     border-radius: 999px;
-    background-image: url(base.$base + "/assets/soundcloud/no-art.png");
     background-size: contain;
-    font-size: 8px;
+    font-size: 7.5px;
     position: absolute;
     line-height: 1;
+
 }
 
 .artist {
 
+    &.stack {
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
     * {
-        height: 100%;
-        width: 100%;
+        width: 0;
+        height: 0;
     
         display: flex;
-        justify-content: center;
         align-items: center;
 
         text-align: center;
+
+        position: relative;
+        transform: translateX(-50%);
     }
 
     .text-outline {
@@ -39,7 +47,6 @@
         color: white;
         text-decoration: none;
         cursor: pointer;
-        
     }
 
 }

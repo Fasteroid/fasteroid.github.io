@@ -27,7 +27,7 @@
     <div class="node-container" id="panzoom">
         
         <!-- template cell -->
-        <div class="node" id="template-node" hidden>
+        <div class="node initial" id="template-node" hidden>
             <div class="stack artist">
                 <div class="text-outline">b</div>
                 <div class="text-main">a</div>
