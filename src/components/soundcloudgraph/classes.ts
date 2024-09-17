@@ -177,8 +177,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     public getSerialized(): SoundcloudNodeData {
         return {
             ...this.data,
-            x: this.pos.x / this.manager.nodeContainer.clientWidth,
-            y: this.pos.y / this.manager.nodeContainer.clientHeight,
         }
     }
 
