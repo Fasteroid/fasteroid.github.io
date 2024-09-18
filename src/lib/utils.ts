@@ -261,3 +261,19 @@ export function SetOnce() {
         })
     }
 }
+
+
+/**
+ * Builds a function from an existing one.  The new one remembers the result of previous calls.  Careful passing object references!
+ * @param fn - victim
+ */
+export function cacheWrap<I, O>(fn: (i: I) => O): (i: I) => O {
+    const cache = new Map<I, O>();
+    return ((i: I): O => {
+        if( cache.has(i) ) return cache.get(i)!;
+        const o = fn(i)
+        cache.set(i, o)
+        return o;
+    }) as (i: I) => O
+}
+

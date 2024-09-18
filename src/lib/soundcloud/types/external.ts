@@ -6,21 +6,19 @@ export namespace ScuffedCloudAPI {
         };
     }
     
-    export interface Visual {
-        entry_time: number;
-
-        visual_url: string;
-        urn:        string;
-    }
-    
     export interface Visuals {
-        visuals:  Visual[];
-
+        visuals:  {
+            entry_time: number;
+            
+            visual_url: string;
+            urn:        string;
+        }[];
+        
         enabled:  boolean;
-
+        
         urn:      string;
-
-        tracking: null; // seems to be always null
+        
+        tracking: string | null;
     }
     
     export interface Badges {
@@ -30,84 +28,67 @@ export namespace ScuffedCloudAPI {
         verified:         boolean;
     }
     
-    export interface User {
-        kind:                  "user";
+    export interface PartialUser {
+        kind: "user"
 
+        badges:            Badges
+
+        id:                number
+        followers_count:   number
+
+        verified:          boolean
+
+        first_name:        string
+        full_name:         string
+        last_modified:     string
+        last_name:         string
+        permalink:         string
+        permalink_url:     string
+        uri:               string
+        urn:               string
+        username:          string
+        city:              string
+        station_urn:       string
+        station_permalink: string
+        avatar_url:        string | null
+        country_code:      string | null
+    }
+
+    export interface User extends PartialUser {
         visuals:               Visuals | null;
         creator_subscriptions: CreatorSubscription[];
         creator_subscription:  CreatorSubscription;
-        badges:                Badges;
 
-        id:                    number;
         track_count:           number;
         playlist_count:        number;
         likes_count:           number;
         playlist_likes_count:  number;
         groups_count:          number;
         comments_count:        number;
-        followers_count:       number;
         followings_count:      number;
         
-        verified:              boolean;
-        
-        avatar_url:            string | null;
-        city:                  string;
-        country_code:          string;
         created_at:            string;
         description:           string;
-        first_name:            string;
-        full_name:             string;
-        last_modified:         string;
-        last_name:             string;
-        permalink:             string;
-        permalink_url:         string;
-        uri:                   string;
-        urn:                   string;
-        username:              string;
-        station_urn:           string;
-        station_permalink:     string;
+    }
+    
+    export interface PartialTrack {
+        kind:               "track"
+
+        id:                 number
         
-        reposts_count:         null;
+        monetization_model: string
+        policy:             string
     }
 
-    // subset of user returned on tracks
-    export interface TrackAuthor {
-        kind:                  "user";
-
-        badges:                Badges;
-
-        id:                    number;
-        followers_count:       number;
-
-        verified:              boolean
-
-        avatar_url:            string | null;
-        full_name:             string;
-        last_modified:         string;
-        last_name:             string;
-        permalink:             string;
-        permalink_url:         string;
-        uri:                   string;
-        urn:                   string;
-        username:              string;
-        city:                  string;
-        country_code:          string;
-        station_urn:           string;
-        station_permalink:     string;
-    }
-
-    export interface Track {
-        kind:                 "track";
-
+    export interface Track extends PartialTrack {
         publisher_metadata:   PublisherMetadata;
-        user:                 TrackAuthor;
+        user:                 PartialUser;
         visuals:              Visuals | null;
-
+        
         media: {
             transcodings: Transcoding[];
         };
-
-        id:                   number;
+        
         duration:             number;
         likes_count:          number;
         playback_count:       number;
@@ -116,13 +97,13 @@ export namespace ScuffedCloudAPI {
         reposts_count:        number;
         user_id:              number;
         full_duration:        number;
-
+        
         streamable:           boolean;
         downloadable:         boolean;
         has_downloads_left:   boolean;
         commentable:          boolean;
         public:               boolean;
-
+        
         created_at:           string;
         last_modified:        string;
         permalink:            string;
@@ -135,8 +116,6 @@ export namespace ScuffedCloudAPI {
         uri:                  string;
         urn:                  string;
         waveform_url:         string;
-        monetization_model:   string;
-        policy:               string;
         station_urn:          string;
         station_permalink:    string;
         track_authorization:  string;
@@ -144,31 +123,21 @@ export namespace ScuffedCloudAPI {
         display_date:         string;
         embeddable_by:        string;
         sharing:              string;
+
         label_name:           string | null;
         release_date:         string | null;
         artwork_url:          string | null;
         purchase_title:       string | null;
         purchase_url:         string | null;
     }
-
+    
     export interface Like {
         kind:                 "like";
-
+        
         created_at:           string;
         
         track?:               Track;
         // playlist?:         Playlist; // todo if needed; does exist but I'm not interested in them right now
-    }
-
-    export interface PublisherMetadata {
-        id:               number;
-
-        contains_music?:  boolean;
-
-        urn:              string;
-        artist?:          string;
-        album_title?:     string;
-        writer_composer?: string;
     }
     
     export interface Transcoding {
@@ -176,14 +145,69 @@ export namespace ScuffedCloudAPI {
             protocol: string;
             mime_type: string;
         };
-
+        
         duration: number;
-
+        
         snipped:  boolean;
-
+        
         url:      string;
         preset:   string;
         quality:  string;
     }
+    
+    export interface Playlist {
+        kind: "playlist"
+
+        user:              User
+        tracks:            (Partial<Track> & PartialTrack)[]
+
+        artwork_url:       string | null
+        purchase_title:    string | null
+        purchase_url:      string | null
+        release_date:      string | null
+        secret_token:      string | null
+        created_at:        string
+        description:       string
+        duration:          number
+        embeddable_by:     string
+        genre:             string
+        label_name:        string
+        last_modified:     string
+        license:           string
+        likes_count:       number
+        managed_by_feeds:  boolean
+        permalink:         string
+        permalink_url:     string
+        public:            boolean
+        reposts_count:     number
+        sharing:           string
+        tag_list:          string
+        title:             string
+        uri:               string
+        user_id:           number
+        set_type:          string
+        is_album:          boolean
+        published_at:      string
+        display_date:      string
+        track_count:       number
+    }
+    
+    export interface PublisherMetadata {
+        id:                   number
+
+        contains_music:       boolean
+        explicit?:            boolean
+
+        urn:                  string
+        artist?:              string
+        album_title?:         string
+        isrc?:                string
+        writer_composer?:     string
+        publisher?:           string
+        p_line?:              string
+        p_line_for_display?:  string
+        release_title?:       string
+    }
+    
 }
 

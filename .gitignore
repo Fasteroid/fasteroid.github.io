@@ -14,3 +14,4 @@ vite.config.ts.timestamp-*
 
 src/lib/json/pagetree.json
 src/globalstyle/vars/base.scss
+src/lib/soundcloud/temp/*

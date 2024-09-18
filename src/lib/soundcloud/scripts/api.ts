@@ -13,7 +13,7 @@ const SHARED_HEADERS = {
 }
 
 export async function getFollowings(userID: number): Promise<ScuffedCloudAPI.User[]> {
-    return await getFullCollection<ScuffedCloudAPI.User>(`https://api-v2.soundcloud.com/users/${userID}/followings?limit=100&client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
+    return await getFullCollection<ScuffedCloudAPI.User>(`https://api-v2.soundcloud.com/users/${userID}/followings?limit=500&client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
         "headers": SHARED_HEADERS,
         "referrerPolicy": "strict-origin-when-cross-origin",
         "body": null,
@@ -38,9 +38,7 @@ export async function getUser(userID: number): Promise<ScuffedCloudAPI.User> {
         "body": null,
         "method": "GET"
     })
-    const json = await response.json()
-    console.log(`Got user ${userID}`)
-    return json;
+    return await response.json()
 }
 
 export async function getLikes(userID: number): Promise<ScuffedCloudAPI.Like[]> {
@@ -50,4 +48,30 @@ export async function getLikes(userID: number): Promise<ScuffedCloudAPI.Like[]> 
         "body": null,
         "method": "GET"
     })
+}
+
+export async function getPlaylist(playlistID: number): Promise<ScuffedCloudAPI.Playlist> {
+    const response = await fetch(`https://api-v2.soundcloud.com/playlists/${playlistID}?client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en&representation=full`, {
+        "headers": SHARED_HEADERS,
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": null,
+        "method": "GET"
+    })
+    return await response.json();
+}
+
+export async function getTracks(...trackIDs: number[]): Promise<ScuffedCloudAPI.Track[]> {
+    let cst = trackIDs.join(',');
+    const response = await fetch(`https://api-v2.soundcloud.com/tracks?ids=${cst}&client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
+        "headers": SHARED_HEADERS,
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": null,
+        "method": "GET"
+    })
+    return await response.json();
+}
+
+export async function getPlaylistTracks(playlistID: number): Promise<ScuffedCloudAPI.Track[]> {
+    let playlist = await getPlaylist(playlistID);
+    return await getTracks(...playlist.tracks.map(track => track.id));
 }
