@@ -1,0 +1,1 @@
+export const FASTEROID_ID = 136005972;

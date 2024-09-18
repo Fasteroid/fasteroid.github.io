@@ -1,5 +1,5 @@
 import { GraphDataset, GraphEdgeData, GraphNodeData } from "../../../components/graph/interfaces";
-import { ScuffedCloudAPI } from "./external";
+import type { ScuffedCloudAPI } from "./external";
 
 export type SoundcloudNodeData = GraphNodeData & Pick<ScuffedCloudAPI.User, 
     'username'        | 
@@ -12,3 +12,8 @@ export type SoundcloudNodeData = GraphNodeData & Pick<ScuffedCloudAPI.User,
 export type SoundcloudEdgeData = GraphEdgeData;
 
 export type SoundcloudGraphDataset = GraphDataset<SoundcloudNodeData, SoundcloudEdgeData>
+
+export type SoundcloudLikedTrack = {
+    created_at: string;
+    track:      ScuffedCloudAPI.Track;
+}

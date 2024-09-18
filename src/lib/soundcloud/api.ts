@@ -12,7 +12,7 @@ const SHARED_HEADERS = {
     "upgrade-insecure-requests": "1",
 }
 
-export async function getFollowing(userID: number): Promise<ScuffedCloudAPI.User[]> {
+export async function getFollowings(userID: number): Promise<ScuffedCloudAPI.User[]> {
     return await getFullCollection<ScuffedCloudAPI.User>(`https://api-v2.soundcloud.com/users/${userID}/followings?limit=100&client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
         "headers": SHARED_HEADERS,
         "referrerPolicy": "strict-origin-when-cross-origin",
@@ -30,15 +30,24 @@ export async function getPopularTracks(userID: number): Promise<ScuffedCloudAPI.
     })
 }
 
-export async function getUser(id: number): Promise<ScuffedCloudAPI.User> {
-    console.log(`Getting user ${id}`)
-    const response = await fetch(`https://api-v2.soundcloud.com/users/${id}?client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
+export async function getUser(userID: number): Promise<ScuffedCloudAPI.User> {
+    console.log(`Getting user ${userID}`)
+    const response = await fetch(`https://api-v2.soundcloud.com/users/${userID}?client_id=${CLIENT_ID}&app_version=1722430138&app_locale=en`, {
         "headers": SHARED_HEADERS,
         "referrerPolicy": "strict-origin-when-cross-origin",
         "body": null,
         "method": "GET"
     })
     const json = await response.json()
-    console.log(`Got user ${id}`)
+    console.log(`Got user ${userID}`)
     return json;
+}
+
+export async function getLikes(userID: number): Promise<ScuffedCloudAPI.Like[]> {
+    return await getFullCollection<ScuffedCloudAPI.Like>(`https://api-v2.soundcloud.com/users/136005972/likes?client_id=${CLIENT_ID}&limit=200&app_version=1726585731&app_locale=en`, {
+        "headers": SHARED_HEADERS,
+        "referrerPolicy": "strict-origin-when-cross-origin",
+        "body": null,
+        "method": "GET"
+    })
 }

@@ -3,7 +3,7 @@ interface CollectionResponse<T> {
     next_href: string | null;
 }
 
-async function getPartialCollection<T>(url: string, headers: RequestInit, offset: number = 0): Promise< CollectionResponse<T> > {
+async function getPartialCollection<T>(url: string, headers: RequestInit, offset: string = "0"): Promise< CollectionResponse<T> > {
     let ans: CollectionResponse<T> | undefined;
 
     while( ans === undefined ){
@@ -37,7 +37,7 @@ export async function getFullCollection<T>(url: string, headers: RequestInit): P
             console.trace(`Couldn't get offset from ${initial.next_href}`);
             break;
         }
-        let next = await getPartialCollection<T>(url, headers, parseInt(offset));
+        let next = await getPartialCollection<T>(url, headers, offset);
         data.push( ...next.collection );
         initial = next;
     }

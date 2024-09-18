@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { getFollowing, getUser } from './api';
+import { getFollowings, getUser } from './api';
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from './types/native';
 import { Map2D } from '$lib/utils';
 import type { ScuffedCloudAPI } from './types/external';
@@ -20,7 +20,7 @@ function toNode( u: ScuffedCloudAPI.User ): SoundcloudNodeData {
 
 const me = await getUser(FASTEROID_ID);
 
-const direct_following_list: ScuffedCloudAPI.User[] = await getFollowing(FASTEROID_ID)
+const direct_following_list: ScuffedCloudAPI.User[] = await getFollowings(FASTEROID_ID)
 
 if( !direct_following_list.some(user => user.username == "acloudyskye") ){
     console.warn("NO ACLOUDYSKYE???"); // sanity test, he got missed once somehow
@@ -37,7 +37,7 @@ for( let user of direct_following_list ){
 
     if( user.id === FASTEROID_ID ) continue;
 
-    const linked_direct_following: ScuffedCloudAPI.User[] = (await getFollowing(user.id)).filter( u => u.id in direct_following_lookup );
+    const linked_direct_following: ScuffedCloudAPI.User[] = (await getFollowings(user.id)).filter( u => u.id in direct_following_lookup );
 
     for( let linked of linked_direct_following ){
         if( linked.id === FASTEROID_ID ) continue;

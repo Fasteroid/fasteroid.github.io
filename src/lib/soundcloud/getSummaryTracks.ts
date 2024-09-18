@@ -1,30 +1,93 @@
-import * as fs from 'fs';
-import { getFollowing, getPopularTracks, getUser } from './api';
-import type { ScuffedCloudAPI } from './types/external';
+import { getFollowings } from "./api";
+import { FASTEROID_ID } from "./constants";
+import { getMyFollowings } from "./getFollowed";
+import { getLikedTracks }  from "./getLikedTracks";
+import type { ScuffedCloudAPI } from "./types/external";
+import type { SoundcloudLikedTrack } from "./types/native";
+import { AutoMap, LookupCache } from "./utils";
 
-const FASTEROID_ID = 136005972;
+const METRIC: number = 0.2;
 
-let direct_following_list: ScuffedCloudAPI.User[] = await getFollowing(FASTEROID_ID)
-
-direct_following_list = direct_following_list.slice(0, 20); // for testing
-
-const each_popular_tracks_map: Map<ScuffedCloudAPI.User, ScuffedCloudAPI.Track[]> = new Map();
-
-await Promise.all( direct_following_list.map( async user => {
-    each_popular_tracks_map.set(user, await getPopularTracks(user.id));
-} ) )
-
-function ranking_likesAndPlaysDividedByAge( track: ScuffedCloudAPI.Track ){
-    const uploadDate = new Date(track.created_at);
-    const age = Date.now() - uploadDate.getTime();
-
-    return track.playback_count * track.likes_count / age;
+const ALIGNMENT_TEST: {[artist: string]: string[]} = {
+    "acloudyskye"         : ["surface", "overthrower", "safety!"],
+    "moe shop"            : ["you look so good"],
+    "kotori"              : ["nanamori"],
+    "synthion"            : ["aurora", "submerge", "starlight"],
+    "becko"               : ["reborn"],
+    "ujico*/snail's house": ["pixel galaxy"],
+    "tyler inktome"       : ["aureolin"],
+    "tenkitsune"          : ["little fox wonderland", "infinity"],
+    "porter robinson"     : ["shelter"],
+    "iglooghost"          : ["bug thief"],
+    "mididuck"            : ["solace", "overwhelmed", "unstable"],
+    "geoxor"              : ["virtual"],
+    "echorift"            : ["monolith"],
+    "the caracal project" : ["de merde"],
+    "yandere"             : ["afterglow ep", "y2k forever ep"],
+    "plusol"              : ["clock", "oracle"],
+    "phritz"              : ["summit", "daydreams"],
+    "defsharp"            : ["glass fort", "offense mechanism", "get older"],
+    "airuei"              : ["aquamarine", "points"],
+    "moon jelly"          : ["one day"],
+    "driftcat"            : ["echo", "heal"],
+    "aika 🌸"             : ["dear me", "calamity rhapsody", "triple threat"],
+    "stonebank"           : ["stronger", "all night"]
 }
 
+let SCORE = 0;
 
-for( let [user, tracks] of each_popular_tracks_map ){
-    const best = tracks.reduce(
-        (a, b) => ranking_likesAndPlaysDividedByAge(a) > ranking_likesAndPlaysDividedByAge(b) ? a : b
-);
-    console.log(`${user.username} - \n${best.title}\n${best.permalink_url}\n`);
+function checkPassedTest(user: ScuffedCloudAPI.User, track: ScuffedCloudAPI.Track) {
+    let optimal = ALIGNMENT_TEST[track.user.username.toLowerCase()]
+    if( optimal === undefined ) return;
+    if( optimal.some( (test) => track.title.toLowerCase().includes(test) ) ) {
+        console.log(`HIT! ${user.username}`)
+        SCORE++;
+    }
+    else{
+        console.log(`Miss: ${user.username} (${track.title})`)
+    }
 }
+
+// 0: Most "popular" track I've liked per artist
+//     0.0: "popular" = soundcloud's metric (plays over time)
+//     0.1: "popular" = likes over time
+//     0.2: "popular" = likes squared over time
+//     0.3: "popular" = comments over time
+if( Math.floor(METRIC) === 0 ){
+
+    const liked                 = await getLikedTracks();
+    const direct_following_list = await getMyFollowings();
+    
+    const now = Date.now();
+
+    const popularityFuncs: {[key: number]: (a: SoundcloudLikedTrack) => number} = {
+        0.0: (it) => { return it.track.playback_count / (now - new Date( it.track.created_at ).getTime()) },
+        0.1: (it) => { return it.track.likes_count / (now - new Date( it.track.created_at ).getTime()) },
+        0.2: (it) => { return it.track.likes_count ** 2 / (now - new Date( it.track.created_at ).getTime()) },
+        0.3: (it) => { return it.track.comment_count ** 2 / (now - new Date( it.track.created_at ).getTime()) },
+    }
+
+    let popularity = new LookupCache<SoundcloudLikedTrack, number>( popularityFuncs[METRIC] );
+    
+    const popularLikesPerArtist = new AutoMap<number, SoundcloudLikedTrack[]>( () => [] );
+    for( let like of liked ){
+        // console.log(like.track.user)
+        const artist = like.track.user.id;
+        popularLikesPerArtist.get(artist).push(like);
+    }
+    for( let [id, artistHits] of popularLikesPerArtist ){
+        artistHits.sort( (a, b) => popularity.get(b) - popularity.get(a) );
+    }
+    
+    console.log( popularLikesPerArtist.get(71428407).map( it => it.track.title ) );
+    
+    for( let artist of direct_following_list ){
+        const likes = popularLikesPerArtist.get(artist.id);
+        if( likes.length > 0 ){
+            const summaryTrack = likes[0].track;
+            checkPassedTest(artist, summaryTrack);
+        }
+    }
+}
+
+console.log(`Score = ${SCORE}`)
