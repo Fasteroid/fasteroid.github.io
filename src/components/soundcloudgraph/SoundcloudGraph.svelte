@@ -5,9 +5,9 @@
 </svelte:head>
 
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { SoundcloudGraphManager } from "./classes";
-    import nodeDataset                     from "$lib/soundcloud/followermap.json"
+    import { browser }                     from "$app/environment";
+    import { SoundcloudGraphManager }      from "./classes";
+    import nodeDataset                     from "$lib/soundcloud/graph_soundcloud_v2.json"
     import type { SoundcloudGraphDataset } from "$lib/soundcloud/types/native";
 
     if( browser ) {

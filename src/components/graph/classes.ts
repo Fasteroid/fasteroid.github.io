@@ -109,6 +109,7 @@ export abstract class GraphManager<
         }
 
         for(const nodeData of data.nodes){
+            if( nodeData === null || nodeData === undefined ) continue;
             this.nodes.set(nodeData.id, this.createNode(nodeData));
         }
 
@@ -119,8 +120,17 @@ export abstract class GraphManager<
             }
             else {
                 edge = this.createEdge(edgeData);
-                this.nodes.get(edgeData.from)!.edges.push(edge);
-                this.nodes.get(edgeData.to)!.edges.push(edge);
+
+                const fromNode = this.nodes.get(edgeData.from);
+                const toNode   = this.nodes.get(edgeData.to);
+
+                if( fromNode === null || fromNode === undefined || toNode === null || toNode === undefined ) {
+                    console.warn("Bad edge: ", edgeData);
+                    continue;
+                }
+
+                fromNode.edges.push(edge);
+                toNode.edges.push(edge);
                 this.edges.set(edgeData.from, edgeData.to, edge);
             }
         }
@@ -194,8 +204,10 @@ export abstract class GraphManager<
     }
 
     private render(){
+        
         this._selfBox = undefined;
         this._parentBox = undefined;
+        this._selfComputedSize = undefined;
 
         this.nodes.forEach( node => node.render() );
 

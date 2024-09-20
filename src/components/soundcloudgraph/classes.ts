@@ -10,10 +10,12 @@ const abs = Math.abs
 const sqrt = Math.sqrt
 const max = Math.max
 const pow = Math.pow
+const min = Math.min
 
-const EDGE_MIN_LENGTH             = 2;     // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 40000; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 800;  // min "far" distance
+const MIN_EDGE                    = 100;
+const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very close
+const AMBIENT_REPEL_STRENGTH      = 6000; // inverse square multiplier
+const FAR_AWAY_FROM_CENTER_THRESH = 1200;  // min "far" distance
 
 const EDGE_RATE                   = 0.1;
 
@@ -77,15 +79,19 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     }
 
     public doForces() {
-        const childNode  = this.from!;
-        const parentNode = this.to!;
+        const fromNode  = this.from!;
+        const toNode = this.to!;
 
-        const dist = childNode.pos.distance(parentNode.pos);
-        let factor = clamp(dist * 0.05, 0, 1) * (this.bidirectional ? 2 : 1);
-        const dir  = childNode.pos.copy.subV(parentNode.pos).scaleBy(factor * (1 + this.width * 2) / dist);
+        const dist = fromNode.pos.distance(toNode.pos);
+        let factor = clamp( (dist - MIN_EDGE) * 0.05, -0.2, 1) * 
+                     (1 + this.width * 0.5) *
+                     (0.5 * fromNode.edgeCountBoost + 0.5 * toNode.edgeCountBoost) *
+                     (this.bidirectional ? 1 : 0.5);
 
-        this.from!.vel.subV(dir);
-        this.to!.vel.addV(dir);
+        const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
+
+        this.from!.vel.addV(dir);
+        this.to!.vel.subV(dir);
     }
 
 }
@@ -101,22 +107,33 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         return this._edgeWidth;
     }
 
+    private _edgeCountBoost!: number;
+    public get edgeCountBoost(){
+        return (
+            this._edgeCountBoost ??= 1 / (
+                0.1 * this.edges.reduce<number>( (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 0 ) 
+            )
+        );
+    }
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
 
+        const {artist, track} = data;
+
         this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
         this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
 
-        (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = data.username;
-        this.html.style.backgroundImage = `url(${data.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
+        (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
+        this.html.style.backgroundImage = `url(${artist.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
 
         let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
-        textMain.innerText = data.username;
+        textMain.innerText = artist.username;
 
         this.html.addEventListener('click', () => {
             if( this.manager.cancelUrlOpen ) return;
-            window.open(data.permalink_url, '_blank', 'noopener, noreferrer');
+            window.open(artist.permalink_url, '_blank', 'noopener, noreferrer');
         });
 
         this.html.addEventListener('mouseenter', () => {
@@ -143,7 +160,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doRepulsionForce(that: SoundcloudNode) {
-        let dist = this.pos.distance(that.pos) + EDGE_MIN_LENGTH;
+        let dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
 
         const f = this.pos.copy.subV(that.pos).scaleBy( 
             (-AMBIENT_REPEL_STRENGTH / (dist**3))
@@ -161,8 +178,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     public override doPositioning(){
         this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this._isHovered ? 1 : -1), 0, 1);
-        let stillness = Math.pow(2, this._edgeWidth * 10);
-        this.vel.scaleBy(0.4 * (1 / stillness));
+        this.vel.scaleBy(0.6);
         this.pos.addV(this.vel);
     }
 
@@ -223,11 +239,11 @@ extends GraphManager<
             this.cancelUrlOpen = true;
         });
 
-        this.panzoom!.on('panend', () => {
+        this.nodeContainer.addEventListener('mouseup', () => {
             setTimeout(() => {
                 this.cancelUrlOpen = false;
-            }, 0);
-        });
+            });
+        })
 
         this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
 
@@ -249,7 +265,7 @@ extends GraphManager<
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
         const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
         
-        const json = JSON.stringify({ nodes, edges }, undefined, 4);
+        const json = JSON.stringify({ nodes, edges });
 
         let element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json));

@@ -11,7 +11,7 @@ export type SoundcloudLikedTrack = {
 }
 
 export type SoundcloudNodeData = GraphNodeData & {
-    track: Pick<ScuffedCloudAPI.Track,
+    track?: Pick<ScuffedCloudAPI.Track,
         'permalink_url'  |
         'duration'       |
         'created_at'     |

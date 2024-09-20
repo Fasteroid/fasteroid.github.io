@@ -1,15 +1,13 @@
 import * as fs from 'node:fs/promises';
 import { getFollowings, getPopularTracks, getUser } from './api';
 import type { ScuffedCloudAPI } from '../types/external';
-import { FASTEROID_ID } from './constants';
+import { FASTEROID_ID, USE_API } from './constants';
 import { getMyFollowings } from './getFollowed';
-
-const FROM_API = true;
 
 export type PopularFollowingTracksIndex = {[user_id: string]: Omit<ScuffedCloudAPI.Track, 'user'>[]}
 
 export async function getPopularFollowingTracks(): Promise<PopularFollowingTracksIndex> {
-    if( FROM_API ){
+    if( USE_API ){
         const direct_following_list: ScuffedCloudAPI.User[] = await getMyFollowings();
         const popular_tracks_index: PopularFollowingTracksIndex = { };
         
