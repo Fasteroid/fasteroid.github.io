@@ -64,9 +64,11 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         const size = this.manager.selfComputedSize;
         const x = size.width * 0.5;
         const y = size.height * 0.5;
+        let center = this.manager.focusOffset;
         for( let vert of original ){
             vert.x += x;
             vert.y += y;
+            center ? vert.subV(center) : null;
         }
         return original;
     }
@@ -116,6 +118,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         );
     }
 
+    private panTicker: number = -1;
+    private panOffset: Vec2 = new Vec2(0, 0);
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
@@ -138,10 +143,14 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         this.html.addEventListener('mouseenter', () => {
             this._isHovered = true;
+            this.manager.setFocusedNode(this);
         });
 
         this.html.addEventListener('mouseleave', () => {
             this._isHovered = false;
+            this.manager.setFocusedNode(null);
+            // window.clearInterval(this.panTicker);
+            // this.panTicker = -1;
         });
         
     }
@@ -197,11 +206,12 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
+        const center = this.manager.focusOffset;
         const size = this.manager.selfComputedSize;
         this.style.transform = `
         translate(
-            ${this.pos.x + size.width / 2}px, 
-            ${this.pos.y + size.height / 2}px
+            ${this.pos.x - center.x + size.width / 2}px, 
+            ${this.pos.y - center.y + size.height / 2}px
         ) 
         translate(-50%, -50%)
         `;
@@ -223,6 +233,28 @@ extends GraphManager<
     }
 
     public cancelUrlOpen: boolean = false;
+
+    private focusedNode: SoundcloudNode | null = null;
+    private focusedOffset: Vec2 = new Vec2(0, 0);
+
+    public setFocusedNode(node: SoundcloudNode | null){
+        this.focusedNode = node;
+        if( !node ) return;
+        this.focusedOffset = node.pos;
+    }
+    
+    private _center: Vec2 = new Vec2(0, 0);
+    public get focusOffset(): ImmutableVec2 {
+        return this._center;
+    }
+
+    private autoFocus = () => {
+        window.requestAnimationFrame(this.autoFocus);
+        if( !this.focusedNode ) return;
+        const cur  = this._center;
+        const next = this.focusedNode.pos;
+        this._center.setTo(cur.x * 0.95 + next.x * 0.05, cur.y * 0.95 + next.y * 0.05);
+    }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){
         super(templateNode, nodeContainer, lineContainer, data, {
@@ -251,6 +283,7 @@ extends GraphManager<
             this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
         }, 1000);
 
+        window.requestAnimationFrame(this.autoFocus);
     }
 
     protected override createNode(data: SoundcloudNodeData): SoundcloudNode {
