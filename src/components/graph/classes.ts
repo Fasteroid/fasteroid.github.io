@@ -247,26 +247,6 @@ export abstract class GraphManager<
         this.nodes.forEach( node => node.doPositioning() );
     }
 
-    /**
-     * Converts global document-space coordinates into local graph-space coordinates.
-     * @param x 
-     * @param y 
-     */
-    public toLocal(x: number, y: number): Vec2 {
-        
-        const rect  = this.selfBox;
-        const style = this.selfComputedSize;
-
-        const scaleX = style.width / rect.width;
-        const scaleY = style.height / rect.height;
-
-        return new Vec2(
-            (x - rect.left) * scaleX,
-            (y - rect.top) * scaleY
-        );
-
-    }
-
     public toParent(x: number, y: number): Vec2 {
         const thisRect = this.selfBox;
         const parentRect = this.parentBox;
@@ -278,6 +258,20 @@ export abstract class GraphManager<
         return new Vec2(
             x * scaleX + thisRect.left - parentRect.left,
             y * scaleY + thisRect.top - parentRect.top
+        );
+    }
+
+    public toLocal(x: number, y: number): Vec2 {
+        const thisRect = this.selfBox;
+        const parentRect = this.parentBox;
+        const style = this.selfComputedSize;
+
+        const scaleX = thisRect.width / style.width;
+        const scaleY = thisRect.height / style.height;
+
+        return new Vec2(
+            (x - thisRect.left + parentRect.left) / scaleX,
+            (y - thisRect.top  + parentRect.top)  / scaleY
         );
     }
 
