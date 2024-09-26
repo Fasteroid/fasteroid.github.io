@@ -226,7 +226,7 @@ export abstract class GraphManager<
         const colors:    number[] = [];
         for(const edge of this.edges.values()){
             for(let vert of edge.verts){
-                vert = this.toParent(vert.x, vert.y);
+                vert = this.toWorld(vert.x, vert.y);
                 positions.push(vert.x, vert.y);
                 colors.push(edge.color.r, edge.color.g, edge.color.b, edge.color.a);
             }
@@ -247,7 +247,7 @@ export abstract class GraphManager<
         this.nodes.forEach( node => node.doPositioning() );
     }
 
-    public toParent(x: number, y: number): Vec2 {
+    public toWorld(x: number, y: number): Vec2 {
         const thisRect = this.selfBox;
         const parentRect = this.parentBox;
         const style = this.selfComputedSize;

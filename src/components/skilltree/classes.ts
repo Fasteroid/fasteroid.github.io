@@ -183,7 +183,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private dragEvent(e: MouseEvent | TouchEvent){
         let event: MouseEvent | Touch = ( e instanceof TouchEvent ) ? e.touches[0] : e;
-        this.pos = this.manager.toLocal(event.clientX, event.clientY);
+        this.pos = this.manager.toLocal(event.clientX, event.clientY).sub(this.manager.selfBox.left, this.manager.selfBox.top);
 
         this.vel.setTo(0,0);
     }
