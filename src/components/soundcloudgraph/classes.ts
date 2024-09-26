@@ -238,22 +238,23 @@ extends GraphManager<
     private focusedOffset: Vec2 = new Vec2(0, 0);
 
     public setFocusedNode(node: SoundcloudNode | null){
+        if( !node && this.focusedNode )
+            this.focusedOffset.subV(this.focusedNode!.pos.copy);
+
         this.focusedNode = node;
-        if( !node ) return;
-        this.focusedOffset = node.pos;
+        
+        if( node )
+            this.focusedOffset.addV(node.pos.copy);
     }
     
-    private _center: Vec2 = new Vec2(0, 0);
     public get focusOffset(): ImmutableVec2 {
-        return this._center;
+        const pos = this.focusedNode?.pos ?? Vec2.ZERO;
+        return pos.copy.subV(this.focusedOffset);
     }
 
     private autoFocus = () => {
         window.requestAnimationFrame(this.autoFocus);
         if( !this.focusedNode ) return;
-        const cur  = this._center;
-        const next = this.focusedNode.pos;
-        this._center.setTo(cur.x * 0.95 + next.x * 0.05, cur.y * 0.95 + next.y * 0.05);
     }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){
