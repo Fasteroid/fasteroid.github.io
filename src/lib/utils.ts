@@ -10,6 +10,8 @@ export type ImmutableVec2 = Omit<Vec2, 'add' | 'sub' | 'addV' | 'subV' | 'setTo'
  */
 export class Vec2 {
 
+    static readonly ZERO: ImmutableVec2 = new Vec2(0, 0);
+
     x: number;
     y: number;
     
@@ -277,3 +279,21 @@ export function cacheWrap<I, O>(fn: (i: I) => O): (i: I) => O {
     }) as (i: I) => O
 }
 
+
+
+// by github copilot
+// stolen from my work (but who cares)
+/**
+ * Takes in an array of {@linkcode T}, returns an object containing the original array's contents, grouped by the result of {@linkcode group}.
+ */
+export function groupBy<T, K extends number | string>( arr: T[], group: (t: T) => K ): Map<K, T[]> {
+    const map = new Map<K, T[]>();
+    for( const item of arr ){
+        const key = group(item);
+        if( !map.has(key) ){
+            map.set(key, []);
+        }
+        map.get(key)?.push(item);
+    }
+    return map;
+}

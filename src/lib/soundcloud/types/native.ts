@@ -30,5 +30,8 @@ export type SoundcloudNodeData = GraphNodeData & {
         'followings_count' |
         'description'      |
         'track_count'
-    >
+    > & {
+        'likes_count':     number // # of theirs in my likes
+        'favorites_count': number // # of theirs in legendary favorites
+    }
 }

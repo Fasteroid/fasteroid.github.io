@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { cacheWrap } from "$lib/utils";
+import { cacheWrap, groupBy } from "$lib/utils";
 import { getFollowings, getPlaylistTracks } from "./scripts/api";
 import { FASTEROID_ID } from "./scripts/constants";
 import { getLikedTracks } from "./scripts/getLikedTracks";
@@ -8,13 +8,17 @@ import type { ScuffedCloudAPI } from "./types/external";
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "./types/native";
 import { AutoMap } from "./scripts/automap";
 
+const UPDATE_EDGES: boolean = false;
+
 const getCachedPopularity  = cacheWrap<SoundcloudNodeTrack, number>( getPopularity )
 const getCachedFollowings  = cacheWrap( getFollowings );
 
 const liked                    = await getLikedTracks();
+const liked_by_artist          = groupBy( liked, it => it.track.user_id );
 const popular_following_tracks = await getPopularFollowingTracks();
 const legendary_favorites      = await getPlaylistTracks(1424215180);
 const legendary_lookup         = new Map( legendary_favorites.map( (track, idx) => [track.id, idx] ) );
+const legendary_by_artist      = groupBy( legendary_favorites, it => it.user_id );
 const followings               = await getCachedFollowings(FASTEROID_ID);
 const followings_lookup        = new Map( followings.map( u => [u.id, u] ) );
 const now                      = Date.now();
@@ -44,7 +48,9 @@ function SoundcloudNodeData(track: Omit<ScuffedCloudAPI.Track, 'user'> | undefin
             followers_count: artist.followers_count,
             followings_count: artist.followings_count,
             description: artist.description,
-            track_count: artist.track_count
+            track_count: artist.track_count,
+            likes_count:     liked_by_artist.get(artist.id)?.length ?? 0,
+            favorites_count: legendary_by_artist.get(artist.id)?.length ?? 0
         }
     }
     if( track !== undefined ){
@@ -101,17 +107,22 @@ for( let [_, trackChoices] of pool ){
     trackChoices.sort( (a, b) => getCachedPopularity(b) - getCachedPopularity(a) );
 }
 
-const edges: SoundcloudEdgeData[] = [];
+let edges: SoundcloudEdgeData[] = [];
 
-for( let user of followings_lookup.values() ){
-    if( user.id === FASTEROID_ID ) continue;
+if( UPDATE_EDGES ){
+    for( let user of followings_lookup.values() ){
+        if( user.id === FASTEROID_ID ) continue;
 
-    const linked_direct_following: ScuffedCloudAPI.User[] = (await getCachedFollowings(user.id)).filter( u => followings_lookup.has(u.id) );
+        const linked_direct_following: ScuffedCloudAPI.User[] = (await getCachedFollowings(user.id)).filter( u => followings_lookup.has(u.id) );
 
-    for( let linked of linked_direct_following ){
-        if( linked.id === FASTEROID_ID ) continue;
-        edges.push({from: user.id.toString(), to: linked.id.toString()});
+        for( let linked of linked_direct_following ){
+            if( linked.id === FASTEROID_ID ) continue;
+            edges.push({from: user.id.toString(), to: linked.id.toString()});
+        }
     }
+}
+else {
+    edges = JSON.parse( fs.readFileSync('./graph_soundcloud_v2.json', 'utf-8') ).edges;
 }
 
 let dataset: SoundcloudGraphDataset = {
