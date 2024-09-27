@@ -67,14 +67,8 @@ export abstract class GraphManager<
 
     private _draw = () => {
         this.render();
+        window.setTimeout(() => this.simulate(), 16); // 60fps
         window.requestAnimationFrame(this._draw);
-    }
-
-    private _sim = () => {
-        this.simulate();
-        window.requestAnimationFrame(() => {
-            window.setTimeout(this._sim, 16); // 60fps
-        });
     }
 
     // ----- webgl -----
@@ -138,8 +132,6 @@ export abstract class GraphManager<
         this.oldH = this.nodeContainer.clientHeight;
         this.oldW = this.nodeContainer.clientWidth;
 
-
-        requestAnimationFrame(this._sim);
         requestAnimationFrame(this._draw);
 
         window.addEventListener('resize', () => {
