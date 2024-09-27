@@ -1,7 +1,7 @@
 # Todo list of stuff to try because there's so much
 
 ## EDGES
-    - Render additively?
+    - Render additively? (looked decent)
     - Experiment with animation
 
 
@@ -9,10 +9,7 @@
     - What if click on a node to autofocus instead of hover?
 
 ## NODES
-    - Size...
-        - based on liked_count?
-        - based on followers_count?
-        - maybe both somehow?
+    - Size based on number of likes makes the structure less fluid... common neighborhoods are more rare.  Do we want this?
 
 ## TRAVERSAL
     - Mousing nodes to pan to them was actually kind of nice.  Explore this further...
