@@ -25,8 +25,8 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
     }
 
-    public static readonly WHITE = new Color(1, 1, 1);
-    public static readonly GRAY  = new Color(0.5, 0.5, 0.5);
+    public static readonly WHITE = new Color(1.0, 1.0, 1.0);
+    public static readonly GRAY  = new Color(0.6, 0.6, 0.6);
     public get color() {
         return this.bidirectional ? SoundcloudEdge.WHITE : SoundcloudEdge.GRAY;
     }
@@ -117,9 +117,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             )
         );
     }
-
-    private panTicker: number = -1;
-    private panOffset: Vec2 = new Vec2(0, 0);
 
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
@@ -285,6 +282,11 @@ extends GraphManager<
         }, 1000);
 
         window.requestAnimationFrame(this.autoFocus);
+
+        // draw brighter edges (bidirectional followings) on top
+        this.gl_ctx.enable(this.gl_ctx.BLEND);
+        this.gl_ctx.blendFunc(this.gl_ctx.ONE, this.gl_ctx.ONE);
+        this.gl_ctx.blendEquation(this.gl_ctx.MAX);
     }
 
     protected override createNode(data: SoundcloudNodeData): SoundcloudNode {

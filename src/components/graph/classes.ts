@@ -78,7 +78,7 @@ export abstract class GraphManager<
     }
 
     // ----- webgl -----
-    private gl_ctx:     WebGL2RenderingContext;
+    public readonly gl_ctx:     WebGL2RenderingContext;
     private gl_program: WebGLProgram;
 
     private gl_positionAttributeLocation: GLint;
