@@ -59,16 +59,20 @@ export abstract class GraphManager<
         return this._selfComputedSize;
     }
 
-    private invalidateCache(){
+    private recalculateStyle(){
         this._selfBox = undefined;
         this._parentBox = undefined;
         this._selfComputedSize = undefined;
+        this.selfBox;
+        this.parentBox;
+        this.selfComputedSize;
     }
 
-    private _draw = () => {
-        this.render();
-        window.setTimeout(() => this.simulate(), 16); // 60fps
-        window.requestAnimationFrame(this._draw);
+    private simTimeout: number | undefined;
+    private _render = () => {
+        this.simulate();
+        window.requestAnimationFrame( () => this.render() );
+        window.setTimeout(this._render, 16); // 60fps
     }
 
     // ----- webgl -----
@@ -132,10 +136,10 @@ export abstract class GraphManager<
         this.oldH = this.nodeContainer.clientHeight;
         this.oldW = this.nodeContainer.clientWidth;
 
-        requestAnimationFrame(this._draw);
+        requestAnimationFrame(this._render);
 
         window.addEventListener('resize', () => {
-            this.invalidateCache();
+            this.recalculateStyle();
             this.handleResize();
         });
 
@@ -197,9 +201,7 @@ export abstract class GraphManager<
 
     private render(){
         
-        this._selfBox = undefined;
-        this._parentBox = undefined;
-        this._selfComputedSize = undefined;
+        this.recalculateStyle();
 
         this.nodes.forEach( node => node.render() );
 
@@ -212,7 +214,7 @@ export abstract class GraphManager<
         this.gl_ctx.useProgram(this.gl_program);
         this.gl_ctx.bindVertexArray(this.gl_vertexArray);
     
-        this.gl_ctx.uniform2f(this.gl_resolutionUniformLocation, this.nodeContainer.clientWidth, this.nodeContainer.clientHeight);
+        this.gl_ctx.uniform2f(this.gl_resolutionUniformLocation, this.parentBox.width, this.parentBox.height);
     
         const positions: number[] = [];
         const colors:    number[] = [];
@@ -414,7 +416,6 @@ export abstract class GraphNode<
      * Same as old render method.
      */
     public render(){
-
         // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
         this.style.transform = `translate(
             ${Math.round(this.pos.x)}px, 

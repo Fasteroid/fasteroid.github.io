@@ -12,12 +12,13 @@ const max = Math.max
 const pow = Math.pow
 const min = Math.min
 
-const MIN_EDGE                    = 100;
 const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 6000; // inverse square multiplier
+const AMBIENT_REPEL_STRENGTH      = 500; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1200;  // min "far" distance
 
 const EDGE_RATE                   = 0.1;
+
+const BASE_NODE_SIZE = 32;
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
@@ -85,10 +86,10 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         const toNode = this.to!;
 
         const dist = fromNode.pos.distance(toNode.pos);
-        let factor = clamp( (dist - MIN_EDGE) * 0.05, -0.2, 1) * 
+        let factor = clamp( (dist - toNode.radius - fromNode.radius) * 0.05, -0.2, 1) * 
                      (1 + this.width * 0.5) *
-                     (0.5 * fromNode.edgeCountBoost + 0.5 * toNode.edgeCountBoost) *
-                     (this.bidirectional ? 1 : 0.5);
+                     (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
+                     (this.bidirectional ? 2 : 1);
 
         const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
 
@@ -109,12 +110,21 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         return this._edgeWidth;
     }
 
-    private _edgeCountBoost!: number;
-    public get edgeCountBoost(){
+    private _fewFollowingMul!: number;
+    public get fewFollowingMul(){
         return (
-            this._edgeCountBoost ??= 1 / (
+            this._fewFollowingMul ??= 1 / ( // only calculate it once
                 0.1 * this.edges.reduce<number>( (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 0 ) 
             )
+        );
+    }
+
+    private _radius!: number;
+    public get radius(){
+        return this._radius ??= (
+            BASE_NODE_SIZE +                       // base size
+            this.data.artist.likes_count +         // my likes on them
+            this.data.artist.favorites_count * 7   // my favorites on them
         );
     }
 
@@ -129,6 +139,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
         this.html.style.backgroundImage = `url(${artist.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
+
+        this.html.style.setProperty('--scale', `${this.radius / BASE_NODE_SIZE}`);
 
         let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
         textMain.innerText = artist.username;
@@ -146,8 +158,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.html.addEventListener('mouseleave', () => {
             this._isHovered = false;
             this.manager.setFocusedNode(null);
-            // window.clearInterval(this.panTicker);
-            // this.panTicker = -1;
         });
         
     }
@@ -166,10 +176,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doRepulsionForce(that: SoundcloudNode) {
-        let dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
-
+        let repel_dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
         const f = this.pos.copy.subV(that.pos).scaleBy( 
-            (-AMBIENT_REPEL_STRENGTH / (dist**3))
+            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.radius + that.radius)
         )
 
         that.vel.addV(f);
@@ -179,7 +188,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private doCenterSeekingForce(){
         const len = this.pos.length();
         const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
-        this.vel.addV( this.pos.copy.scaleBy(scale * -0.1) );
+        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.radius) );
     }
 
     public override doPositioning(){
@@ -210,7 +219,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             ${this.pos.x - center.x + size.width / 2}px, 
             ${this.pos.y - center.y + size.height / 2}px
         ) 
-        translate(-50%, -50%)
         `;
     }
     
