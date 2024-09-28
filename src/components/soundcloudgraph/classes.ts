@@ -13,7 +13,7 @@ const pow = Math.pow
 const min = Math.min
 
 const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 800; // inverse square multiplier
+const AMBIENT_REPEL_STRENGTH      = 1200; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1700;  // min "far" distance
 
 const EDGE_RATE                   = 0.1;
@@ -89,6 +89,7 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         let factor = clamp( (dist - toNode.radius - fromNode.radius) * 0.05, -0.2, 1) * 
                      (1 + this.width * 0.25) * 
                      (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
+                     ( (0.5 * fromNode.radius + 0.5 * toNode.radius) / BASE_NODE_SIZE ) *
                      (this.bidirectional ? 2 : 0.5);
 
         const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
@@ -131,7 +132,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         return this._radius ??= (
             BASE_NODE_SIZE +                       // base size
             this.data.artist.likes_count * 1.5 +   // my likes on them
-            this.data.artist.favorites_count * 4   // my favorites on them
+            this.data.artist.favorites_count * 6 + // my favorites on them
+            this.data.artist.relics_count * 9     // my relics on them (old favorites)
         );
     }
 

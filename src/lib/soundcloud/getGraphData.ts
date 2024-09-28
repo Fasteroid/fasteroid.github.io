@@ -1,14 +1,12 @@
 import * as fs from 'fs';
 import { cacheWrap, groupBy } from "$lib/utils";
 import { getFollowings, getPlaylistTracks } from "./scripts/api";
-import { FASTEROID_ID } from "./scripts/constants";
+import { FASTEROID_ID, USE_API } from "./scripts/constants";
 import { getLikedTracks } from "./scripts/getLikedTracks";
 import { getPopularFollowingTracks } from "./scripts/getPopularFollowingTracks";
 import type { ScuffedCloudAPI } from "./types/external";
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "./types/native";
 import { AutoMap } from "./scripts/automap";
-
-const UPDATE_EDGES: boolean = false;
 
 const getCachedPopularity  = cacheWrap<SoundcloudNodeTrack, number>( getPopularity )
 const getCachedFollowings  = cacheWrap( getFollowings );
@@ -16,11 +14,18 @@ const getCachedFollowings  = cacheWrap( getFollowings );
 const liked                    = await getLikedTracks();
 const liked_by_artist          = groupBy( liked, it => it.track.user_id );
 const popular_following_tracks = await getPopularFollowingTracks();
+
 const legendary_favorites      = await getPlaylistTracks(1424215180);
 const legendary_lookup         = new Map( legendary_favorites.map( (track, idx) => [track.id, idx] ) );
 const legendary_by_artist      = groupBy( legendary_favorites, it => it.user_id );
+
 const followings               = await getCachedFollowings(FASTEROID_ID);
 const followings_lookup        = new Map( followings.map( u => [u.id, u] ) );
+
+const classic_favorites        = await getPlaylistTracks(1596510016);
+const classic_lookup           = new Map( classic_favorites.map( (track, idx) => [track.id, idx] ) );
+const classic_by_artist        = groupBy( classic_favorites, it => it.user_id );
+
 const now                      = Date.now();
 
 function getPopularity(it: SoundcloudNodeTrack): number {
@@ -50,7 +55,8 @@ function SoundcloudNodeData(track: Omit<ScuffedCloudAPI.Track, 'user'> | undefin
             description: artist.description,
             track_count: artist.track_count,
             likes_count:     liked_by_artist.get(artist.id)?.length ?? 0,
-            favorites_count: legendary_by_artist.get(artist.id)?.length ?? 0
+            favorites_count: legendary_by_artist.get(artist.id)?.length ?? 0,
+            relics_count:    classic_by_artist.get(artist.id)?.length ?? 0
         }
     }
     if( track !== undefined ){
@@ -109,7 +115,7 @@ for( let [_, trackChoices] of pool ){
 
 let edges: SoundcloudEdgeData[] = [];
 
-if( UPDATE_EDGES ){
+if( USE_API ){
     for( let user of followings_lookup.values() ){
         if( user.id === FASTEROID_ID ) continue;
 
