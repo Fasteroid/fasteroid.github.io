@@ -155,6 +155,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         this.html.style.setProperty('--scale', `${this.radius / BASE_NODE_SIZE}`);
 
+        (this.html as any).__data_for_fellow_devs_using_inspect_element__ = this.data; // :)
+
         let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
         textMain.innerText = artist.username;
 
