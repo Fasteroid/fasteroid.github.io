@@ -13,8 +13,8 @@ const pow = Math.pow
 const min = Math.min
 
 const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 500; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 1200;  // min "far" distance
+const AMBIENT_REPEL_STRENGTH      = 800; // inverse square multiplier
+const FAR_AWAY_FROM_CENTER_THRESH = 1700;  // min "far" distance
 
 const EDGE_RATE                   = 0.1;
 
@@ -87,14 +87,15 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         const dist = fromNode.pos.distance(toNode.pos);
         let factor = clamp( (dist - toNode.radius - fromNode.radius) * 0.05, -0.2, 1) * 
-                     (1 + this.width * 0.5) *
+                     (1 + this.width * 0.25) * 
                      (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
-                     (this.bidirectional ? 2 : 1);
+                     (this.bidirectional ? 2 : 0.5);
 
         const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
 
-        this.from!.vel.addV(dir);
-        this.to!.vel.subV(dir);
+        fromNode.vel.addV(dir);
+        toNode.vel.subV(dir);
+
     }
 
 }
@@ -114,7 +115,13 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     public get fewFollowingMul(){
         return (
             this._fewFollowingMul ??= 1 / ( // only calculate it once
-                0.1 * this.edges.reduce<number>( (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 0 ) 
+                min(
+                    0.1 * this.edges.reduce<number>( 
+                        (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 
+                        0 
+                    ),
+                    4
+                )
             )
         );
     }
@@ -123,9 +130,15 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     public get radius(){
         return this._radius ??= (
             BASE_NODE_SIZE +                       // base size
-            this.data.artist.likes_count +         // my likes on them
-            this.data.artist.favorites_count * 7   // my favorites on them
+            this.data.artist.likes_count * 1.5 +   // my likes on them
+            this.data.artist.favorites_count * 4   // my favorites on them
         );
+    }
+
+    // artists with large followings need the extra circumference
+    private _trueRadius!: number;
+    public get trueRadius(){
+        return this._trueRadius ??= max(this.radius * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
     }
 
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
@@ -175,10 +188,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.pos.setTo(x, y);
     }
 
-    private doRepulsionForce(that: SoundcloudNode) {
+    public doRepulsionForce(that: SoundcloudNode) {
         let repel_dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
         const f = this.pos.copy.subV(that.pos).scaleBy( 
-            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.radius + that.radius)
+            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.trueRadius + that.trueRadius)
         )
 
         that.vel.addV(f);
@@ -188,7 +201,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private doCenterSeekingForce(){
         const len = this.pos.length();
         const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
-        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.radius) );
+        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.trueRadius) );
     }
 
     public override doPositioning(){
@@ -198,10 +211,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public doForces(){ 
-        for( const that of this.manager.nodes.values() ){
-            if( that === this ) continue; // don't repel self lol
-            this.doRepulsionForce(that);
-        }
         this.doCenterSeekingForce();
     }
 
@@ -260,6 +269,16 @@ extends GraphManager<
     private autoFocus = () => {
         window.requestAnimationFrame(this.autoFocus);
         if( !this.focusedNode ) return;
+    }
+
+    public override preSimulate(): void {
+        const nodes = Array.from( this.nodes.values() );
+        for( let i = 0; i < nodes.length; i++ ){
+            const node1 = nodes[i];
+            for( let j = i + 1; j < nodes.length; j++ ){
+                node1.doRepulsionForce(nodes[j]);
+            }
+        }
     }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){

@@ -37,14 +37,12 @@ export abstract class GraphManager<
 
     private _selfBox?: DOMRect;
     public get selfBox(): DOMRect {
-        if(this._selfBox === undefined) this._selfBox = this.nodeContainer.getBoundingClientRect();
-        return this._selfBox;
+        return this._selfBox ??= this.nodeContainer.getBoundingClientRect();
     }
 
     private _parentBox?: DOMRect;
     public get parentBox(): DOMRect {
-        if(this._parentBox === undefined) this._parentBox = this.nodeContainer.parentElement!.getBoundingClientRect();
-        return this._parentBox;
+        return this._parentBox ??= this.nodeContainer.parentElement!.getBoundingClientRect();
     }
 
     private _selfComputedSize?: { width: number, height: number };
@@ -68,11 +66,12 @@ export abstract class GraphManager<
         this.selfComputedSize;
     }
 
-    private simTimeout: number | undefined;
     private _render = () => {
         this.simulate();
-        window.requestAnimationFrame( () => this.render() );
-        window.setTimeout(this._render, 16); // 60fps
+        window.requestAnimationFrame( () => {
+            window.setTimeout(this._render, 16); // 60fps
+            this.render()
+        });
     }
 
     // ----- webgl -----
@@ -199,14 +198,14 @@ export abstract class GraphManager<
         this.edgeContainer.height = this.nodeContainer.clientHeight
     }
 
+    public /*virtual*/ preRender(){ };
     private render(){
-        
+        this.preRender();
         this.recalculateStyle();
 
         this.nodes.forEach( node => node.render() );
 
-        let style = this.selfComputedSize;
-        this.gl_ctx.viewport(0, 0, style.width, style.height);
+        this.gl_ctx.viewport(0, 0, this.selfComputedSize.width, this.selfComputedSize.height);
 
         this.gl_ctx.clearColor(0.0, 0.0, 0.0, 0.0);  // White background
         this.gl_ctx.clear(this.gl_ctx.COLOR_BUFFER_BIT);
@@ -235,7 +234,9 @@ export abstract class GraphManager<
         this.gl_ctx.drawArrays(this.gl_ctx.TRIANGLES, 0, positions.length / 2);  
     }
 
+    public /*virtual*/ preSimulate(){};
     private simulate(){
+        this.preSimulate();
         this.nodes.forEach( node => node.doForces() );
         this.edges.forEach( edge => edge.doForces() );
         this.nodes.forEach( node => node.doPositioning() );

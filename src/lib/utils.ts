@@ -12,16 +12,23 @@ export class Vec2 {
 
     static readonly ZERO: ImmutableVec2 = new Vec2(0, 0);
 
-    x: number;
-    y: number;
+    private _x: number;
+    private _y: number;
+
+    public get x() { return this._x; }
+    public get y() { return this._y; }
+    public set x(v: number) { this._x = v; this._length = undefined; }
+    public set y(v: number) { this._y = v; this._length = undefined; }
     
-    constructor(x: number = 0, y: number = 0){
-        this.x = x;
-        this.y = y;
+    constructor(x: number = 0, y: number = 0, length?: number){
+        this._x = x;
+        this._y = y;
+        this._length = length;
     }
     
+    private _length: number | undefined;
     length(): number {
-        return sqrt(this.x**2 + this.y**2);
+        return this._length ??= sqrt(this.x**2 + this.y**2);
     }
     
     distance(that: ImmutableVec2): number {
@@ -31,12 +38,14 @@ export class Vec2 {
     normalize(): Vec2 {
         const length = this.length();
         this.scaleBy(1 / length);
+        this._length = 1;
         return this;
     }
 
     clampLength(min: number, max: number): Vec2 {
         const length = this.length();
         const new_length = clamp(length, min, max);
+        this._length = new_length;
         this.scaleBy( new_length / length );
         return this;
     }
@@ -50,14 +59,16 @@ export class Vec2 {
     }
 
     add(x: number, y: number): Vec2 {
-        this.x += x;
-        this.y += y;
+        this._x += x;
+        this._y += y;
+        this._length = undefined;
         return this;
     }
 
     sub(x: number, y: number): Vec2 {
-        this.x -= x;
-        this.y -= y;
+        this._x -= x;
+        this._y -= y;
+        this._length = undefined;
         return this;
     }
 
@@ -70,38 +81,42 @@ export class Vec2 {
     }
 
     get copy() {
-        return new Vec2(this.x, this.y)
+        return new Vec2(this.x, this.y, this._length)
     }
 
     setTo(x: number, y: number): Vec2 {
         this.x = x;
         this.y = y;
+        this._length = undefined;
         return this;
     }
 
-    scaleBy(mag: number): Vec2{
-        return this.setTo(this.x * mag, this.y * mag)
+    scaleBy(mag: number): Vec2 {
+        this._length = this._length ? this._length * mag : undefined;
+        this._x *= mag;
+        this._y *= mag;
+        return this;
     }
 
-    rotate(angle: number): Vec2{
+    rotate(angle: number): Vec2 {
         const x = this.x;
         const y = this.y;
-        this.x = x * Math.cos(angle) - y * Math.sin(angle);
-        this.y = x * Math.sin(angle) + y * Math.cos(angle);
+        this._x = x * Math.cos(angle) - y * Math.sin(angle);
+        this._y = x * Math.sin(angle) + y * Math.cos(angle);
         return this;
     }
 
     pivot90CCW(): Vec2 {
         const x = this.x;
-        this.x = -this.y;
-        this.y = x;
+        this._x = -this.y;
+        this._y = x;
         return this;
     }
 
     pivot90CW(): Vec2 {
         const x = this.x;
-        this.x = this.y;
-        this.y = -x;
+        this._x = this.y;
+        this._y = -x;
         return this;
     }
 
