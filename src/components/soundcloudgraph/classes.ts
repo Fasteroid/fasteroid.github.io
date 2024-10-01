@@ -16,6 +16,8 @@ const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very clo
 const AMBIENT_REPEL_STRENGTH      = 1200; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1700;  // min "far" distance
 
+const THINNING_FACTOR             = 5;
+
 const EDGE_RATE                   = 0.1;
 
 const BASE_NODE_SIZE = 32;
@@ -23,44 +25,61 @@ const BASE_NODE_SIZE = 32;
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
     public get width() {
-        return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
+        return max(this.to.edgeWidth, this.from.edgeWidth) * 4;
     }
 
-    public static readonly WHITE = new Color(1.0, 1.0, 1.0);
-    public static readonly GRAY  = new Color(0.6, 0.6, 0.6);
+    public readonly COLOR: Color;
     public get color() {
-        return this.bidirectional ? SoundcloudEdge.WHITE : SoundcloudEdge.GRAY;
+        return this.COLOR;
     }
 
     constructor(private manager: SoundcloudGraphManager, data: SoundcloudEdgeData){
         super(manager, data);
+
+        let a = Math.random() * 0.3 + 0.7;
+
+        this.COLOR = this.bidirectional ?
+            new Color(0, 0, 0, 0.5) :
+            new Color(0, 0, 0, 0.5);
     }
 
     public override get verts(): Vec2[] {
 
         if( this.width === 0 ) return [];
 
-        let original: Vec2[];
+        let original: Vec2[] = super.verts;
 
-        if( this.bidirectional ){
-            original = super.verts;
-        }
-        else { // arrows
-            const to   = this.to.pos;
-            const from = this.from.pos;
+        // const to   = this.to.pos.copy;
+        // const from = this.from.pos.copy;
 
-            const norm = this.normal;
-            norm.scaleBy(this.width / 2);
-    
-            const offset = norm.copy;
-            offset.pivot90CCW();
+        // const offset = this.normal;
 
-            original = [
-                from.copy.addV(offset),
-                from.copy.subV(offset),
-                to.copy
-            ]
-        }
+        // // fix the endpoints so they're on the edge of the node instead of the center
+        // to.subV( offset.copy.scaleBy(this.to.diameter * 0.75) );     // I have no idea why this is 0.75 and not 0.5
+        // from.addV( offset.copy.scaleBy(this.from.diameter * 0.75) );
+
+        // // now actually make it the perpendicular offset we needed
+        // offset.scaleBy(this.width);
+        // offset.pivot90CCW();
+
+        // if( this.bidirectional ){
+        //     original = [ 
+        //         // New idea, thinner in the middle.  Costs the same as a thick line but looks more like WoG.  Brains are stupid and see this shit as curved even though it isn't.
+        //         to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR),
+        //         from.copy.addV(offset),
+        //         from.copy.subV(offset),
+        //         from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR),
+        //         to.copy.subV(offset),
+        //         to.copy.addV(offset),
+        //     ]
+        // }
+        // else { // arrows
+        //     original = [
+        //         to.copy,
+        //         from.copy.addV(offset),
+        //         from.copy.subV(offset),
+        //     ]
+        // }
 
         const size = this.manager.selfComputedSize;
         const x = size.width * 0.5;
@@ -86,10 +105,10 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         const toNode = this.to!;
 
         const dist = fromNode.pos.distance(toNode.pos);
-        let factor = clamp( (dist - toNode.radius - fromNode.radius) * 0.05, -0.2, 1) * 
+        let factor = clamp( (dist - toNode.diameter - fromNode.diameter) * 0.05, -0.2, 1) * 
                      (1 + this.width * 0.25) * 
                      (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
-                     ( (0.5 * fromNode.radius + 0.5 * toNode.radius) / BASE_NODE_SIZE ) *
+                     ( (0.5 * fromNode.diameter + 0.5 * toNode.diameter) / BASE_NODE_SIZE ) *
                      (this.bidirectional ? 2 : 0.5);
 
         const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
@@ -127,9 +146,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         );
     }
 
-    private _radius!: number;
-    public get radius(){
-        return this._radius ??= (
+    private _diameter!: number;
+    public get diameter(){
+        return this._diameter ??= (
             BASE_NODE_SIZE +                       // base size
             this.data.artist.likes_count * 1.5 +   // my likes on them
             this.data.artist.favorites_count * 6 + // my favorites on them
@@ -138,9 +157,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     // artists with large followings need the extra circumference
-    private _trueRadius!: number;
-    public get trueRadius(){
-        return this._trueRadius ??= max(this.radius * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
+    private _trueDiameter!: number;
+    public get trueDiameter(){
+        return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
     }
 
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
@@ -155,7 +174,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
         this.html.style.backgroundImage = `url(${artist.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
 
-        this.html.style.setProperty('--scale', `${this.radius / BASE_NODE_SIZE}`);
+        this.html.style.setProperty('--scale', `${this.diameter / BASE_NODE_SIZE}`);
 
         (this.html as any).__data_for_fellow_devs_using_inspect_element__ = this.data; // :)
 
@@ -195,7 +214,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     public doRepulsionForce(that: SoundcloudNode) {
         let repel_dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
         const f = this.pos.copy.subV(that.pos).scaleBy( 
-            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.trueRadius + that.trueRadius)
+            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.trueDiameter + that.trueDiameter)
         )
 
         that.vel.addV(f);
@@ -205,7 +224,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private doCenterSeekingForce(){
         const len = this.pos.length();
         const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
-        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.trueRadius) );
+        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.trueDiameter) );
     }
 
     public override doPositioning(){
@@ -283,6 +302,23 @@ extends GraphManager<
                 node1.doRepulsionForce(nodes[j]);
             }
         }
+    }
+
+
+    public override get fragmentShader(): string {
+        return `#version 300 es
+
+        precision highp float;
+
+        in vec4 v_color;
+        in vec3 v_barycentric;
+
+        out vec4 outColor;
+
+        void main() {
+            float dist = v_barycentric.x;
+            outColor = vec4(dist, dist, dist, 1.0);
+        }`
     }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){

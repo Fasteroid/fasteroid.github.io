@@ -57,6 +57,14 @@ export abstract class GraphManager<
         return this._selfComputedSize;
     }
 
+    protected /*virtual*/ get vertexShader(): string {
+        return VERTEX_SHADER
+    }
+
+    protected /*virtual*/ get fragmentShader(): string {
+        return FRAGMENT_SHADER
+    }
+
     private recalculateStyle(){
         this._selfBox = undefined;
         this._parentBox = undefined;
@@ -144,8 +152,8 @@ export abstract class GraphManager<
 
         this.gl_ctx = this.edgeContainer.getContext("webgl2") as WebGL2RenderingContext;
 
-        const vertex   = compileShader(this.gl_ctx, this.gl_ctx.VERTEX_SHADER, VERTEX_SHADER);
-        const fragment = compileShader(this.gl_ctx, this.gl_ctx.FRAGMENT_SHADER, FRAGMENT_SHADER);
+        const vertex   = compileShader(this.gl_ctx, this.gl_ctx.VERTEX_SHADER, this.vertexShader);
+        const fragment = compileShader(this.gl_ctx, this.gl_ctx.FRAGMENT_SHADER, this.fragmentShader);
 
         this.gl_program = this.gl_ctx.createProgram() ?? die("Failed to create program");
         this.gl_ctx.attachShader(this.gl_program, vertex);
@@ -324,13 +332,13 @@ export abstract class GraphEdge<
         offset.pivot90CCW();
 
         return [
+            to.copy.addV(offset),
             from.copy.subV(offset),
             from.copy.addV(offset),
-            to.copy.addV(offset),
 
+            from.copy.subV(offset),
             to.copy.addV(offset),
             to.copy.subV(offset),
-            from.copy.subV(offset)
         ]
 
     }
