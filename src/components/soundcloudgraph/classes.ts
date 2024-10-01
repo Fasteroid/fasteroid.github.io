@@ -22,6 +22,10 @@ const EDGE_RATE                   = 0.1;
 
 const BASE_NODE_SIZE = 32;
 
+export const LIKES_SIZE_MUL     = 1.5;
+export const FAVORITES_SIZE_MUL = 6;
+export const RELICS_SIZE_MUL    = 9;
+
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
     public get width() {
@@ -161,9 +165,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     public get diameter(){
         return this._diameter ??= (
             BASE_NODE_SIZE +                       // base size
-            this.data.artist.likes_count * 1.5 +   // my likes on them
-            this.data.artist.favorites_count * 6 + // my favorites on them
-            this.data.artist.relics_count * 9     // my relics on them (old favorites)
+            this.data.artist.likes_count * LIKES_SIZE_MUL +
+            this.data.artist.favorites_count * FAVORITES_SIZE_MUL +
+            this.data.artist.relics_count * RELICS_SIZE_MUL
         );
     }
 
