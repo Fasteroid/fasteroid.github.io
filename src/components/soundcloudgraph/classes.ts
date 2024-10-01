@@ -60,9 +60,9 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         const normal = this.normal;
 
-        // actual value here is 0.75 (why??) but I use 0.6 to hide my shitty math that's making this boundary slightly offset from where it should be 💀
-        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.6);
-        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.6);
+        // actual value here is 0.75 (why??) but I use 0.65 to hide my shitty math that's making this boundary slightly offset from where it should be 💀
+        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.65);
+        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.65);
 
         // fix the endpoints so they're on the edge of the node instead of the center
         to.subV( offsetScaledTo );
@@ -96,7 +96,7 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
             ];
         else
             original = [ 
-                [to.copy, this.toColor],
+                [to.copy.subV(from).scaleBy(1.5).addV(from), this.fromColor], // these fade a little fast, so make the edge extra "too long" so it's just right in practice
                 [from.copy.addV(offsetScaledFrom), this.fromColor],
                 [from.copy.subV(offsetScaledFrom), this.fromColor],
             ];
@@ -220,8 +220,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             this._palette = colors.map( (rgb: [number, number, number]) => {
                 let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
                 let hsv = actualColor.toHSV();
-                hsv.v = Math.max(0.8, hsv.v);
-                hsv.s = Math.min(0.6, hsv.s);
+                hsv.v = max(0.8, hsv.v);
+                hsv.s = min(0.6, hsv.s);
                 return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
             } )
         } );
