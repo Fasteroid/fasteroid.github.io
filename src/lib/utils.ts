@@ -122,6 +122,7 @@ export class Vec2 {
 
 }
 
+
 export class Color {
     
     r: number;
@@ -134,6 +135,25 @@ export class Color {
         this.g = g;
         this.b = b;
         this.a = a;
+    }
+
+    // https://stackoverflow.com/a/17243070/15204995
+    static fromHSV(h: number, s: number, v: number, a: number = 1): Color {
+        let r, g, b, i, f, p, q, t;
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return new Color(r, g, b, a);
     }
 
 }

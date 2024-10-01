@@ -16,7 +16,7 @@ const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very clo
 const AMBIENT_REPEL_STRENGTH      = 1200; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1700;  // min "far" distance
 
-const THINNING_FACTOR             = 5;
+const THINNING_FACTOR             = 30;
 
 const EDGE_RATE                   = 0.1;
 
@@ -25,7 +25,7 @@ const BASE_NODE_SIZE = 32;
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
     public get width() {
-        return max(this.to.edgeWidth, this.from.edgeWidth) * 4;
+        return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
     }
 
     public readonly COLOR: Color;
@@ -36,11 +36,7 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     constructor(private manager: SoundcloudGraphManager, data: SoundcloudEdgeData){
         super(manager, data);
 
-        let a = Math.random() * 0.3 + 0.7;
-
-        this.COLOR = this.bidirectional ?
-            new Color(0, 0, 0, 0.5) :
-            new Color(0, 0, 0, 0.5);
+        this.COLOR = Color.fromHSV(Math.random(), 0.4, 1)
     }
 
     public override get verts(): Vec2[] {
@@ -49,47 +45,52 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         let original: Vec2[] = super.verts;
 
-        // const to   = this.to.pos.copy;
-        // const from = this.from.pos.copy;
+        const to   = this.to.pos.copy;
+        const from = this.from.pos.copy;
 
-        // const offset = this.normal;
+        const normal = this.normal;
 
-        // // fix the endpoints so they're on the edge of the node instead of the center
-        // to.subV( offset.copy.scaleBy(this.to.diameter * 0.75) );     // I have no idea why this is 0.75 and not 0.5
-        // from.addV( offset.copy.scaleBy(this.from.diameter * 0.75) );
+        // actual value here is 0.75 (why??) but I use 0.6 to hide my shitty math that's making this boundary slightly offset from where it should be 💀
+        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.6);
+        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.6);
 
-        // // now actually make it the perpendicular offset we needed
-        // offset.scaleBy(this.width);
-        // offset.pivot90CCW();
-
-        // if( this.bidirectional ){
-        //     original = [ 
-        //         // New idea, thinner in the middle.  Costs the same as a thick line but looks more like WoG.  Brains are stupid and see this shit as curved even though it isn't.
-        //         to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR),
-        //         from.copy.addV(offset),
-        //         from.copy.subV(offset),
-        //         from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR),
-        //         to.copy.subV(offset),
-        //         to.copy.addV(offset),
-        //     ]
-        // }
-        // else { // arrows
-        //     original = [
-        //         to.copy,
-        //         from.copy.addV(offset),
-        //         from.copy.subV(offset),
-        //     ]
-        // }
+        // fix the endpoints so they're on the edge of the node instead of the center
+        to.subV( offsetScaledTo );
+        from.addV( offsetScaledFrom );
 
         const size = this.manager.selfComputedSize;
         const x = size.width * 0.5;
         const y = size.height * 0.5;
-        let center = this.manager.focusOffset;
-        for( let vert of original ){
-            vert.x += x;
-            vert.y += y;
-            center ? vert.subV(center) : null;
-        }
+        const center = this.manager.focusOffset ?? Vec2.ZERO;
+
+        // transform the base points since coordinates are jank here
+        to.add(x - center.x, y - center.y);
+        from.add(x - center.x, y - center.y);
+
+        // make these perpendicular now
+        offsetScaledTo.pivot90CCW();
+        offsetScaledFrom.pivot90CCW();
+
+        // and shrink them because 0.6 * diameter will be way too thick
+        offsetScaledTo.scaleBy(0.05 * this.width);
+        offsetScaledFrom.scaleBy(0.05 * this.width);
+
+        if( this.bidirectional )
+            original = [ 
+                to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR),
+                from.copy.addV(offsetScaledFrom),
+                from.copy.subV(offsetScaledFrom),
+                from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR),
+                to.copy.subV(offsetScaledTo),
+                to.copy.addV(offsetScaledTo),
+            ];
+        else
+            original = [ 
+                to.copy,
+                from.copy.addV(offsetScaledFrom),
+                from.copy.subV(offsetScaledFrom),
+            ];
+
         return original;
     }
 
@@ -315,9 +316,14 @@ extends GraphManager<
 
         out vec4 outColor;
 
+        float lightFalloff(float dist) {
+            return dist * dist * dist * 16.0;
+        }
+
         void main() {
-            float dist = v_barycentric.x;
-            outColor = vec4(dist, dist, dist, 1.0);
+            float dist = min(v_barycentric.y, v_barycentric.z);
+            float a = lightFalloff(dist);
+            outColor = vec4(v_color.xyz * a, a);
         }`
     }
 
@@ -342,18 +348,18 @@ extends GraphManager<
             });
         })
 
-        this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
+        // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
 
-        window.setTimeout(() => {
-            this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
-        }, 1000);
+        // window.setTimeout(() => {
+        //     this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
+        // }, 1000);
 
         window.requestAnimationFrame(this.autoFocus);
 
         // draw brighter edges (bidirectional followings) on top
         this.gl_ctx.enable(this.gl_ctx.BLEND);
-        this.gl_ctx.blendFunc(this.gl_ctx.ONE, this.gl_ctx.ONE);
-        this.gl_ctx.blendEquation(this.gl_ctx.MAX);
+        this.gl_ctx.blendFuncSeparate(this.gl_ctx.SRC_ALPHA, this.gl_ctx.ONE, this.gl_ctx.ZERO, this.gl_ctx.ONE);
+        //this.gl_ctx.blendEquation(this.gl_ctx.FUNC_ADD);
     }
 
     protected override createNode(data: SoundcloudNodeData): SoundcloudNode {

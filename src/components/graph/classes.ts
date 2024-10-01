@@ -150,7 +150,7 @@ export abstract class GraphManager<
             this.handleResize();
         });
 
-        this.gl_ctx = this.edgeContainer.getContext("webgl2") as WebGL2RenderingContext;
+        this.gl_ctx = this.edgeContainer.getContext("webgl2", {preMultipliedAlpha: false}) as WebGL2RenderingContext;
 
         const vertex   = compileShader(this.gl_ctx, this.gl_ctx.VERTEX_SHADER, this.vertexShader);
         const fragment = compileShader(this.gl_ctx, this.gl_ctx.FRAGMENT_SHADER, this.fragmentShader);
