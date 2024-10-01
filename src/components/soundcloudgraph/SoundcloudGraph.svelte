@@ -29,6 +29,7 @@
         <!-- template cell -->
         <div class="node initial" id="template-node" hidden>
             <div class="stack artist">
+                <img alt="">
                 <div class="text-outline">b</div>
                 <div class="text-main">a</div>
             </div>

@@ -8,21 +8,21 @@
 
     overflow: hidden;
     
+    
 }
   
 .node {
+
+    // outline: solid; TODO: this actually looks good?
 
     --scale: 1;
 
     width: calc( var(--scale) * 48px );
     height: calc( var(--scale) * 48px );
-    border-radius: 999px;
     background-size: contain;
     font-size: calc( var(--scale) * 7px );
     position: absolute;
     line-height: 1;
-
-    cursor: pointer;
 
     translate: -50% -50%;
 
@@ -49,11 +49,23 @@
     
         .text-outline {
             -webkit-text-stroke: calc( var(--scale) * 2px ) black;
+            pointer-events: none;
         }
     
         .text-main {
             color: white;
             text-decoration: none;
+            pointer-events: none;
+        }
+
+        img {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            left: 0%;
+            border-radius: 9999px;
+            cursor: pointer;
         }
     
     }

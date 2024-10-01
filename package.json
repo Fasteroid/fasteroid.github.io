@@ -26,6 +26,7 @@
 	"type": "module",
 	"dependencies": {
 		"@sveltejs/adapter-static": "^2.0.3",
+		"colorthief": "^2.2.0",
 		"panzoom": "^9.4.3",
 		"sass": "^1.68.0",
 		"typescript-to-json-schema": "^0.6.1"

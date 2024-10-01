@@ -1,10 +1,10 @@
 import { clamp, Color, Vec2 } from "$lib/utils";
 import type { ImmutableVec2 } from "$lib/utils";
-import { PanZoomOptions } from "panzoom";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
 import { base } from "$app/paths";
+import { getColorAsync, getPaletteAsync } from "$lib/colorthiefextensions";
 
 const abs = Math.abs
 const sqrt = Math.sqrt
@@ -28,22 +28,32 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
     }
 
-    public readonly COLOR: Color;
-    public get color() {
-        return this.COLOR;
-    }
-
+    public readonly color: Color = Color.BLACK;
     constructor(private manager: SoundcloudGraphManager, data: SoundcloudEdgeData){
         super(manager, data);
-
-        this.COLOR = Color.fromHSV(Math.random(), 0.4, 1)
     }
 
-    public override get verts(): Vec2[] {
+    private $lastToPalette: Color[] = [];
+    private $lastFromPalette: Color[] = [];
+
+    private toColor: Color = Color.BLACK;
+    private fromColor: Color = Color.BLACK;
+
+    public override get verts(): [Vec2, Color][] {
 
         if( this.width === 0 ) return [];
 
-        let original: Vec2[] = super.verts;
+        if( this.to.palette !== this.$lastToPalette ){
+            this.$lastToPalette = this.to.palette;
+            this.toColor = this.to.palette[ Math.floor(Math.random() * this.to.palette.length) ]; // pick randomly
+        }
+
+        if( this.from.palette !== this.$lastFromPalette ){
+            this.$lastFromPalette = this.from.palette;
+            this.fromColor = this.from.palette[ Math.floor(Math.random() * this.from.palette.length) ]; // pick randomly
+        }
+
+        let original: [Vec2, Color][];
 
         const to   = this.to.pos.copy;
         const from = this.from.pos.copy;
@@ -77,18 +87,18 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         if( this.bidirectional )
             original = [ 
-                to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR),
-                from.copy.addV(offsetScaledFrom),
-                from.copy.subV(offsetScaledFrom),
-                from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR),
-                to.copy.subV(offsetScaledTo),
-                to.copy.addV(offsetScaledTo),
+                [to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR), this.toColor],
+                [from.copy.addV(offsetScaledFrom), this.fromColor],
+                [from.copy.subV(offsetScaledFrom), this.fromColor],
+                [from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR), this.fromColor],
+                [to.copy.subV(offsetScaledTo), this.toColor],
+                [to.copy.addV(offsetScaledTo), this.toColor],
             ];
         else
             original = [ 
-                to.copy,
-                from.copy.addV(offsetScaledFrom),
-                from.copy.subV(offsetScaledFrom),
+                [to.copy, this.toColor],
+                [from.copy.addV(offsetScaledFrom), this.fromColor],
+                [from.copy.subV(offsetScaledFrom), this.fromColor],
             ];
 
         return original;
@@ -163,6 +173,11 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
     }
 
+    private _palette?: Color[];
+    public get palette(): Color[] {
+        return this._palette ?? [Color.BLACK];
+    }
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
@@ -173,30 +188,43 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
-        this.html.style.backgroundImage = `url(${artist.avatar_url}), url(${base}/assets/soundcloud/missing.png)`;
 
         this.html.style.setProperty('--scale', `${this.diameter / BASE_NODE_SIZE}`);
 
-        (this.html as any).__data_for_fellow_devs_using_inspect_element__ = this.data; // :)
+        (this.html as any).__data__ = this.data; // :)
+        (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
-        let textMain = this.html.querySelector(".text-main")! as HTMLDivElement;
-        textMain.innerText = artist.username;
+        // use img instead for pointer events and stuff since its hitbox is actually circular (unlike the div)
+        const img = this.html.querySelector("img") as HTMLImageElement;
 
-        this.html.addEventListener('click', () => {
+        img.crossOrigin = "Anonymous";
+        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png)`;
+
+        img.addEventListener('click', () => {
             if( this.manager.cancelUrlOpen ) return;
             window.open(artist.permalink_url, '_blank', 'noopener, noreferrer');
         });
 
-        this.html.addEventListener('mouseenter', () => {
+        img.addEventListener('mouseenter', () => {
             this._isHovered = true;
             this.manager.setFocusedNode(this);
         });
 
-        this.html.addEventListener('mouseleave', () => {
+        img.addEventListener('mouseleave', () => {
             this._isHovered = false;
             this.manager.setFocusedNode(null);
         });
         
+        getPaletteAsync(img).then( colors => {
+            if( !colors ) return;
+            this._palette = colors.map( (rgb: [number, number, number]) => {
+                let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                let hsv = actualColor.toHSV();
+                hsv.v = Math.max(0.8, hsv.v);
+                hsv.s = Math.min(0.6, hsv.s);
+                return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
+            } )
+        } );
     }
 
     private _neighbors!: SoundcloudNode[];

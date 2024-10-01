@@ -6,7 +6,7 @@ export type ImmutableVec2 = Omit<Vec2, 'add' | 'sub' | 'addV' | 'subV' | 'setTo'
 
 /**
  * NOTE: For memory efficiency, most of these methods self-modify.
- *       Access the 'copy' field to get a new 
+ *       Access the 'copy' field to get a new one.
  */
 export class Vec2 {
 
@@ -124,6 +124,8 @@ export class Vec2 {
 
 
 export class Color {
+
+    static BLACK: Readonly<Color> = new Color(0, 0, 0, 1);
     
     r: number;
     g: number;
@@ -137,7 +139,13 @@ export class Color {
         this.a = a;
     }
 
-    // https://stackoverflow.com/a/17243070/15204995
+    /**
+     * @param h - hue (0-1)
+     * @param s - saturation (0-1)
+     * @param v - value (0-1)
+     * @param a - alpha (0-1)
+     * @stackoverflow https://stackoverflow.com/a/17243070/15204995
+     */
     static fromHSV(h: number, s: number, v: number, a: number = 1): Color {
         let r, g, b, i, f, p, q, t;
         i = Math.floor(h * 6);
@@ -154,6 +162,31 @@ export class Color {
             case 5: r = v, g = p, b = q; break;
         }
         return new Color(r, g, b, a);
+    }
+
+    /**
+     * @stackoverflow https://stackoverflow.com/a/17243070/15204995
+     */
+    toHSV(): { h: number, s: number, v: number } {
+        let max = Math.max(this.r, this.g, this.b), 
+            min = Math.min(this.r, this.g, this.b),
+            d = max - min,
+            h = 0,
+            s = (max === 0 ? 0 : d / max),
+            v = max / 255;
+    
+        switch (max) {
+            case min: h = 0; break;
+            case this.r: h = (this.g - this.b) + d * (this.g < this.b ? 6: 0); h /= 6 * d; break;
+            case this.g: h = (this.b - this.r) + d * 2; h /= 6 * d; break;
+            case this.b: h = (this.r - this.g) + d * 4; h /= 6 * d; break;
+        }
+    
+        return {
+            h: h,
+            s: s,
+            v: v
+        };
     }
 
 }

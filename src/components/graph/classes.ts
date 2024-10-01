@@ -150,7 +150,7 @@ export abstract class GraphManager<
             this.handleResize();
         });
 
-        this.gl_ctx = this.edgeContainer.getContext("webgl2", {preMultipliedAlpha: false}) as WebGL2RenderingContext;
+        this.gl_ctx = this.edgeContainer.getContext("webgl2") as WebGL2RenderingContext;
 
         const vertex   = compileShader(this.gl_ctx, this.gl_ctx.VERTEX_SHADER, this.vertexShader);
         const fragment = compileShader(this.gl_ctx, this.gl_ctx.FRAGMENT_SHADER, this.fragmentShader);
@@ -227,9 +227,11 @@ export abstract class GraphManager<
         const colors:    number[] = [];
         for(const edge of this.edges.values()){
             for(let vert of edge.verts){
-                vert = this.toWorld(vert.x, vert.y);
-                positions.push(vert.x, vert.y);
-                colors.push(edge.color.r, edge.color.g, edge.color.b, edge.color.a);
+                let pos   = vert[0];
+                let color = vert[1];
+                pos = this.toWorld(pos.x, pos.y);
+                positions.push(pos.x, pos.y);
+                colors.push(color.r, color.g, color.b, color.a);
             }
         }
 
@@ -319,8 +321,8 @@ export abstract class GraphEdge<
         return ret;
     }
 
-    /** Two counterclockwise triangles */
-    public get verts(): Vec2[] {
+    /** Two triangles */
+    public get verts(): [Vec2, Color][] {
 
         const to   = this.to.pos;
         const from = this.from.pos;
@@ -332,13 +334,12 @@ export abstract class GraphEdge<
         offset.pivot90CCW();
 
         return [
-            to.copy.addV(offset),
-            from.copy.subV(offset),
-            from.copy.addV(offset),
-
-            from.copy.subV(offset),
-            to.copy.addV(offset),
-            to.copy.subV(offset),
+            [to.copy.addV(offset),   this.color],
+            [from.copy.subV(offset), this.color],
+            [from.copy.addV(offset), this.color],
+            [from.copy.subV(offset), this.color],
+            [to.copy.addV(offset),   this.color],
+            [to.copy.subV(offset),   this.color],
         ]
 
     }
