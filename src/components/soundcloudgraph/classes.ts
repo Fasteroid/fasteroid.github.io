@@ -141,7 +141,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     declare readonly manager: SoundcloudGraphManager;
 
     private _edgeWidth: number = 0;
-    private _isHovered: boolean = false;
+    public selected_: boolean = false;
     public get edgeWidth() {
         return this._edgeWidth;
     }
@@ -206,18 +206,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         img.addEventListener('click', () => {
             if( this.manager.cancelUrlOpen ) return;
-            window.open(artist.permalink_url, '_blank', 'noopener, noreferrer');
-        });
-
-        img.addEventListener('mouseenter', () => {
-            this._isHovered = true;
             this.manager.setFocusedNode(this);
         });
 
-        img.addEventListener('mouseleave', () => {
-            this._isHovered = false;
-            this.manager.setFocusedNode(null);
-        });
         
         getPaletteAsync(img).then( colors => {
             if( !colors ) return;
@@ -261,7 +252,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override doPositioning(){
-        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this._isHovered ? 1 : -1), 0, 1);
+        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this.selected_ ? 1 : -1), 0, 1);
         this.vel.scaleBy(0.6);
         this.pos.addV(this.vel);
     }
@@ -308,13 +299,17 @@ extends GraphManager<
     private focusedOffset: Vec2 = new Vec2(0, 0);
 
     public setFocusedNode(node: SoundcloudNode | null){
-        if( !node && this.focusedNode )
-            this.focusedOffset.subV(this.focusedNode!.pos.copy);
+        if( this.focusedNode ){
+            this.focusedNode.selected_ = false;
+            this.focusedOffset.subV(this.focusedNode.pos.copy);
+        }
 
         this.focusedNode = node;
         
-        if( node )
+        if( node ){
+            node.selected_ = true;
             this.focusedOffset.addV(node.pos.copy);
+        }
     }
     
     public get focusOffset(): ImmutableVec2 {
