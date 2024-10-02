@@ -1,6 +1,6 @@
 
-import { parse } from "svelte/compiler";
-import { clamp, compileShader, Map2D, die, Vec2, Color } from "../../lib/utils";
+import { Vec2 } from "$lib/vec2";
+import { clamp, compileShader, Map2D, die, Color } from "../../lib/utils";
 import type { GraphEdgeData, GraphNodeData, GraphDataset } from "./interfaces";
 import { FRAGMENT_SHADER, VERTEX_SHADER } from "./shaders";
 import type { PanZoom, PanZoomOptions } from "panzoom";

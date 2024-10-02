@@ -1,7 +1,8 @@
-import { clamp, Color, Vec2 } from "$lib/utils";
+import { clamp, Color } from "$lib/utils";
 import { PanZoomOptions } from "panzoom";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
+import { Vec2 } from "$lib/vec2";
 
 function forceFalloff(d: number){
     return d<0?d*0.05:d*(0.05 + (d/500)*0.45);

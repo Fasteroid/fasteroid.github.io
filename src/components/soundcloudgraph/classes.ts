@@ -1,10 +1,11 @@
-import { clamp, Color, Vec2 } from "$lib/utils";
-import type { ImmutableVec2 } from "$lib/utils";
+import { clamp, Color } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
 import { base } from "$app/paths";
 import { getColorAsync, getPaletteAsync } from "$lib/colorthiefextensions";
+import { Vec2 } from "$lib/vec2";
+import type { ImmutableVec2 } from "$lib/vec2"
 
 const abs = Math.abs
 const sqrt = Math.sqrt
