@@ -94,6 +94,12 @@ export class Vec2 {
         return this;
     }
 
+    copyTo(other: Vec2){
+        other._x      = this._x;
+        other._y      = this._y;
+        other._length = this._length;
+    }
+
     scaleBy(mag: number): Vec2 {
         this._length = this._length !== undefined ? this._length * mag : undefined;
         this._x *= mag;
@@ -122,12 +128,5 @@ export class Vec2 {
         this._y = -x;
         return this;
     }
-
-}
-
-/**
- * For efficient garbage collection avoidance.  Lets you recycle Vec2 objects.
- */
-export class Vec2Buffer {
 
 }
