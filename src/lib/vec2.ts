@@ -94,10 +94,10 @@ export class Vec2 {
         return this;
     }
 
-    copyTo(other: Vec2){
-        other._x      = this._x;
-        other._y      = this._y;
-        other._length = this._length;
+    setToV(other: Vec2){
+        this._x      = other._x;
+        this._y      = other._y;
+        this._length = other._length;
     }
 
     scaleBy(mag: number): Vec2 {

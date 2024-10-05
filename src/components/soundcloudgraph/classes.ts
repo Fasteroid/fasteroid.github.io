@@ -26,6 +26,7 @@ const BASE_NODE_SIZE              = 32;
 
 const ZOOM_TRANSITION_TIME        = 750;
 const ZOOM_SCALE_MUL              = 100;
+const UNFOCUS_DRAG_DIST           = 10;
 
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
@@ -209,22 +210,23 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         img.crossOrigin = "Anonymous";
         img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
-        img.addEventListener('click', () => {
-            // if( this.manager.cancelUrlOpen ) return;
+        img.addEventListener('click', (e) => {
+            if( this.manager.dragging ) return;
+            console.log("clicked", this.data.artist.username);
             this.manager.setFocusedNode(this);
         });
 
         
-        getPaletteAsync(img).then( colors => {
-            if( !colors ) return;
-            this._palette = colors.map( (rgb: [number, number, number]) => {
-                let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
-                let hsv = actualColor.toHSV();
-                hsv.v = max(0.8, hsv.v);
-                hsv.s = min(0.6, hsv.s);
-                return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
-            } )
-        } );
+        // getPaletteAsync(img).then( colors => {
+        //     if( !colors ) return;
+        //     this._palette = colors.map( (rgb: [number, number, number]) => {
+        //         let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+        //         let hsv = actualColor.toHSV();
+        //         hsv.v = max(0.8, hsv.v);
+        //         hsv.s = min(0.6, hsv.s);
+        //         return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
+        //     } )
+        // } );
     }
 
     private _neighbors!: SoundcloudNode[];
@@ -298,31 +300,45 @@ extends GraphManager<
         return 30;
     }
 
-    public cancelUrlOpen: boolean = false;
+    public  held:          boolean = false;
+    public  dragging:      boolean = false;
+    private focusChanged:  boolean = false;
+
 
     private focusedNode: SoundcloudNode | null = null;
+
+    private firstDragTransform: Transform | null = null;
 
     public setFocusedNode(node: SoundcloudNode | null){
 
         const transform: Readonly<Transform> = this.panzoom!.getTransform();
         let   origin = new Vec2(transform.x, transform.y)
 
+        if( node === this.focusedNode ) return;
+
+        this.focusChanged = true;
+
+        console.log( node ? "focus" : "unfocus" )
+
+
         if( this.focusedNode ){
             this.focusedNode.selected_ = false;
-            
-            origin.subV( this.transformToWorld( this.focusedNode.pos.copy ) )
+
+            origin.subV( this.transformToWorld( this.focusedNode.pos.copy ) ) // dump the camera offset into the panzoom
         }
 
         this.focusedNode = node;
         
+        let zoom = 1;
+
         if( node ){
             node.selected_ = true;
-
-            origin.addV( this.transformToWorld( node.pos.copy )  )
+            zoom = ZOOM_SCALE_MUL / node.diameter;
+            origin.addV( this.transformToWorld( node.pos.copy ) ) // remove center offset
         }
 
-        this.panzoom!.moveTo(origin.x, origin.y)
-
+        // this.panzoom!.moveTo(origin.x, origin.y)
+        //this.panzoom!.smoothZoomAbs(this.nodeContainer.offsetWidth * 0.5, this.nodeContainer.offsetHeight * 0.5, zoom)
     }
     
     public get offsetPos(): ImmutableVec2 {
@@ -379,13 +395,39 @@ extends GraphManager<
         this.handleResize();
 
         this.panzoom!.on('pan', () => {
-            this.cancelUrlOpen = true;
+            if( !this.firstDragTransform ) return;
+
+            let curDragTransform = this.panzoom!.getTransform();
+
+            if( sqrt(
+                ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
+                ( this.firstDragTransform.y - curDragTransform.y ) ** 2
+            ) > 0 ) {
+                this.dragging = true;
+                this.setFocusedNode(null);
+            }
         });
 
-        this.nodeContainer.addEventListener('mouseup', () => {
+        document.addEventListener('wheel', () => {
+            this.setFocusedNode(null);
+        })
+
+        document.addEventListener('mouseup', () => {
             setTimeout(() => {
-                this.cancelUrlOpen = false;
-            });
+                this.held         = false;
+                this.dragging     = false;
+                this.focusChanged = false;
+            })
+            if( !this.focusChanged ){
+                this.setFocusedNode(null);
+            }
+        })
+
+        document.addEventListener('mousedown', () => {
+            this.held         = true;
+            this.dragging     = false;
+            this.focusChanged = false;
+            this.firstDragTransform = {...this.panzoom!.getTransform()}; // need to copy, lmao (this took me 2 hours to figure out)
         })
 
         // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
