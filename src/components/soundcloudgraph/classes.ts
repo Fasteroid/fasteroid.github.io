@@ -6,6 +6,7 @@ import { base } from "$app/paths";
 import { getColorAsync, getPaletteAsync } from "$lib/colorthiefextensions";
 import { Vec2 } from "$lib/vec2";
 import type { ImmutableVec2 } from "$lib/vec2"
+import { Transform } from "panzoom";
 
 const abs = Math.abs
 const sqrt = Math.sqrt
@@ -21,7 +22,10 @@ const THINNING_FACTOR             = 30;
 
 const EDGE_RATE                   = 0.1;
 
-const BASE_NODE_SIZE = 32;
+const BASE_NODE_SIZE              = 32;
+
+const ZOOM_TRANSITION_TIME        = 750;
+const ZOOM_SCALE_MUL              = 100;
 
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
@@ -76,7 +80,7 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         const size = this.manager.selfComputedSize;
         const x = size.width * 0.5;
         const y = size.height * 0.5;
-        const center = this.manager.focusOffset ?? Vec2.ZERO;
+        const center = this.manager.offsetPos ?? Vec2.ZERO;
 
         // transform the base points since coordinates are jank here
         to.add(x - center.x, y - center.y);
@@ -203,10 +207,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         const img = this.html.querySelector("img") as HTMLImageElement;
 
         img.crossOrigin = "Anonymous";
-        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png)`;
+        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', () => {
-            if( this.manager.cancelUrlOpen ) return;
+            // if( this.manager.cancelUrlOpen ) return;
             this.manager.setFocusedNode(this);
         });
 
@@ -269,7 +273,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
-        const center = this.manager.focusOffset;
+        const center = this.manager.offsetPos;
         const size = this.manager.selfComputedSize;
         this.style.transform = `
         translate(
@@ -297,25 +301,33 @@ extends GraphManager<
     public cancelUrlOpen: boolean = false;
 
     private focusedNode: SoundcloudNode | null = null;
-    private focusedOffset: Vec2 = new Vec2(0, 0);
 
     public setFocusedNode(node: SoundcloudNode | null){
+
+        const transform: Readonly<Transform> = this.panzoom!.getTransform();
+        let   origin = new Vec2(transform.x, transform.y)
+
         if( this.focusedNode ){
             this.focusedNode.selected_ = false;
-            this.focusedOffset.subV(this.focusedNode.pos.copy);
+            
+            origin.subV( this.transformToWorld( this.focusedNode.pos.copy ) )
         }
 
         this.focusedNode = node;
         
         if( node ){
             node.selected_ = true;
-            this.focusedOffset.addV(node.pos.copy);
+
+            origin.addV( this.transformToWorld( node.pos.copy )  )
         }
+
+        this.panzoom!.moveTo(origin.x, origin.y)
+
     }
     
-    public get focusOffset(): ImmutableVec2 {
-        const pos = this.focusedNode?.pos ?? Vec2.ZERO;
-        return pos.copy.subV(this.focusedOffset);
+    public get offsetPos(): ImmutableVec2 {
+        const  pos = this.focusedNode?.pos ?? Vec2.ZERO;
+        return pos.copy;
     }
 
     private autoFocus = () => {
