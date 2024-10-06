@@ -129,4 +129,8 @@ export class Vec2 {
         return this;
     }
 
+    extract(): [number, number] {
+        return [this.x, this.y];
+    }
+
 }

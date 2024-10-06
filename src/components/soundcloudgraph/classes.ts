@@ -201,17 +201,20 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         this.html.style.setProperty('--scale', `${this.diameter / BASE_NODE_SIZE}`);
 
-        (this.html as any).__data__ = this.data; // :)
+        (this.html as any).__self__ = this; // :)
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
         // use img instead for pointer events and stuff since its hitbox is actually circular (unlike the div)
         const img = this.html.querySelector("img") as HTMLImageElement;
 
-        img.crossOrigin = "Anonymous";
-        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
+        // img.crossOrigin = "Anonymous";
+        // img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', (e) => {
-            if( this.manager.dragging ) return;
+            if( this.manager.dragging ) {
+                this.manager.setFocusedNode(null)
+                return;
+            };
             console.log("clicked", this.data.artist.username);
             this.manager.setFocusedNode(this);
         });
@@ -311,44 +314,46 @@ extends GraphManager<
 
     public setFocusedNode(node: SoundcloudNode | null){
 
-        const transform: Readonly<Transform> = this.panzoom!.getTransform();
-        let   origin = new Vec2(transform.x, transform.y)
-
         if( node === this.focusedNode ) return;
 
+        const transform = this.getPanzoomTransform();
+        const instant = this.transformToCanvas( (this.focusedNode?.pos ?? new Vec2(0,0)).copy.scaleBy(-1) ) ;
+        const deferred = new Vec2();
+
         this.focusChanged = true;
-
-        console.log( node ? "focus" : "unfocus" )
-
 
         if( this.focusedNode ){
             this.focusedNode.selected_ = false;
 
-            origin.subV( this.transformToWorld( this.focusedNode.pos.copy ) ) // dump the camera offset into the panzoom
         }
 
         this.focusedNode = node;
-        
-        let zoom = 1;
 
         if( node ){
             node.selected_ = true;
-            zoom = ZOOM_SCALE_MUL / node.diameter;
-            origin.addV( this.transformToWorld( node.pos.copy ) ) // remove center offset
+            instant.addV( this.transformToCanvas(node.pos.copy) );
         }
 
-        // this.panzoom!.moveTo(origin.x, origin.y)
-        //this.panzoom!.smoothZoomAbs(this.nodeContainer.offsetWidth * 0.5, this.nodeContainer.offsetHeight * 0.5, zoom)
+        instant.scaleBy( transform.scale );
+
+        this.firstDragTransform = null;
+
+        this.panzoom!.moveTo( ...instant.extract() );
+
+        this.simulationToPanzoomOrigin(deferred);
+        this.simulationToPanzoomOrigin(instant);
+        
+        if( node ){
+            setTimeout( () => {
+                this.panzoom!.smoothMoveTo( ...deferred.extract() )
+            }, 500)
+        }
+
     }
     
     public get offsetPos(): ImmutableVec2 {
         const  pos = this.focusedNode?.pos ?? Vec2.ZERO;
         return pos.copy;
-    }
-
-    private autoFocus = () => {
-        window.requestAnimationFrame(this.autoFocus);
-        if( !this.focusedNode ) return;
     }
 
     public override preSimulate(): void {
@@ -361,6 +366,50 @@ extends GraphManager<
         }
     }
 
+    // Transforms a document coordinate (clientX, clientY) to a simulation coordinate.  Self-modifies.
+    public documentToSimulation(v: Vec2): Vec2 {
+        const thisParentBox = this.parentBox;
+        const pzTransform = this.panzoom!.getTransform();
+
+        return v.setTo(
+            (v.x - thisParentBox.left - pzTransform.x) / pzTransform.scale - thisParentBox.width / 2,
+            (v.y - thisParentBox.top  - pzTransform.y) / pzTransform.scale - thisParentBox.height / 2
+        );
+    }
+
+    public simulationToUVs(v: Vec2): Vec2 {
+        const thisParentBox = this.parentBox;
+        const pzTransform = this.panzoom!.getTransform();
+
+        return v.setTo(
+            ( (v.x + thisParentBox.width / 2) * pzTransform.scale + pzTransform.x ) / thisParentBox.width,
+            ( (v.y + thisParentBox.height / 2) * pzTransform.scale + pzTransform.y ) / thisParentBox.height
+        );
+    }
+
+    public UVsToSimulation(v: Vec2): Vec2 {
+        const thisParentBox = this.parentBox;
+        const pzTransform = this.panzoom!.getTransform();
+
+        return v.setTo(
+            (v.x * thisParentBox.width - pzTransform.x) / pzTransform.scale - thisParentBox.width / 2,
+            (v.y * thisParentBox.height - pzTransform.y) / pzTransform.scale - thisParentBox.height / 2
+        );
+    }
+
+    public UVsToPanzoomOffset(v: Vec2): Vec2 {
+        return v.setTo(
+            this.parentBox.width * 0.5 * ( v.x - 0.5 ),
+            this.parentBox.height * 0.5 * ( v.y - 0.5 )
+        );
+    }
+
+    public panzoomOffsetToUVs(v: Vec2): Vec2 {
+        return v.setTo(
+            v.x / this.parentBox.width + 0.5,
+            v.y / this.parentBox.height + 0.5
+        );
+    }
 
     public override get fragmentShader(): string {
         return `#version 300 es
@@ -394,54 +443,85 @@ extends GraphManager<
         (window as any).manager = this;
         this.handleResize();
 
-        this.panzoom!.on('pan', () => {
-            if( !this.firstDragTransform ) return;
 
+        this.panzoom!.on('pan', () => {
+            if( !this.held ) return;
+            this.firstDragTransform ??= this.getPanzoomTransform();
             let curDragTransform = this.panzoom!.getTransform();
 
             if( sqrt(
                 ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
                 ( this.firstDragTransform.y - curDragTransform.y ) ** 2
-            ) > 0 ) {
+            ) > 50 ) {
+                console.log('dragging')
                 this.dragging = true;
                 this.setFocusedNode(null);
             }
         });
 
-        document.addEventListener('wheel', () => {
+        const wheel = (e: WheelEvent) => {
             this.setFocusedNode(null);
-        })
+        }
 
-        document.addEventListener('mouseup', () => {
+        this.edgeContainer.addEventListener('wheel', wheel)
+        this.nodeContainer.addEventListener('wheel', wheel)
+
+        const mouseUp = () => {
             setTimeout(() => {
-                this.held         = false;
-                this.dragging     = false;
-                this.focusChanged = false;
+                if( !this.focusChanged ) {
+                    this.setFocusedNode(null);
+                }
+                this.held               = false;
+                this.dragging           = false;
+                this.focusChanged       = false;
+                this.firstDragTransform = null;
             })
-            if( !this.focusChanged ){
-                this.setFocusedNode(null);
-            }
-        })
+        };
 
-        document.addEventListener('mousedown', () => {
+        this.nodeContainer.addEventListener('mouseup', mouseUp);
+        this.edgeContainer.addEventListener('mouseup', mouseUp);
+
+        const mouseDown = (e: MouseEvent) => {
             this.held         = true;
             this.dragging     = false;
             this.focusChanged = false;
-            this.firstDragTransform = {...this.panzoom!.getTransform()}; // need to copy, lmao (this took me 2 hours to figure out)
-        })
 
-        // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 4);
+            let uv = this.documentToSimulation(new Vec2(e.clientX, e.clientY));
+            console.log("simulation coords", uv)
+            this.simulationToUVs(uv);
+            console.log("uniform coords", uv)
+            this.UVsToPanzoomOffset(uv);
+            console.log("panzoom offset", uv)
+
+            this.panzoom!.moveTo(uv.x * 2, uv.y * 2);
+            
+
+            // this.panzoom!.moveTo(uv.x, uv.y);
+            let pzTransform = this.panzoom!.getTransform();
+            let pzVec = new Vec2(pzTransform.x, pzTransform.y);
+            
+            console.log("panzoom transform", pzVec)
+            this.panzoomOffsetToUVs(pzVec);
+            console.log("uniform coords", pzVec)
+        };
+
+        this.nodeContainer.addEventListener('mousedown', mouseDown);
+        this.edgeContainer.addEventListener('mousedown', mouseDown);
+
+        // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
 
         // window.setTimeout(() => {
         //     this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
         // }, 1000);
 
-        window.requestAnimationFrame(this.autoFocus);
-
         // draw brighter edges (bidirectional followings) on top
         this.gl_ctx.enable(this.gl_ctx.BLEND);
         this.gl_ctx.blendFuncSeparate(this.gl_ctx.SRC_ALPHA, this.gl_ctx.ONE, this.gl_ctx.ZERO, this.gl_ctx.ONE);
         //this.gl_ctx.blendEquation(this.gl_ctx.FUNC_ADD);
+    }
+
+    protected getPanzoomTransform(): Transform {
+        return {...this.panzoom!.getTransform()};
     }
 
     protected override createNode(data: SoundcloudNodeData): SoundcloudNode {

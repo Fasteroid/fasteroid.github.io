@@ -229,7 +229,7 @@ export abstract class GraphManager<
             for(let vert of edge.verts){
                 let pos   = vert[0];
                 let color = vert[1];
-                this.transformToWorld(pos);
+                this.transformToCanvas(pos);
                 positions.push(pos.x, pos.y);
                 colors.push(color.r, color.g, color.b, color.a);
             }
@@ -252,7 +252,7 @@ export abstract class GraphManager<
         this.nodes.forEach( node => node.doPositioning() );
     }
 
-    public transformToWorld(v: Vec2): Vec2 {
+    public transformToCanvas(v: Vec2): Vec2 {
         const thisRect = this.selfBox;
         const parentRect = this.parentBox;
         const style = this.selfComputedSize;
@@ -261,22 +261,8 @@ export abstract class GraphManager<
         const scaleY = thisRect.height / style.height;
 
         return v.setTo(
-            v.x * scaleX + thisRect.left - parentRect.left,
-            v.y * scaleY + thisRect.top - parentRect.top
-        );
-    }
-
-    public transformToLocal(v: Vec2): Vec2 {
-        const thisRect = this.selfBox;
-        const parentRect = this.parentBox;
-        const style = this.selfComputedSize;
-
-        const scaleX = thisRect.width / style.width;
-        const scaleY = thisRect.height / style.height;
-
-        return v.setTo(
-            v.x * scaleX + thisRect.left - parentRect.left,
-            v.y * scaleY + thisRect.top - parentRect.top
+            (v.x - thisRect.left + parentRect.left) / scaleX,
+            (v.y - thisRect.top + parentRect.top) / scaleY
         );
     }
 

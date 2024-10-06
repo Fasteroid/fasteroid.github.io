@@ -184,7 +184,10 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private dragEvent(e: MouseEvent | TouchEvent){
         let event: MouseEvent | Touch = ( e instanceof TouchEvent ) ? e.touches[0] : e;
-        this.pos = this.manager.transformToLocal(new Vec2(event.clientX, event.clientY)).sub(this.manager.selfBox.left, this.manager.selfBox.top);
+
+        this.pos.x = event.clientX;
+        this.pos.y = event.clientY;
+        this.manager.transformDragEventToSimulationCoords(this.pos);
 
         this.vel.setTo(0,0);
     }
@@ -354,6 +357,22 @@ extends GraphManager<
     protected override createEdge(data: SkillTreeEdgeData): SkillTreeEdge {
         return new SkillTreeEdge(this, data);
     }
+
+
+    public transformDragEventToSimulationCoords(v: Vec2): Vec2 {
+        const thisRect = this.selfBox;
+        const parentRect = this.parentBox;
+        const style = this.selfComputedSize;
+
+        const scaleX = thisRect.width / style.width;
+        const scaleY = thisRect.height / style.height;
+
+        return v.setTo(
+            (v.x - thisRect.left) * scaleX + thisRect.left - parentRect.left,
+            (v.y - thisRect.top)  * scaleY + thisRect.top  - parentRect.top
+        );
+    }
+
 
     public serialize(): void {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
