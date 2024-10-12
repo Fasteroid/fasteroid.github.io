@@ -317,37 +317,38 @@ extends GraphManager<
         if( node === this.focusedNode ) return;
 
         const transform = this.getPanzoomTransform();
-        const instant = this.transformToCanvas( (this.focusedNode?.pos ?? new Vec2(0,0)).copy.scaleBy(-1) ) ;
+
+        const instant = new Vec2();
         const deferred = new Vec2();
 
         this.focusChanged = true;
 
         if( this.focusedNode ){
             this.focusedNode.selected_ = false;
-
+            instant.addV( this.focusedNode.pos.copy.scaleBy(-1) );
         }
 
         this.focusedNode = node;
 
         if( node ){
             node.selected_ = true;
-            instant.addV( this.transformToCanvas(node.pos.copy) );
+            instant.addV( node.pos );
         }
 
-        instant.scaleBy( transform.scale );
-
+        this.simulationToPanzoomOrigin(instant);
+        
         this.firstDragTransform = null;
 
-        this.simulationToPanzoomOrigin(deferred);
-        this.simulationToPanzoomOrigin(instant);
 
-        this.panzoom!.moveTo( ...instant.extract() );
-        
-        if( node ){
-            setTimeout( () => {
-                this.panzoom!.smoothMoveTo( ...deferred.extract() )
-            }, 500)
-        }
+            this.panzoom!.moveTo( ...instant.extract() );
+
+
+
+        // if( node ){
+        //     setTimeout( () => {
+        //         this.panzoom!.smoothMoveTo( ...deferred.extract() )
+        //     }, 500)
+        // }
 
     }
     
@@ -377,47 +378,36 @@ extends GraphManager<
         );
     }
 
-    public simulationToUVs(v: Vec2): Vec2 {
+    // Transforms a simulation coordinate to a uniform coordinate (-1 to 1 relative to viewport).  Self-modifies.
+    public simulationToUniform(v: Vec2): Vec2 {
         const thisParentBox = this.parentBox;
         const pzTransform = this.panzoom!.getTransform();
 
         return v.setTo(
-            ( (v.x + thisParentBox.width / 2) * pzTransform.scale + pzTransform.x ) / thisParentBox.width,
-            ( (v.y + thisParentBox.height / 2) * pzTransform.scale + pzTransform.y ) / thisParentBox.height
+            2 * ( (v.x + thisParentBox.width * 0.5) * pzTransform.scale + pzTransform.x ) / thisParentBox.width - 1,
+            2 * ( (v.y + thisParentBox.height * 0.5) * pzTransform.scale + pzTransform.y ) / thisParentBox.height - 1
         );
     }
 
-    public UVsToSimulation(v: Vec2): Vec2 {
+
+    public uniformToSimulation(v: Vec2): Vec2 {
         const thisParentBox = this.parentBox;
         const pzTransform = this.panzoom!.getTransform();
 
         return v.setTo(
-            (v.x * thisParentBox.width - pzTransform.x) / pzTransform.scale - thisParentBox.width / 2,
-            (v.y * thisParentBox.height - pzTransform.y) / pzTransform.scale - thisParentBox.height / 2
-        );
-    }
-
-    public UVsToPanzoomOffset(v: Vec2): Vec2 {
-        return v.setTo(
-            this.parentBox.width * 0.5 * ( v.x - 0.5 ),
-            this.parentBox.height * 0.5 * ( v.y - 0.5 )
-        );
-    }
-
-    public panzoomOffsetToUVs(v: Vec2): Vec2 {
-        return v.setTo(
-            v.x / this.parentBox.width + 0.5,
-            v.y / this.parentBox.height + 0.5
+            ( thisParentBox.width * (v.x + 1) * 0.5 - pzTransform.x ) / pzTransform.scale - thisParentBox.width * 0.5,
+            ( thisParentBox.height * (v.y + 1) * 0.5 - pzTransform.y ) / pzTransform.scale - thisParentBox.height * 0.5
         );
     }
 
     public simulationToPanzoomOrigin(v: Vec2): Vec2 {
+        this.simulationToUniform(v);
+        return this.uniformToPanzoomOrigin(v);
+    }
+
+    public uniformToPanzoomOrigin(v: Vec2): Vec2 {
         const pzTransform = this.panzoom!.getTransform();
         const thisParentBox = this.parentBox;
-
-        this.simulationToUVs(v);
-        v.add(-0.5, -0.5);
-        v.scaleBy(2);
 
         return v.setTo(
             thisParentBox.width * ( 1 - pzTransform.scale + v.x ) / 2,
@@ -499,20 +489,6 @@ extends GraphManager<
             this.held         = true;
             this.dragging     = false;
             this.focusChanged = false;
-
-            let uv = this.documentToSimulation(new Vec2(e.clientX, e.clientY));
-            console.log("simulation coords", uv)
-            this.simulationToPanzoomOrigin(uv);
-            console.log("panzoom transform?", uv)
-
-            let pzTransform = this.panzoom!.getTransform();
-            let pzVec = new Vec2(pzTransform.x, pzTransform.y);
-            
-            console.log("panzoom transform", pzVec)
-            this.panzoomOffsetToUVs(pzVec);
-            console.log("uniform coords", pzVec)
-
-            this.panzoom!.moveTo(uv.x, uv.y);
         };
 
         this.nodeContainer.addEventListener('mousedown', mouseDown);
