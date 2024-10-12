@@ -24,9 +24,8 @@ const EDGE_RATE                   = 0.1;
 
 const BASE_NODE_SIZE              = 32;
 
-const ZOOM_TRANSITION_TIME        = 750;
 const ZOOM_SCALE_MUL              = 100;
-const UNFOCUS_DRAG_DIST           = 10;
+const UNFOCUS_DRAG_DIST           = 200;
 
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
@@ -309,12 +308,16 @@ extends GraphManager<
 
 
     private focusedNode: SoundcloudNode | null = null;
+    private zoomTimeout: number = -1;
 
     private firstDragTransform: Transform | null = null;
 
     public setFocusedNode(node: SoundcloudNode | null){
 
         if( node === this.focusedNode ) return;
+
+        clearTimeout(this.zoomTimeout);
+        this.zoomTimeout = -1;
 
         const transform = this.getPanzoomTransform();
 
@@ -330,25 +333,28 @@ extends GraphManager<
 
         this.focusedNode = node;
 
+        let zoom = transform.scale;
+
         if( node ){
             node.selected_ = true;
             instant.addV( node.pos );
+            zoom = ZOOM_SCALE_MUL / node.diameter;
         }
 
         this.simulationToPanzoomOrigin(instant);
-        
+        this.uniformToPanzoomOrigin(deferred);
         this.firstDragTransform = null;
 
+        this.panzoom!.moveTo( ...instant.extract() );
+        if( node ){
+            this.panzoom!.smoothMoveTo( ...deferred.extract() );
 
-            this.panzoom!.moveTo( ...instant.extract() );
-
-
-
-        // if( node ){
-        //     setTimeout( () => {
-        //         this.panzoom!.smoothMoveTo( ...deferred.extract() )
-        //     }, 500)
-        // }
+            // of course, because the library I chose to PAN AND ZOOM can't PAN AND ZOOM AT THE SAME TIME ACCURATELY TO A LOCATION!!!!
+            // add a shitty fucking delay because it's the only thing we can do
+            this.zoomTimeout = window.setTimeout(() => {
+                this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
+            }, 150);
+        }
 
     }
     
@@ -456,7 +462,7 @@ extends GraphManager<
             if( sqrt(
                 ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
                 ( this.firstDragTransform.y - curDragTransform.y ) ** 2
-            ) > 50 ) {
+            ) > UNFOCUS_DRAG_DIST ) {
                 console.log('dragging')
                 this.dragging = true;
                 this.setFocusedNode(null);
