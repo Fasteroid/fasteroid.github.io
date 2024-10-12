@@ -338,10 +338,10 @@ extends GraphManager<
 
         this.firstDragTransform = null;
 
-        this.panzoom!.moveTo( ...instant.extract() );
-
         this.simulationToPanzoomOrigin(deferred);
         this.simulationToPanzoomOrigin(instant);
+
+        this.panzoom!.moveTo( ...instant.extract() );
         
         if( node ){
             setTimeout( () => {
@@ -409,6 +409,20 @@ extends GraphManager<
             v.x / this.parentBox.width + 0.5,
             v.y / this.parentBox.height + 0.5
         );
+    }
+
+    public simulationToPanzoomOrigin(v: Vec2): Vec2 {
+        const pzTransform = this.panzoom!.getTransform();
+        const thisParentBox = this.parentBox;
+
+        this.simulationToUVs(v);
+        v.add(-0.5, -0.5);
+        v.scaleBy(2);
+
+        return v.setTo(
+            thisParentBox.width * ( 1 - pzTransform.scale + v.x ) / 2,
+            thisParentBox.height * ( 1 - pzTransform.scale + v.y ) / 2,
+        )
     }
 
     public override get fragmentShader(): string {
@@ -488,21 +502,17 @@ extends GraphManager<
 
             let uv = this.documentToSimulation(new Vec2(e.clientX, e.clientY));
             console.log("simulation coords", uv)
-            this.simulationToUVs(uv);
-            console.log("uniform coords", uv)
-            this.UVsToPanzoomOffset(uv);
-            console.log("panzoom offset", uv)
+            this.simulationToPanzoomOrigin(uv);
+            console.log("panzoom transform?", uv)
 
-            this.panzoom!.moveTo(uv.x * 2, uv.y * 2);
-            
-
-            // this.panzoom!.moveTo(uv.x, uv.y);
             let pzTransform = this.panzoom!.getTransform();
             let pzVec = new Vec2(pzTransform.x, pzTransform.y);
             
             console.log("panzoom transform", pzVec)
             this.panzoomOffsetToUVs(pzVec);
             console.log("uniform coords", pzVec)
+
+            this.panzoom!.moveTo(uv.x, uv.y);
         };
 
         this.nodeContainer.addEventListener('mousedown', mouseDown);
