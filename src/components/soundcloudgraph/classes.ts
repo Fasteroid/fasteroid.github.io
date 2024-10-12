@@ -206,8 +206,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         // use img instead for pointer events and stuff since its hitbox is actually circular (unlike the div)
         const img = this.html.querySelector("img") as HTMLImageElement;
 
-        // img.crossOrigin = "Anonymous";
-        // img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
+        img.crossOrigin = "Anonymous";
+        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', (e) => {
             if( this.manager.dragging ) {
@@ -219,16 +219,16 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         });
 
         
-        // getPaletteAsync(img).then( colors => {
-        //     if( !colors ) return;
-        //     this._palette = colors.map( (rgb: [number, number, number]) => {
-        //         let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
-        //         let hsv = actualColor.toHSV();
-        //         hsv.v = max(0.8, hsv.v);
-        //         hsv.s = min(0.6, hsv.s);
-        //         return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
-        //     } )
-        // } );
+        getPaletteAsync(img).then( colors => {
+            if( !colors ) return;
+            this._palette = colors.map( (rgb: [number, number, number]) => {
+                let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                let hsv = actualColor.toHSV();
+                hsv.v = max(0.8, hsv.v);
+                hsv.s = min(0.6, hsv.s);
+                return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
+            } )
+        } );
     }
 
     private _neighbors!: SoundcloudNode[];

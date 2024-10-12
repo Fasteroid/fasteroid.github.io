@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; justify-content: center; pointer-events: none; position: absolute;">x</div>
+        <!-- <div style="display: flex; align-items: center; justify-content: center; pointer-events: none; position: absolute;">x</div> -->
 
     </div>        
 </section> 

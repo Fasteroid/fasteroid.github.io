@@ -261,8 +261,8 @@ export abstract class GraphManager<
         const scaleY = thisRect.height / style.height;
 
         return v.setTo(
-            (v.x - thisRect.left + parentRect.left) / scaleX,
-            (v.y - thisRect.top + parentRect.top) / scaleY
+            v.x * scaleX + thisRect.left - parentRect.left,
+            v.y * scaleY + thisRect.top - parentRect.top
         );
     }
 
