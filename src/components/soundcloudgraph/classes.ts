@@ -24,7 +24,7 @@ const EDGE_RATE                   = 0.1;
 
 const BASE_NODE_SIZE              = 32;
 
-const ZOOM_SCALE_MUL              = 100;
+const ZOOM_SCALE_MUL              = 85;
 const UNFOCUS_DRAG_DIST           = 200;
 
 export const LIKES_SIZE_MUL     = 1.5;
@@ -69,9 +69,8 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         const normal = this.normal;
 
-        // actual value here is 0.75 (why??) but I use 0.65 to hide my shitty math that's making this boundary slightly offset from where it should be 💀
-        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.65);
-        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.65);
+        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.72);
+        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.72);
 
         // fix the endpoints so they're on the edge of the node instead of the center
         to.subV( offsetScaledTo );
@@ -261,7 +260,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override doPositioning(){
-        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this.selected_ ? 1 : -1), 0, 1);
+        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this.selected_ ? 1 : -0.4), 0, 1);
         this.vel.scaleBy(0.6);
         this.pos.addV(this.vel);
     }

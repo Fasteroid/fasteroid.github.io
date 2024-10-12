@@ -42,20 +42,31 @@
                     <li><i>"What's your favorite genre?"</i></li>
                 </ul>
                 <div class="minibr"></div>
-                And I'm embarassed every single goddamn time people ask, because I don't have common or straightforward answers to ANY of these.<br/>
-                Even if I named a favorite artist, you wouldn't know them.  Nor would you know my favorite genres if I tried to describe them.<br/>
-                <br/>
-                Instead, here's an interactive map of everyone I follow on Soundcloud—for you to explore as much or as little as you want.  Pan and zoom the canvas, or click on an artist to visit their Soundcloud.
+                And I get embarassed every time someone asks.  It's impossible to describe the niche of indie electronica that I've fallen into through the years.  I don't even have a clear favorite artist!<br/>
+                <div class="minibr"></div>
+                Instead of me trying to describe my musical tastes, why not explore them for yourself?
             </div>
             <SoundcloudGraph/>
             <div class="p2">
+                For the especially curious, here are some more technical details about what this visualization is showing:
                 <ul class="first-ul">
                     <li>
                         The size of each artist tells how important they are to me.  How is that calculated?
                         <ul>
-                            <li>How many of their tracks are in my <a href="https://soundcloud.com/fasteroid-1/likes">Likes</a>? (x{LIKES_SIZE_MUL})</li>
-                            <li>My <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-legendary">Legendary Favorites</a> playlist? (x{FAVORITES_SIZE_MUL})</li>
-                            <li>My <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-relics">Relics</a> playlist? (x{RELICS_SIZE_MUL})</li>
+                            <li>
+                                How many of their tracks are in my 
+                                <a href="https://soundcloud.com/fasteroid-1/likes" title="Anything I liked enough to listen to again.">Likes</a>? 
+                                (x{LIKES_SIZE_MUL})</li>
+                            <li>
+                                ...plus in my 
+                                <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-legendary" title="A competitive catalogue, limited to my top 30 with a max of 3 per artist.">Legendary Favorites</a> 
+                                playlist (x{FAVORITES_SIZE_MUL})
+                            </li>
+                            <li>
+                                ...plus in my 
+                                <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-relics" title="A playlist of nostalgia containing tracks from 9th grade and earlier.">Relics</a>
+                                playlist (x{RELICS_SIZE_MUL})
+                            </li>
                         </ul>
                     </li>
                     <li>
