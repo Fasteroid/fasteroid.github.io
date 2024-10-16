@@ -2,6 +2,8 @@
     import { base } from "$app/paths";
     import { FAVORITES_SIZE_MUL, LIKES_SIZE_MUL, RELICS_SIZE_MUL } from "../../../components/soundcloudgraph/classes";
     import SoundcloudGraph from "../../../components/soundcloudgraph/SoundcloudGraph.svelte";
+
+    const legendaryFavoritesDesc = "A competitive catalogue, limited to my top 30 with a max of 3 per artist."
 </script>
 
 <style lang="scss">
@@ -60,7 +62,7 @@
                                 (x{LIKES_SIZE_MUL})</li>
                             <li>
                                 ...plus in my 
-                                <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-legendary" title="A competitive catalogue, limited to my top 30 with a max of 3 per artist.">Legendary Favorites</a> 
+                                <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-legendary" title={legendaryFavoritesDesc}>Legendary Favorites</a> 
                                 playlist (x{FAVORITES_SIZE_MUL})
                             </li>
                             <li>
@@ -68,6 +70,18 @@
                                 <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-relics" title="A playlist of nostalgia containing tracks from 9th grade and earlier.">Relics</a>
                                 playlist (x{RELICS_SIZE_MUL})
                             </li>
+                        </ul>
+                    </li>
+                    <li>
+                        Almost every artist here has a featured track.  How am I picking those?
+                        <ul>
+                            <li>For most tracks, popularity is determined as a combination of plays, likes, and comments squared divided by age.</li>
+                            <li>
+                                If the track is in my
+                                <a href="https://soundcloud.com/fasteroid-1/sets/sc-likes-legendary" title={legendaryFavoritesDesc}>Legendary Favorites</a> playlist,
+                                it is "timeless", and will divide by its ranking there instead of age.
+                            </li>
+                            <li>This means if there's not a significant difference in stats, Legendary Favorites are preferred.  <i>But not always.</i></li>
                         </ul>
                     </li>
                     <li>
@@ -83,9 +97,6 @@
                             <li>Bidirectional starts thick, goes thin, then ends thick again.</li>
                             <li>Single-direction follows start thick and taper into nothingness.</li>
                         </ul>
-                    </li>
-                    <li>
-                        Plans to let you listen to a piece from each artist directly from this page are in the works!
                     </li>
                 </ul>
             </div>

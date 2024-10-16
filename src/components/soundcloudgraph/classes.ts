@@ -17,7 +17,7 @@ const max = Math.max
 const min = Math.min
 
 const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 200; // inverse square multiplier
+const AMBIENT_REPEL_STRENGTH      = 100; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
 
 const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges
@@ -210,7 +210,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         placeholder.replaceWith(iframe);
 
         const widget = window.SC.Widget(iframe);
-        widget.setVolume(0.5);
+        widget.bind('ready', () => {
+            widget.setVolume(40);
+        });
+        
 
     }
 
@@ -287,7 +290,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
                 this.manager.preventUnfocus_ = true;
                 return;
             }
-            console.log("clicked", this.data.artist.username);
             this.manager.setFocusedNode(this);
         });
 
@@ -297,7 +299,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.descriptor.style.opacity = '0';
 
         const text_bio = this.descriptor.querySelector('.text-bio') as HTMLElement;
-        text_bio.innerText = trimBioText( getEnhancedBio(data) ?? "", 10, 550 );
+        text_bio.innerText = trimBioText( getEnhancedBio(data) ?? "", 8, 400 );
 
         const wrapper = this.descriptor.querySelector('.inside') as HTMLElement;
         
@@ -430,9 +432,6 @@ extends GraphManager<
             instant.addV( node.pos );
             zoom = ZOOM_SCALE_MUL * NODE_SUPER_RESOLUTION / node.diameter;
         }
-
-        zoom = Math.round(zoom);
-        console.log(zoom)
 
         this.simulationToPanzoomOrigin(instant);
         this.uniformToPanzoomOrigin(deferred);

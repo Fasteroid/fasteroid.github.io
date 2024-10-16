@@ -3,6 +3,7 @@
 ## VFX
     - Add an "on fire" effect that correlates to legendary favorites playlist
     - Add another effect that comes from the relics playlist
+    - If an artist is strongly correlated to one of the "element" playlists, do an effect for that too.
 
 
 ## Bugs
