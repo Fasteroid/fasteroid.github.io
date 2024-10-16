@@ -6,9 +6,7 @@
     height: 70vh;
     background-image: url(base.$base + "/assets/grid.png");
 
-    overflow: hidden;
-    
-    
+    overflow: hidden;   
 }
   
 .node {
@@ -25,6 +23,14 @@
     line-height: 1;
 
     translate: -50% -50%;
+
+    &.anim-top {
+        z-index: 3;
+    }
+
+    &.anim-middle {
+        z-index: 2;
+    }
 
     .artist {
 
@@ -67,6 +73,15 @@
             border-radius: 9999px;
         }
     
+    }
+
+    .descriptor {
+        overflow: visible;
+        position: absolute;
+        top: 0%;
+        left: 100%;
+        background-color: rgb(70, 70, 199);
+        z-index: 10;
     }
 
 }

@@ -33,6 +33,10 @@
                 <div class="text-outline">b</div>
                 <div class="text-main">a</div>
             </div>
+
+            <div class="descriptor">
+                test
+            </div>
         </div>
 
         <!-- <div style="display: flex; align-items: center; justify-content: center; pointer-events: none; position: absolute;">x</div> -->

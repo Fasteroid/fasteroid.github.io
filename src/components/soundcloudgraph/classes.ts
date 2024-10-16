@@ -3,29 +3,27 @@ import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
 import { base } from "$app/paths";
-import { getColorAsync, getPaletteAsync } from "$lib/colorthiefextensions";
+import { getPaletteAsync } from "$lib/colorthiefextensions";
 import { Vec2 } from "$lib/vec2";
 import type { ImmutableVec2 } from "$lib/vec2"
 import { Transform } from "panzoom";
 
-const abs = Math.abs
 const sqrt = Math.sqrt
 const max = Math.max
-const pow = Math.pow
 const min = Math.min
 
-const REPEL_SOFTNESS              = 2;     // to avoid NaN if nodes are very close
+const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
 const AMBIENT_REPEL_STRENGTH      = 1200; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 1700;  // min "far" distance
+const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
 
-const THINNING_FACTOR             = 30;
+const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges
 
-const EDGE_RATE                   = 0.1;
+const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shrink
 
-const BASE_NODE_SIZE              = 32;
+const BASE_NODE_SIZE              = 32;   // self-explanatory
 
-const ZOOM_SCALE_MUL              = 85;
-const UNFOCUS_DRAG_DIST           = 200;
+const ZOOM_SCALE_MUL              = 200;  // constant apparent size of node when focused and zoomed on it
+const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
 
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
@@ -144,8 +142,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     declare readonly manager: SoundcloudGraphManager;
 
+    private _selected:  boolean = false;
+
     private _edgeWidth: number = 0;
-    public selected_: boolean = false;
     public get edgeWidth() {
         return this._edgeWidth;
     }
@@ -186,6 +185,49 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         return this._palette ?? [Color.BLACK];
     }
 
+    private _descriptor!: HTMLElement;
+    public get descriptor(): HTMLElement {
+        return this._descriptor ?? ( // Are getters like this an anti-pattern, or are they based?  I'm doing this a lot...
+            this._descriptor = this.html.querySelector('.descriptor') as HTMLElement
+        )
+    }
+
+    private anim?: Animation;
+    public setFocus(is: boolean){
+        this._selected = is;
+
+        if( this.anim ){ 
+            this.anim.onfinish = () => {}; // cancel but don't really cancel 
+        }
+
+        this.anim = this.descriptor.animate([
+            { opacity: is ? 1 : 0 },
+        ], {
+            duration: 500,
+            easing: 'ease-in-out',
+            fill: 'both'
+        });
+
+        this.html.classList.remove('anim-top');
+        this.html.classList.add('anim-middle');
+
+        if( is ) {
+            this.descriptor.hidden = false;
+
+            this.anim.onfinish = () => {
+                this.html.classList.remove('anim-middle');
+                this.html.classList.add('anim-top');
+            }
+        }
+        else {
+            this.anim.onfinish = () => {
+                console.log('finished')
+                this.html.classList.remove('anim-middle');
+                this.descriptor.hidden = true;
+            }
+        }
+    }
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
@@ -216,6 +258,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             console.log("clicked", this.data.artist.username);
             this.manager.setFocusedNode(this);
         });
+
+        this.descriptor.hidden = true;
+        this.descriptor.style.opacity = '0';
 
         
         getPaletteAsync(img).then( colors => {
@@ -260,7 +305,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override doPositioning(){
-        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this.selected_ ? 1 : -0.4), 0, 1);
+        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this._selected ? 1 : -0.4), 0, 1);
         this.vel.scaleBy(0.6);
         this.pos.addV(this.vel);
     }
@@ -307,16 +352,12 @@ extends GraphManager<
 
 
     private focusedNode: SoundcloudNode | null = null;
-    private zoomTimeout: number = -1;
 
     private firstDragTransform: Transform | null = null;
 
     public setFocusedNode(node: SoundcloudNode | null){
 
         if( node === this.focusedNode ) return;
-
-        clearTimeout(this.zoomTimeout);
-        this.zoomTimeout = -1;
 
         const transform = this.getPanzoomTransform();
 
@@ -326,7 +367,7 @@ extends GraphManager<
         this.focusChanged = true;
 
         if( this.focusedNode ){
-            this.focusedNode.selected_ = false;
+            this.focusedNode.setFocus(false);
             instant.addV( this.focusedNode.pos.copy.scaleBy(-1) );
         }
 
@@ -335,7 +376,7 @@ extends GraphManager<
         let zoom = transform.scale;
 
         if( node ){
-            node.selected_ = true;
+            node.setFocus(true);
             instant.addV( node.pos );
             zoom = ZOOM_SCALE_MUL / node.diameter;
         }
@@ -344,15 +385,32 @@ extends GraphManager<
         this.uniformToPanzoomOrigin(deferred);
         this.firstDragTransform = null;
 
+
         this.panzoom!.moveTo( ...instant.extract() );
         if( node ){
+            deferred.add(-node.diameter * transform.scale * 0.75, 0)
             this.panzoom!.smoothMoveTo( ...deferred.extract() );
 
-            // of course, because the library I chose to PAN AND ZOOM can't PAN AND ZOOM AT THE SAME TIME ACCURATELY TO A LOCATION!!!!
-            // add a shitty fucking delay because it's the only thing we can do
-            this.zoomTimeout = window.setTimeout(() => {
-                this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
-            }, 150);
+            // zoom on it after we've aimed at it.  can't do sooner because panzoom library is jank.
+            const interval = window.setInterval(() => {
+
+                let curTransform = this.panzoom!.getTransform();
+                let diff = sqrt(
+                    (deferred.x - curTransform.x) ** 2 +
+                    (deferred.y - curTransform.y) ** 2
+                );
+
+                if( diff < 1 ){
+                    window.clearInterval(interval);
+                    this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
+                }
+
+            })
+
+            setTimeout(() => {
+                window.clearInterval(interval);
+            }, 3000); // took too long, forget it.
+
         }
 
     }
