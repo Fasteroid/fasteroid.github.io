@@ -7,6 +7,7 @@ import { getPaletteAsync } from "$lib/colorthiefextensions";
 import { Vec2 } from "$lib/vec2";
 import type { ImmutableVec2 } from "$lib/vec2"
 import { Transform } from "panzoom";
+import { addHyperlinks } from "./misc";
 
 const sqrt = Math.sqrt
 const max = Math.max
@@ -261,6 +262,11 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         this.descriptor.hidden = true;
         this.descriptor.style.opacity = '0';
+
+        const text_bio = this.descriptor.querySelector('.text-bio') as HTMLElement;
+        text_bio.innerText = artist.description;
+
+        addHyperlinks(text_bio); // make the links clickable; cursed.
 
         
         // getPaletteAsync(img).then( colors => {

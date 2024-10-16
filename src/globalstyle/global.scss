@@ -96,9 +96,9 @@ ul {
 }
 
 a {
-    color: #b1b1ff;
+    color: globals.$a-untouched;
     &:visited {
-        color: #eca1ff;
+        color: globals.$a-touched;
     }
 }
 

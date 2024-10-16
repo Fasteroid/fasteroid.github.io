@@ -186,8 +186,6 @@ export class Set2D<K> {
 export function compileShader(ctx: WebGL2RenderingContext, type: GLenum, source: string) {
     const shader = ctx.createShader(type);
 
-    console.log(shader)
-
     if( shader === null ) throw "Failed to compile shader";
 
     ctx.shaderSource(shader, source);
@@ -259,4 +257,56 @@ export function groupBy<T, K extends number | string>( arr: T[], group: (t: T) =
         map.get(key)?.push(item);
     }
     return map;
+}
+
+
+/**
+ * Replaces text in a string, according to one regex, but only if it doesn't match another regex.
+ * @param text       - victim
+ * @param sentinel   - any number of groups to ignore
+ * @param innerRegex - what you actually want to match
+ * @param replace    - the function that will be called to replace the matches
+ * @author Fasteroid
+ */
+export function shortCircuitReplace( text: string, sentinel: RegExp, innerRegex: RegExp, replace: (...args: string[]) => string ){
+    let argShift = 1;
+
+    let lastWasEscape = false;
+    for( let char of sentinel.source ){
+
+        if( lastWasEscape ){
+            lastWasEscape = false;
+            continue;
+        }
+
+        if( char === "\\" ){
+            lastWasEscape = true;
+            continue;
+        }
+
+        if( char === "(" ){
+            argShift++;
+        }
+        
+    }
+
+    let matcher = new RegExp(`${sentinel.source}|${innerRegex.source}`,"g")
+
+    return text.replace(matcher, function(){
+        let shiftedArguments = [...arguments].slice(argShift, arguments.length - argShift); // we'll pass these on to replace
+
+        for( let i = 1; i < argShift; i++ ){
+            if( arguments[i] ){ return arguments[0] } // oops, we matched a sentinel
+        }
+
+        return replace.call(globalThis, ...shiftedArguments); // we matched the inner regex and no sentinels, so we can replace
+    })
+}
+
+/**
+ * Should be self-explanatory.
+ * @author Fasteroid
+ */
+export function replaceOutsideHTMLTags( text: string, innerRegex: RegExp, replace: (...args: string[]) => string ){
+    return shortCircuitReplace(text, /(\<.*?\>.*?\<.*?\>)/, innerRegex, replace)
 }

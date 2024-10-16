@@ -35,7 +35,11 @@
             </div>
 
             <div class="descriptor">
-                test
+                <div class="inside">
+                    <div class="text-bio">
+
+                    </div>
+                </div>
             </div>
         </div>
 

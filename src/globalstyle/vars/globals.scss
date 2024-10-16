@@ -32,3 +32,6 @@ $section-background: #ffffff15; // or rgba(255, 255, 255, 0.0824)
 $section-1x: stack($section-background, $site-background);
 $section-2x: stack($section-1x, $site-background);
 $section-3x: stack($section-2x, $site-background);
+
+$a-touched: #eca1ff;
+$a-untouched: #b1b1ff;

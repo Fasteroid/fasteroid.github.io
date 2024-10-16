@@ -3,24 +3,9 @@
 // WARNING: LEGACY (ish) CODE
 // MAY BE CRINGE
 
+import { replaceOutsideHTMLTags, shortCircuitReplace } from "$lib/utils";
+
 // WARNING: CURSED REGEX
-
-const ignoreTagsPreproc = /(\<.*?\>.*?\<.*?\>)/.source
-let replaceIgnoreTags = function replaceIgnoreTags( text: string, innerRegex: RegExp, replace: (...args: string[]) => string ){
-    
-    let matcher = new RegExp(`${ignoreTagsPreproc}|${innerRegex.source}`,"g")
-
-    return text.replace(matcher, function(){
-        let shiftedArguments = [...arguments].slice(2,arguments.length-2); // we'll pass these on to replace
-        if( !arguments[1] ){
-            return replace.call(globalThis, ...shiftedArguments)
-        }
-        else{
-            return arguments[0]
-        }
-    })
-
-}
 
 export const E2SyntaxHighlighter = {
 
@@ -103,7 +88,7 @@ export const E2SyntaxHighlighter = {
         for (const [dir, wholeLine] of Object.entries(this.directives) ){
             if(wholeLine){
                 let matcher = new RegExp(`(^|\n)(${dir}.*?)(\n)`,"gm")
-                txt = replaceIgnoreTags(txt,matcher,(a,b,c) => `${a}<e2dir>${b}</e2dir>${c}`)
+                txt = replaceOutsideHTMLTags(txt,matcher,(a,b,c) => `${a}<e2dir>${b}</e2dir>${c}`)
             }
             else{
                 txt = txt.replaceAll(dir,`<e2dir>${dir}</e2dir>`);
@@ -152,7 +137,7 @@ export const E2SyntaxHighlighter = {
         }
 
         txt = explodedtext.join("");
-        txt = replaceIgnoreTags(txt, /(#include)/, () => "<e2key>#include</e2key>")
+        txt = replaceOutsideHTMLTags(txt, /(#include)/, () => "<e2key>#include</e2key>")
         txt = txt.replaceAll("#[","<e2comment>#[");
         txt = txt.replaceAll("]#","]#</e2comment>");
 
@@ -293,7 +278,7 @@ export const E2SyntaxHighlighter = {
 
     highlightKeywords(txt: string){
         for (const keyword of this.keywords) {
-            txt = replaceIgnoreTags(txt, new RegExp(`(\\\W)(${keyword})(\\\W)`), (a,b,c) => `${a}<e2key>${b}</e2key>${c}`);
+            txt = replaceOutsideHTMLTags(txt, new RegExp(`(\\\W)(${keyword})(\\\W)`), (a,b,c) => `${a}<e2key>${b}</e2key>${c}`);
         }
         return txt
     }
