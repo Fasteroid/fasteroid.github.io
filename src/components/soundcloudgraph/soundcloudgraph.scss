@@ -12,6 +12,9 @@
 }
 
 .node-container {
+    
+    text-rendering: geometricPrecision !important;
+
     --base-scale: 100px;
 
     .node {
@@ -84,8 +87,6 @@
     
         .descriptor {
     
-            text-rendering: optimizeLegibility !important;
-    
             font-size: 6px;
     
             line-height: 1.2;
@@ -113,6 +114,7 @@
                 color: globals.$a-untouched;
                 cursor: pointer;
             }
+
     
             &::before {
                 content: "";
@@ -129,21 +131,9 @@
     
             .inside {
                 --background-art: linear-gradient(globals.$section-1x, globals.$section-1x);
-    
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-    
-                .user-bio {
-                    white-space: pre-line;
-                    height: min-content
-                }
-    
-                padding: 3px;
-    
+
                 background-color: #494949d0;
-    
+        
                 &::before {
                     content: "";
                     display: block;
@@ -159,6 +149,37 @@
     
                     // filter: blur( calc(1px * var(--scale)) );
                 }
+
+                height: 100%;
+
+                .user-bio {
+                    white-space: pre-line;
+                    height: min-content;
+                }
+
+                .noflex {
+                    flex: 0;
+                }
+
+                .iframe-holder {
+                    height: 12px;
+                }
+
+                .featured-track {
+                    font-size: 5.5px;
+                    padding-bottom: 2px;
+                }
+
+                .text-featured-track {
+                    font-style: italic;
+                }
+
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+    
+                padding: 3px;
                 
                 iframe {
                     $zoom-factor: 2;
@@ -166,6 +187,7 @@
                     width: calc(100% * $zoom-factor);
                     transform: translate(-50%, -50%) scale(calc(1 / $zoom-factor)) translate(50%, 50%);
                 }
+
             }
         }
     

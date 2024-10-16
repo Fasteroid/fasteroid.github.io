@@ -39,8 +39,14 @@
                 <!-- todo: experiment with creating this element lazily -->
                 <div class="descriptor">
                     <div class="inside">
-                        <div class="text-bio">placeholder</div>
-                        <div class="iframe-placeholder"></div>
+                        <div class="text-bio noflex">placeholder</div>
+                        <div></div>
+                        <div class="featured-track noflex">
+                            Featured Track: <span class="text-featured-track">placeholder</span>
+                        </div>
+                        <div class="iframe-holder noflex">
+                            <div class="iframe-placeholder"></div>
+                        </div>
                     </div>
                 </div>
             </div>

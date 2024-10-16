@@ -26,7 +26,11 @@ OVERRIDE_FUNCTIONS.set("91351883", (user: Artist) => { // EmelUK
 
 export function getEnhancedBio(data: SoundcloudNodeData): string {
     let fun = OVERRIDE_FUNCTIONS.get(data.id) ?? function(user: Artist): string { return user.description };
-    return fun(data.artist);
+
+    let ret = fun(data.artist);
+    if( ret === "" ){ ret = "This artist has not written anything about themselves." }
+
+    return ret;
 }
 
 // looks for a good place to cut it
@@ -65,6 +69,6 @@ export function trimBioText(text: string, maxLines: number, maxChars: number): s
         ret_lines.push(...buffer_lines);
     }
 
-    return ret_lines.join("\n");
+    return ret_lines.join("\n").trimEnd();
 
 }

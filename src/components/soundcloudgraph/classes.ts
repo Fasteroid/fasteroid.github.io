@@ -26,7 +26,7 @@ const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shri
 
 const BASE_NODE_SIZE              = 48;   // self-explanatory
 
-const ZOOM_SCALE_MUL              = 156;  // constant apparent size of node when focused and zoomed on it
+const ZOOM_SCALE_MUL              = 142;  // constant apparent size of node when focused and zoomed on it
 const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
 
 const NODE_SUPER_RESOLUTION       = 4;
@@ -205,7 +205,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         if( !placeholder || !this.data.track ) return;
 
         const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
-        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=false&auto_play=true&show_user=true`
+        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
         iframe.hidden = false;
         placeholder.replaceWith(iframe);
 
@@ -266,9 +266,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
-        let pixelPerfectDiameter = Math.round( this.diameter * BASE_NODE_SIZE / NODE_SUPER_RESOLUTION ) * NODE_SUPER_RESOLUTION / BASE_NODE_SIZE
-
-        this.html.style.setProperty('--node-scale', `${pixelPerfectDiameter / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
+        // const pixelPerfectDiameter = Math.round( this.diameter * BASE_NODE_SIZE / NODE_SUPER_RESOLUTION ) * NODE_SUPER_RESOLUTION / BASE_NODE_SIZE
+        this.html.style.setProperty('--node-scale', `${this.diameter / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
 
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
@@ -303,6 +302,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         const wrapper = this.descriptor.querySelector('.inside') as HTMLElement;
         
         if( artist.background_art ) wrapper.style.setProperty('--background-art', `url(${artist.background_art})`);
+
+        if( track ) {
+            this.descriptor.querySelector('.text-featured-track')!.textContent = `${track.title}`;
+        }
 
         addHyperlinks(text_bio); // make the links clickable; cursed.
         
@@ -427,6 +430,9 @@ extends GraphManager<
             instant.addV( node.pos );
             zoom = ZOOM_SCALE_MUL * NODE_SUPER_RESOLUTION / node.diameter;
         }
+
+        zoom = Math.round(zoom);
+        console.log(zoom)
 
         this.simulationToPanzoomOrigin(instant);
         this.uniformToPanzoomOrigin(deferred);
