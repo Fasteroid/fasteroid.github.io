@@ -36,27 +36,32 @@ export function trimBioText(text: string, maxLines: number, maxChars: number): s
 
     let ret_lines:    string[] = [];
     let buffer_lines: string[] = [];
-    let no_double_break = true;
+    let early_exit = false;
     let char_count = 0;
 
     for(let i = 0; i < all_lines.length; i++){
         const line = all_lines[i];
 
         if( line === "" ){
-            no_double_break = false;
             ret_lines.push(...buffer_lines);
             buffer_lines = [];
         }
 
         char_count += Math.max(line.length, maxChars / maxLines);
-        if( char_count >= maxChars ){ break; }
+        if( char_count >= maxChars ){ 
+            early_exit = true;
+            break; 
+        }
 
         buffer_lines.push(line);
 
-        if( i >= maxLines ){ break; }
+        if( i >= maxLines ){ 
+            early_exit = true;
+            break; 
+        }
     }
 
-    if( no_double_break ){
+    if( !early_exit ){
         ret_lines.push(...buffer_lines);
     }
 
