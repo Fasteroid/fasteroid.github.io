@@ -92,7 +92,7 @@
                         </ul>
                     </li>
                     <li>
-                        Graph edges (hover on a node) also show if two artists are following each other or not.
+                        Graph edges (click a node to view them) also show if two artists are following each other or not.
                         <ul>
                             <li>Bidirectional starts thick, goes thin, then ends thick again.</li>
                             <li>Single-direction follows start thick and taper into nothingness.</li>
