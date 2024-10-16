@@ -271,7 +271,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this.descriptor.style.opacity = '0';
 
         const text_bio = this.descriptor.querySelector('.text-bio') as HTMLElement;
-        text_bio.innerText = trimBioText( getEnhancedBio(data) ?? "", 14, 550 );
+        text_bio.innerText = trimBioText( getEnhancedBio(data) ?? "", 10, 550 );
 
         const wrapper = this.descriptor.querySelector('.inside') as HTMLElement;
         
