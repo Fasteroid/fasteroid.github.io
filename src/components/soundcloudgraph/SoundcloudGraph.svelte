@@ -29,19 +29,21 @@
         
         <!-- template cell -->
         <div class="node initial" id="template-node" hidden>
-            <div class="stack artist">
-                <img alt="" title="Click twice to open in SoundCloud">
-                <div class="text-outline">b</div>
-                <div class="text-main">a</div>
-            </div>
-
-            <!-- todo: experiment with creating this element lazily -->
-            <div class="descriptor">
-                <div class="inside">
-                    <div class="text-bio">placeholder</div>
-                    <br>
-                    <div class="iframe-isolator">
-                        <div class="iframe-placeholder"></div>
+            <div class="scale">
+                <div class="stack artist">
+                    <img alt="" title="Click twice to open in SoundCloud">
+                    <div class="text-outline">b</div>
+                    <div class="text-main">a</div>
+                </div>
+    
+                <!-- todo: experiment with creating this element lazily -->
+                <div class="descriptor">
+                    <div class="inside">
+                        <div class="text-bio">placeholder</div>
+                        <br>
+                        <!-- <div class="iframe-isolator">
+                            <div class="iframe-placeholder"></div>
+                        </div> -->
                     </div>
                 </div>
             </div>
