@@ -1,5 +1,7 @@
 @use "vars/base.scss" as base;
+@use "vars/globals.scss" as globals;
 @use "../graph/graph.scss" as graph;
+
 
 .grid {
     padding: 0px;
@@ -79,9 +81,25 @@
         overflow: visible;
         position: absolute;
         top: 0%;
-        left: 100%;
-        background-color: rgb(70, 70, 199);
+        left: 110%;
+        background-color: globals.$section-background;
         z-index: 10;
+        width: 200%;
+
+        // nice going copilot! 
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            height: 10%;
+            aspect-ratio: 1 / 1;
+            background-color: globals.$section-background;
+            top: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            clip-path: polygon(0 0, 0 100%, 100% 100%);
+        }
     }
+
+    
 
 }

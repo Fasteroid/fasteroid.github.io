@@ -1,6 +1,34 @@
-// I COULD make separate scss files for each of these namespaces, but that seems overkill since there's only two and they aren't large.
+
+// by ChatGPT
+@function stack($foreground, $background) {
+    // Extract RGBA components of the colors
+    $r1: red($foreground);
+    $g1: green($foreground);
+    $b1: blue($foreground);
+    $a1: alpha($foreground);
+    
+    $r2: red($background);
+    $g2: green($background);
+    $b2: blue($background);
+    
+    // Compute the alpha composite
+    $a: $a1 + (1 - $a1);
+    
+    // Calculate blended color components
+    $r: ($r1 * $a1 + $r2 * (1 - $a1));
+    $g: ($g1 * $a1 + $g2 * (1 - $a1));
+    $b: ($b1 * $a1 + $b2 * (1 - $a1));
+    
+    @return rgba($r, $g, $b, 1);
+}
+  
 
 $site-background: #2f3234;
-$site-text:       #eeeeee;
+$site-text: #eeeeee;
 
-$section-background: #ffffff15;
+$section-background: #ffffff15; // or rgba(255, 255, 255, 0.0824)
+
+// actual colors of sections layered on background... in case they're needed:
+$section-1x: stack($section-background, $site-background);
+$section-2x: stack($section-1x, $site-background);
+$section-3x: stack($section-2x, $site-background);
