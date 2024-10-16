@@ -80,6 +80,8 @@
 
     .descriptor {
 
+        text-rendering: optimizeLegibility !important;
+
         font-size: calc( var(--scale) * 3px );
 
         line-height: 1.2;
@@ -125,6 +127,7 @@
 
             box-sizing: border-box;
             display: flex;
+            flex-direction: column;
 
             .user-bio {
                 white-space: pre-line;
@@ -148,6 +151,18 @@
                 z-index: -1;
 
                 // filter: blur( calc(1px * var(--scale)) );
+            }
+            
+            .iframe-isolator {
+                transform: translateZ(0);
+            }
+
+            iframe {
+                $zoom-level: 5;
+                height: 20px;
+                width: calc(100% * $zoom-level / var(--scale));
+                transform: translate(-50%, -50%) scale( calc( var(--scale) / $zoom-level ) ) translate(50%, 50%);
+                overflow: show;
             }
         }
     }

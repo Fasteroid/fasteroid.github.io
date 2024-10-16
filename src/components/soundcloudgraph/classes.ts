@@ -10,6 +10,8 @@ import { Transform } from "panzoom";
 import { addHyperlinks } from "./url-adder";
 import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
+import "./widget-types"; // cursed hack by Claude
+
 const sqrt = Math.sqrt
 const max = Math.max
 const min = Math.min
@@ -194,6 +196,32 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         )
     }
 
+    private onFirstVisible = () => {
+        this.descriptor.hidden = false;
+        
+        const placeholder = this.descriptor.querySelector('.iframe-placeholder') as HTMLElement | null;
+        if( !placeholder || !this.data.track ) return;
+
+        const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
+        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=false&auto_play=true&show_user=true`
+        iframe.hidden = false;
+        placeholder.replaceWith(iframe);
+
+        const widget = window.SC.Widget(iframe);
+        widget.setVolume(0.5);
+
+    }
+
+    private onFullVisible = () => {
+        this.html.classList.remove('anim-middle');
+        this.html.classList.add('anim-top');
+    }
+
+    private onLastVisible = () => {
+        this.html.classList.remove('anim-middle');
+        this.descriptor.hidden = true;
+    }
+
     private anim?: Animation;
     public setFocus(is: boolean){
         this._selected = is;
@@ -202,31 +230,26 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             this.anim.onfinish = () => {}; // cancel but don't really cancel 
         }
 
-        this.anim = this.descriptor.animate([
-            { opacity: is ? 1 : 0 },
-        ], {
-            duration: 500,
-            easing: 'ease-in-out',
-            fill: 'both'
-        });
+        this.anim = this.descriptor.animate(
+            [ 
+                { opacity: is ? 1 : 0 } 
+            ], 
+            {
+                duration: 500,
+                easing: 'ease-in-out',
+                fill: 'both'
+            }
+        );
 
         this.html.classList.remove('anim-top');
         this.html.classList.add('anim-middle');
 
         if( is ) {
-            this.descriptor.hidden = false;
-
-            this.anim.onfinish = () => {
-                this.html.classList.remove('anim-middle');
-                this.html.classList.add('anim-top');
-            }
+            this.onFirstVisible();
+            this.anim.onfinish = this.onFullVisible;
         }
         else {
-            this.anim.onfinish = () => {
-                console.log('finished')
-                this.html.classList.remove('anim-middle');
-                this.descriptor.hidden = true;
-            }
+            this.anim.onfinish = this.onLastVisible;
         }
     }
 
@@ -241,7 +264,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
-        this.html.style.setProperty('--scale', `${this.diameter / BASE_NODE_SIZE}`);
+        this.html.style.setProperty('--scale', `${Math.round(this.diameter) / BASE_NODE_SIZE}`);
 
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
@@ -370,6 +393,8 @@ extends GraphManager<
 
     private focusedNode: SoundcloudNode | null = null;
     private firstDragTransform: Transform | null = null;
+
+    public readonly templateEmbed: HTMLIFrameElement;
 
     public setFocusedNode(node: SoundcloudNode | null){
 
@@ -527,6 +552,8 @@ extends GraphManager<
         });
         (window as any).manager = this;
         this.handleResize();
+
+        this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
 
         const urlLookupMap = new Map<string, SoundcloudNode>();
 

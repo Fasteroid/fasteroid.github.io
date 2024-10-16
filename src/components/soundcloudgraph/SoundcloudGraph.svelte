@@ -2,6 +2,7 @@
     <style lang="scss">
         @import "./soundcloudgraph.scss";
     </style>
+    <script src="https://w.soundcloud.com/player/api.js"></script>
 </svelte:head>
 
 <script lang="ts">
@@ -34,14 +35,27 @@
                 <div class="text-main">a</div>
             </div>
 
+            <!-- todo: experiment with creating this element lazily -->
             <div class="descriptor">
                 <div class="inside">
-                    <div class="text-bio">
-
+                    <div class="text-bio">placeholder</div>
+                    <br>
+                    <div class="iframe-isolator">
+                        <div class="iframe-placeholder"></div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- template iframe -->
+        <iframe id="template-embed"
+            scrolling="no" 
+            frameborder="no" 
+            allow="autoplay" 
+            src=""
+            title="embed"
+            hidden
+        >
 
         <!-- <div style="display: flex; align-items: center; justify-content: center; pointer-events: none; position: absolute;">x</div> -->
 
