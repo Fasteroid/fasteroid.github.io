@@ -26,7 +26,6 @@ const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shri
 
 const BASE_NODE_SIZE              = 48;   // self-explanatory
 
-const ZOOM_SCALE_MUL              = 142;  // constant apparent size of node when focused and zoomed on it
 const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
 
 const NODE_SUPER_RESOLUTION       = 4;
@@ -34,6 +33,10 @@ const NODE_SUPER_RESOLUTION       = 4;
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
 export const RELICS_SIZE_MUL    = 9;
+
+function getZoomScaleMul(){
+    return document.body.clientWidth * 0.07
+}
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
@@ -258,6 +261,19 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
+    private onClick = () => {
+        if( this.manager.dragging ) {
+            this.manager.setFocusedNode(null)
+            return;
+        };
+        if( this._selected ) {
+            window.open(this.data.artist.permalink_url, '_blank');
+            this.manager.preventUnfocus_ = true;
+            return;
+        }
+        this.manager.setFocusedNode(this);
+    }
+
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
 
         super(manager, data);
@@ -280,18 +296,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         img.crossOrigin = "Anonymous";
         img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
-        img.addEventListener('click', (e) => {
-            if( this.manager.dragging ) {
-                this.manager.setFocusedNode(null)
-                return;
-            };
-            if( this._selected ) {
-                window.open(this.data.artist.permalink_url, '_blank');
-                this.manager.preventUnfocus_ = true;
-                return;
-            }
-            this.manager.setFocusedNode(this);
-        });
+        img.addEventListener('click', this.onClick);
+        img.addEventListener('touchend', this.onClick);
 
         (img as any).__data__ = this.data; // for devs; this will be what gets inspect-elemented
 
@@ -430,7 +436,7 @@ extends GraphManager<
         if( node ){
             node.setFocus(true);
             instant.addV( node.pos );
-            zoom = ZOOM_SCALE_MUL * NODE_SUPER_RESOLUTION / node.diameter;
+            zoom = getZoomScaleMul() * NODE_SUPER_RESOLUTION / node.diameter;
         }
 
         this.simulationToPanzoomOrigin(instant);
@@ -624,7 +630,10 @@ extends GraphManager<
         this.nodeContainer.addEventListener('mouseup', mouseUp);
         this.edgeContainer.addEventListener('mouseup', mouseUp);
 
-        const mouseDown = (e: MouseEvent) => {
+        this.nodeContainer.addEventListener('touchend', mouseUp);
+        this.edgeContainer.addEventListener('touchend', mouseUp);
+
+        const mouseDown = () => {
             this.held         = true;
             this.dragging     = false;
             this.focusChanged = false;
@@ -632,6 +641,9 @@ extends GraphManager<
 
         this.nodeContainer.addEventListener('mousedown', mouseDown);
         this.edgeContainer.addEventListener('mousedown', mouseDown);
+
+        this.edgeContainer.addEventListener('touchstart', mouseDown);
+        this.nodeContainer.addEventListener('touchstart', mouseDown);
 
         // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
 
