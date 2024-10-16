@@ -20,11 +20,11 @@
         .scale {
             scale: var(--node-scale);
         }
-    
+
         width:  calc( var(--base-scale) * 0.5 );
         height: calc( var(--base-scale) * 0.5 );
         background-size: contain;
-        font-size: 7px;
+        font-size: 14px;
         position: absolute;
         line-height: 1;
     
@@ -60,7 +60,7 @@
             }
         
             .text-outline {
-                -webkit-text-stroke: 2px black;
+                -webkit-text-stroke: 3px black;
                 pointer-events: none;
             }
         
@@ -86,7 +86,7 @@
     
             text-rendering: optimizeLegibility !important;
     
-            font-size: calc( 3px );
+            font-size: 6px;
     
             line-height: 1.2;
             text-align: left;
@@ -98,11 +98,12 @@
             background-color: globals.$section-background;
             z-index: 10;
             width: 200%;
-            padding: calc( 2px ); // idk how copilot guessed this
+            height: round( 100%, 1px );
+            padding: 3px;
     
             box-sizing: border-box;
     
-            filter: drop-shadow( 0 0 calc( 2px ) black );
+            filter: drop-shadow( 0 0 6px black );
     
             a {
                 text-decoration: none; // underlines are broken in this context
@@ -132,12 +133,14 @@
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
+                justify-content: space-between;
     
                 .user-bio {
                     white-space: pre-line;
+                    height: min-content
                 }
     
-                padding: calc( 1px );
+                padding: 3px;
     
                 background-color: #494949d0;
     
@@ -157,17 +160,12 @@
                     // filter: blur( calc(1px * var(--scale)) );
                 }
                 
-                .iframe-isolator {
-                    transform: translateZ(0);
+                iframe {
+                    $zoom-factor: 2;
+                    height: 20px;
+                    width: calc(100% * $zoom-factor);
+                    transform: translate(-50%, -50%) scale(calc(1 / $zoom-factor)) translate(50%, 50%);
                 }
-    
-                // iframe {
-                //     $zoom-level: 5;
-                //     height: 20px;
-                //     width: calc(100% * $zoom-level / var(--scale));
-                //     transform: translate(-50%, -50%) scale( calc( var(--scale) / $zoom-level ) ) translate(50%, 50%);
-                //     overflow: show;
-                // }
             }
         }
     

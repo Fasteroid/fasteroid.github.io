@@ -17,23 +17,23 @@ const max = Math.max
 const min = Math.min
 
 const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 400; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 1700 * 2; // min "far" distance
+const AMBIENT_REPEL_STRENGTH      = 600; // inverse square multiplier
+const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
 
 const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges
 
 const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shrink
 
-const BASE_NODE_SIZE              = 128;   // self-explanatory
+const BASE_NODE_SIZE              = 48;   // self-explanatory
 
-const ZOOM_SCALE_MUL              = 800;  // constant apparent size of node when focused and zoomed on it
+const ZOOM_SCALE_MUL              = 156;  // constant apparent size of node when focused and zoomed on it
 const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
+
+const NODE_SUPER_RESOLUTION       = 4;
 
 export const LIKES_SIZE_MUL     = 1.5;
 export const FAVORITES_SIZE_MUL = 6;
 export const RELICS_SIZE_MUL    = 9;
-
-const newScaleSystemFix = 32 / BASE_NODE_SIZE;
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
@@ -73,8 +73,8 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
 
         const normal = this.normal;
 
-        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.5 * newScaleSystemFix);
-        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.5 * newScaleSystemFix);
+        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.24);
+        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.24);
 
         // fix the endpoints so they're on the edge of the node instead of the center
         to.subV( offsetScaledTo );
@@ -94,8 +94,8 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         offsetScaledFrom.pivot90CCW();
 
         // and shrink them because 0.6 * diameter will be way too thick
-        offsetScaledTo.scaleBy(this.width * 0.2 * newScaleSystemFix);
-        offsetScaledFrom.scaleBy(this.width * 0.2 * newScaleSystemFix);
+        offsetScaledTo.scaleBy(0.05 * this.width);
+        offsetScaledFrom.scaleBy(0.05 * this.width);
 
         if( this.bidirectional )
             original = [ 
@@ -173,11 +173,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private _diameter!: number;
     public get diameter(){
         return this._diameter ??= (
-            BASE_NODE_SIZE + ( 
-                this.data.artist.likes_count * LIKES_SIZE_MUL +
-                this.data.artist.favorites_count * FAVORITES_SIZE_MUL +
-                this.data.artist.relics_count * RELICS_SIZE_MUL
-            ) / newScaleSystemFix
+            BASE_NODE_SIZE +                       // base size
+            this.data.artist.likes_count * LIKES_SIZE_MUL +
+            this.data.artist.favorites_count * FAVORITES_SIZE_MUL +
+            this.data.artist.relics_count * RELICS_SIZE_MUL
         );
     }
 
@@ -267,7 +266,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
-        this.html.style.setProperty('--node-scale', `${Math.round(this.diameter) / BASE_NODE_SIZE}`);
+        let pixelPerfectDiameter = Math.round( this.diameter * BASE_NODE_SIZE / NODE_SUPER_RESOLUTION ) * NODE_SUPER_RESOLUTION / BASE_NODE_SIZE
+
+        this.html.style.setProperty('--node-scale', `${pixelPerfectDiameter / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
 
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
@@ -424,7 +425,7 @@ extends GraphManager<
         if( node ){
             node.setFocus(true);
             instant.addV( node.pos );
-            zoom = ZOOM_SCALE_MUL / node.diameter;
+            zoom = ZOOM_SCALE_MUL * NODE_SUPER_RESOLUTION / node.diameter;
         }
 
         this.simulationToPanzoomOrigin(instant);
@@ -434,9 +435,7 @@ extends GraphManager<
 
         this.panzoom!.moveTo( ...instant.extract() );
         if( node ){
-
-            console.log("aiming")
-            deferred.add(-node.diameter * transform.scale * 0.4, 0)
+            deferred.add(-node.diameter * transform.scale * 0.5, 0)
             this.panzoom!.smoothMoveTo( ...deferred.extract() );
 
             // zoom on it after we've aimed at it.  can't do sooner because panzoom library is jank.
@@ -448,8 +447,7 @@ extends GraphManager<
                     (deferred.y - curTransform.y) ** 2
                 );
 
-                if( diff < 10 ){
-                    console.log("zooming")
+                if( diff < 1 ){
                     window.clearInterval(interval);
                     this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
                 }
@@ -561,9 +559,9 @@ extends GraphManager<
 
         this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
 
-        this.nodeContainer.style.setProperty('--base-size', `${BASE_NODE_SIZE}px`);
-
         const urlLookupMap = new Map<string, SoundcloudNode>();
+
+        this.nodeContainer.style.setProperty('--base-scale', `${BASE_NODE_SIZE * NODE_SUPER_RESOLUTION}px`);
 
         this.nodes.forEach( node => {
             urlLookupMap.set(node.data.artist.permalink_url, node);

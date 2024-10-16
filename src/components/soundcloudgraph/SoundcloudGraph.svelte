@@ -40,10 +40,7 @@
                 <div class="descriptor">
                     <div class="inside">
                         <div class="text-bio">placeholder</div>
-                        <br>
-                        <!-- <div class="iframe-isolator">
-                            <div class="iframe-placeholder"></div>
-                        </div> -->
+                        <div class="iframe-placeholder"></div>
                     </div>
                 </div>
             </div>
