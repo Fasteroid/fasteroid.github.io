@@ -17,7 +17,7 @@ const max = Math.max
 const min = Math.min
 
 const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 600; // inverse square multiplier
+const AMBIENT_REPEL_STRENGTH      = 200; // inverse square multiplier
 const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
 
 const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges

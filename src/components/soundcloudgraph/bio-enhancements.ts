@@ -13,7 +13,7 @@ type OverrideFunction = (user: Artist) => string;
 const OVERRIDE_FUNCTIONS: Map<string, OverrideFunction> = new Map<string, OverrideFunction>()
 
 OVERRIDE_FUNCTIONS.set("557092200", (user: Artist) => {
-    return `Cloudier was a duet consisting of Cloudfield (now @mididuck) and Reichuu (now @moonjelly0) from 2019 to 2020.\n\nhttps://soundcloud.com/driftcat/echo is likely their breakup song.`
+    return `Cloudier was the musical love story of Cloudfield and Reichuu.\n\nNow under new aliases as @mididuck and @moonjelly0, all that remains is an echo of their dreams.`
 });
 
 OVERRIDE_FUNCTIONS.set("143194090", (user: Artist) => {

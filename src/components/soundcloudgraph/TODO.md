@@ -7,3 +7,6 @@
 
 ## Bugs
     - Fix text imprecision on small nodes by scaling everything up
+
+## Exploits
+    - If possible, can we animate the nodes in sync with the music being played?  Might be impossible because of CORS restrictions.
