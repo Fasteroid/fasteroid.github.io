@@ -29,7 +29,7 @@
         <!-- template cell -->
         <div class="node initial" id="template-node" hidden>
             <div class="stack artist">
-                <img alt="">
+                <img alt="" title="Click twice to open in SoundCloud">
                 <div class="text-outline">b</div>
                 <div class="text-main">a</div>
             </div>

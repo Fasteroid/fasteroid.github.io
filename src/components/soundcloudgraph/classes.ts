@@ -7,7 +7,8 @@ import { getPaletteAsync } from "$lib/colorthiefextensions";
 import { Vec2 } from "$lib/vec2";
 import type { ImmutableVec2 } from "$lib/vec2"
 import { Transform } from "panzoom";
-import { addHyperlinks } from "./misc";
+import { addHyperlinks } from "./url-adder";
+import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 const sqrt = Math.sqrt
 const max = Math.max
@@ -23,7 +24,7 @@ const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shri
 
 const BASE_NODE_SIZE              = 32;   // self-explanatory
 
-const ZOOM_SCALE_MUL              = 200;  // constant apparent size of node when focused and zoomed on it
+const ZOOM_SCALE_MUL              = 156;  // constant apparent size of node when focused and zoomed on it
 const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
 
 export const LIKES_SIZE_MUL     = 1.5;
@@ -242,43 +243,52 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         this.html.style.setProperty('--scale', `${this.diameter / BASE_NODE_SIZE}`);
 
-        (this.html as any).__self__ = this; // :)
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
         // use img instead for pointer events and stuff since its hitbox is actually circular (unlike the div)
         const img = this.html.querySelector("img") as HTMLImageElement;
 
         img.crossOrigin = "Anonymous";
-        // img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
+        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', (e) => {
             if( this.manager.dragging ) {
                 this.manager.setFocusedNode(null)
                 return;
             };
+            if( this._selected ) {
+                window.open(this.data.artist.permalink_url, '_blank');
+                this.manager.preventUnfocus_ = true;
+                return;
+            }
             console.log("clicked", this.data.artist.username);
             this.manager.setFocusedNode(this);
         });
+
+        (img as any).__data__ = this.data; // for devs; this will be what gets inspect-elemented
 
         this.descriptor.hidden = true;
         this.descriptor.style.opacity = '0';
 
         const text_bio = this.descriptor.querySelector('.text-bio') as HTMLElement;
-        text_bio.innerText = artist.description;
+        text_bio.innerText = trimBioText( getEnhancedBio(data) ?? "", 14, 550 );
+
+        const wrapper = this.descriptor.querySelector('.inside') as HTMLElement;
+        
+        if( artist.background_art ) wrapper.style.setProperty('--background-art', `url(${artist.background_art})`);
 
         addHyperlinks(text_bio); // make the links clickable; cursed.
-
         
-        // getPaletteAsync(img).then( colors => {
-        //     if( !colors ) return;
-        //     this._palette = colors.map( (rgb: [number, number, number]) => {
-        //         let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
-        //         let hsv = actualColor.toHSV();
-        //         hsv.v = max(0.8, hsv.v);
-        //         hsv.s = min(0.6, hsv.s);
-        //         return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
-        //     } )
-        // } );
+        getPaletteAsync(img).then( colors => {
+            if( !colors ) return;
+            this._palette = colors.map( (rgb: [number, number, number]) => {
+                let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+                let hsv = actualColor.toHSV();
+                hsv.v = max(0.8, hsv.v);
+                hsv.s = min(0.6, hsv.s);
+                return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
+            } )
+        } );
     }
 
     private _neighbors!: SoundcloudNode[];
@@ -356,14 +366,16 @@ extends GraphManager<
     public  dragging:      boolean = false;
     private focusChanged:  boolean = false;
 
+    public  preventUnfocus_: boolean = false;
 
     private focusedNode: SoundcloudNode | null = null;
-
     private firstDragTransform: Transform | null = null;
 
     public setFocusedNode(node: SoundcloudNode | null){
 
         if( node === this.focusedNode ) return;
+        
+        (window as any).focusedNode = node;
 
         const transform = this.getPanzoomTransform();
 
@@ -516,6 +528,26 @@ extends GraphManager<
         (window as any).manager = this;
         this.handleResize();
 
+        const urlLookupMap = new Map<string, SoundcloudNode>();
+
+        this.nodes.forEach( node => {
+            urlLookupMap.set(node.data.artist.permalink_url, node);
+        });
+
+        this.nodes.forEach( node => {
+            node.descriptor.querySelectorAll('a').forEach( (a: HTMLAnchorElement) => {
+                let related = urlLookupMap.get(a.href);
+                if( related ){
+                    let replacement = document.createElement('span');
+                    replacement.innerText = a.innerText;
+                    replacement.classList.add("a");
+                    replacement.addEventListener('click', () => { related.html.querySelector('img')?.click() });
+
+                    a.replaceWith(replacement);
+                }
+            })
+        });
+
 
         this.panzoom!.on('pan', () => {
             if( !this.held ) return;
@@ -526,7 +558,6 @@ extends GraphManager<
                 ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
                 ( this.firstDragTransform.y - curDragTransform.y ) ** 2
             ) > UNFOCUS_DRAG_DIST ) {
-                console.log('dragging')
                 this.dragging = true;
                 this.setFocusedNode(null);
             }
@@ -541,9 +572,10 @@ extends GraphManager<
 
         const mouseUp = () => {
             setTimeout(() => {
-                if( !this.focusChanged ) {
+                if( !this.focusChanged && !this.preventUnfocus_ ){  // preventUnfocus triggers when opening a link by clicking a node again
                     this.setFocusedNode(null);
                 }
+                this.preventUnfocus_    = false;
                 this.held               = false;
                 this.dragging           = false;
                 this.focusChanged       = false;

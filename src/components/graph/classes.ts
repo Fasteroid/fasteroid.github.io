@@ -343,7 +343,7 @@ export abstract class GraphNode<
     EdgeData extends GraphEdgeData,
     Edge     extends GraphEdge<NodeData, EdgeData, GraphNode<NodeData, EdgeData, Edge>>
 >{
-    protected data: NodeData;
+    public readonly data: Readonly<NodeData>;
 
     public pos: Vec2 = new Vec2();
     public vel: Vec2 = new Vec2();

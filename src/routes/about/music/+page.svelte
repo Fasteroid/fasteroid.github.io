@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
-  import { FAVORITES_SIZE_MUL, LIKES_SIZE_MUL, RELICS_SIZE_MUL } from "../../../components/soundcloudgraph/classes";
+    import { FAVORITES_SIZE_MUL, LIKES_SIZE_MUL, RELICS_SIZE_MUL } from "../../../components/soundcloudgraph/classes";
     import SoundcloudGraph from "../../../components/soundcloudgraph/SoundcloudGraph.svelte";
 </script>
 
@@ -31,7 +31,7 @@
     <div class="margins">
         <section>
             <hgroup>
-                <h1>Soundcloud Map [BETA]</h1>
+                <h1>Map of Musicians</h1>
             </hgroup>
             <div class="p">
                 I get asked all the time about my music preferences.
@@ -42,7 +42,8 @@
                     <li><i>"What's your favorite genre?"</i></li>
                 </ul>
                 <div class="minibr"></div>
-                And I get embarassed every time someone asks.  It's impossible to describe the niche of indie electronica that I've fallen into through the years.  I don't even have a clear favorite artist!<br/>
+                And I get embarassed every time someone asks!  It's impossible to describe every niche subgenres of electronic music I've fallen in love with over the years.  
+                I don't even have a clear favorite artist!<br/>
                 <div class="minibr"></div>
                 Instead of me trying to describe my musical tastes, why not explore them for yourself?
             </div>

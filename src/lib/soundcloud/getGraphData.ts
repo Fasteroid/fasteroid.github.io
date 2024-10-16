@@ -43,33 +43,43 @@ function getPopularity(it: SoundcloudNodeTrack): number {
     )
 }
 
+function getBackgroundArt( user: ScuffedCloudAPI.User ): string | null {
+    let visuals = user.visuals?.visuals; // I hate this already
+    if( visuals === undefined ) return null;
+    let id  = user.id.toString();
+    let art = visuals.find( v => v.visual_url.includes(id) );
+    if( art === undefined ) return null;
+    return art.visual_url;
+}
+
 function SoundcloudNodeData(track: Omit<ScuffedCloudAPI.Track, 'user'> | undefined, artist: ScuffedCloudAPI.User): SoundcloudNodeData {
     let initial: SoundcloudNodeData = {
         id: artist.id.toString(),
         artist: {
-            username: artist.username,
-            avatar_url: artist.avatar_url,
-            permalink_url: artist.permalink_url,
-            followers_count: artist.followers_count,
+            username:         artist.username,
+            avatar_url:       artist.avatar_url,
+            permalink_url:    artist.permalink_url,
+            followers_count:  artist.followers_count,
             followings_count: artist.followings_count,
-            description: artist.description,
-            track_count: artist.track_count,
-            likes_count:     liked_by_artist.get(artist.id)?.length ?? 0,
-            favorites_count: legendary_by_artist.get(artist.id)?.length ?? 0,
-            relics_count:    classic_by_artist.get(artist.id)?.length ?? 0
+            description:      artist.description,
+            track_count:      artist.track_count,
+            likes_count:      liked_by_artist.get(artist.id)?.length ?? 0,
+            favorites_count:  legendary_by_artist.get(artist.id)?.length ?? 0,
+            relics_count:     classic_by_artist.get(artist.id)?.length ?? 0,
+            background_art:   getBackgroundArt(artist)
         }
     }
     if( track !== undefined ){
         initial.track = {
-            permalink_url: track.permalink_url,
-            duration: track.duration,
-            created_at: track.created_at,
+            permalink_url:  track.permalink_url,
+            duration:       track.duration,
+            created_at:     track.created_at,
             playback_count: track.playback_count,
-            likes_count: track.likes_count,
-            comment_count: track.comment_count,
-            artwork_url: track.artwork_url,
-            title: track.title,
-            id: track.id
+            likes_count:    track.likes_count,
+            comment_count:  track.comment_count,
+            artwork_url:    track.artwork_url,
+            title:          track.title,
+            id:             track.id
         }
     }
     return initial;

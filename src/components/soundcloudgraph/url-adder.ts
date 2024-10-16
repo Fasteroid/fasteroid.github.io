@@ -25,6 +25,7 @@ export function addHyperlinks(e: HTMLElement){
         return `<a href="mailto:${p1}" target="_blank">${p1}</a>`;
     });
     
+    // TODO: for artists, if they exist in the map, take us there!
     html = replaceOutsideHTMLTags(html, HANDLE_REGEX, (p1: string, p2: string) => {
         return `${p1}<a href="https://soundcloud.com/${p2}" target="_blank">${p2}</a>`; // don't include the @, just like soundcloud.
     });

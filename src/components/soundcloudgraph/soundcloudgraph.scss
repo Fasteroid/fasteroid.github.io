@@ -73,6 +73,7 @@
             width: 100%;
             left: 0%;
             border-radius: 9999px;
+            cursor: pointer;
         }
     
     }
@@ -91,14 +92,21 @@
         background-color: globals.$section-background;
         z-index: 10;
         width: 200%;
+        padding: calc( var(--scale) * 2px ); // idk how copilot guessed this
 
         box-sizing: border-box;
+
+        filter: drop-shadow( 0 0 calc( var(--scale) * 2px ) black );
 
         a {
             text-decoration: none; // underlines are broken in this context
         }
 
-        // nice going copilot! 
+        .a {
+            color: globals.$a-untouched;
+            cursor: pointer;
+        }
+
         &::before {
             content: "";
             display: block;
@@ -107,17 +115,39 @@
             aspect-ratio: 1 / 1;
             background-color: globals.$section-background;
             top: 50%;
+            left: 0;
             transform: translate(-50%, -50%) rotate(45deg);
             clip-path: polygon(0 0, 0 100%, 100% 100%);
         }
 
         .inside {
+            --background-art: linear-gradient(globals.$section-1x, globals.$section-1x);
+
             box-sizing: border-box;
-            padding: calc( var(--scale) * 2px ); // idk how copilot guessed this
             display: flex;
 
             .user-bio {
                 white-space: pre-line;
+            }
+
+            padding: calc( var(--scale) * 1px );
+
+            background-color: #494949d0;
+
+            &::before {
+                content: "";
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--background-art);
+                background-position: center;
+                background-size: auto 100%;
+                z-index: -1;
+
+                // filter: blur( calc(1px * var(--scale)) );
             }
         }
     }

@@ -2,5 +2,5 @@ import { load as loadParent } from "../+page";
 import { defineData } from "$lib/pagedata"
 
 export const load = defineData( loadParent, {
-	title: "Soundcloud Map [BETA]",
+	title: "Map of Musicians",
 })
