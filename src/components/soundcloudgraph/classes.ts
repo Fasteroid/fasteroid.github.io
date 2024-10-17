@@ -26,7 +26,7 @@ const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shri
 
 const BASE_NODE_SIZE              = 48;   // self-explanatory
 
-const UNFOCUS_DRAG_DIST           = 200;  // how far to drag before unfocusing; allows micro-movements during selection
+const UNFOCUS_DRAG_DIST           = 100;  // how far to drag before unfocusing; allows micro-movements during selection
 
 const NODE_SUPER_RESOLUTION       = 4;
 
@@ -482,8 +482,9 @@ extends GraphManager<
                     (deferred.y - curTransform.y) ** 2
                 );
 
-                if( diff < 1 ){
+                if( diff < 10 ){
                     window.clearInterval(interval);
+                    console.log('zooming')
                     this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
                 }
 
@@ -587,7 +588,7 @@ extends GraphManager<
                 zoomDoubleClickSpeed: 1,
                 zoomSpeed: 0.1,
                 minZoom: 0.1,
-                maxZoom: 10,
+                maxZoom: 15,
         });
         (window as any).manager = this;
         this.handleResize();
