@@ -264,7 +264,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this._selected = is;
 
         if( !is ){
-            console.log('cleanup')
             const iframe = this.descriptor.querySelector('iframe') as HTMLIFrameElement | null;
             if( !iframe ) return;
     
@@ -485,7 +484,6 @@ extends GraphManager<
 
                 if( diff < 1 ){
                     window.clearInterval(interval);
-                    console.log(zoom)
                     this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
                 }
 
