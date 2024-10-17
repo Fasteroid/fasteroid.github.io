@@ -216,8 +216,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         widget.bind('ready', () => {
             widget.setVolume(40);
         });
-        
-
     }
 
     private onFullVisible = () => {
@@ -228,6 +226,14 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private onLastVisible = () => {
         this.html.classList.remove('anim-middle');
         this.descriptor.hidden = true;
+
+        const iframe = this.descriptor.querySelector('iframe') as HTMLIFrameElement | null;
+        if( !iframe ) return;
+
+        const placeholder = document.createElement('div');
+        placeholder.classList.add('iframe-placeholder');
+
+        iframe.replaceWith(placeholder); // clean up
     }
 
     private anim?: Animation;
