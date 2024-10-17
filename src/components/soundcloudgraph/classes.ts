@@ -35,7 +35,7 @@ export const FAVORITES_SIZE_MUL = 6;
 export const RELICS_SIZE_MUL    = 9;
 
 function getZoomScaleMul(){
-    return document.body.clientWidth * 0.07
+    return document.body.clientWidth * 0.065
 }
 
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
@@ -151,7 +151,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
     declare readonly manager: SoundcloudGraphManager;
 
-    private _selected:  boolean = false;
+    private _focused:  boolean = false;
+    private _selected: boolean = false;
 
     private _edgeWidth: number = 0;
     public get edgeWidth() {
@@ -226,19 +227,11 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private onLastVisible = () => {
         this.html.classList.remove('anim-middle');
         this.descriptor.hidden = true;
-
-        const iframe = this.descriptor.querySelector('iframe') as HTMLIFrameElement | null;
-        if( !iframe ) return;
-
-        const placeholder = document.createElement('div');
-        placeholder.classList.add('iframe-placeholder');
-
-        iframe.replaceWith(placeholder); // clean up
     }
 
     private anim?: Animation;
     public setFocus(is: boolean){
-        this._selected = is;
+        this._focused = is;
 
         if( this.anim ){ 
             this.anim.onfinish = () => {}; // cancel but don't really cancel 
@@ -267,17 +260,33 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
+    public setSelect(is: boolean){
+        this._selected = is;
+
+        if( !is ){
+            console.log('cleanup')
+            const iframe = this.descriptor.querySelector('iframe') as HTMLIFrameElement | null;
+            if( !iframe ) return;
+    
+            const placeholder = document.createElement('div');
+            placeholder.classList.add('iframe-placeholder');
+    
+            iframe.replaceWith(placeholder); // clean up
+        }
+    }
+
     private onClick = () => {
         if( this.manager.dragging ) {
             this.manager.setFocusedNode(null)
             return;
         };
-        if( this._selected ) {
+        if( this._focused ) {
             window.open(this.data.artist.permalink_url, '_blank');
             this.manager.preventUnfocus_ = true;
             return;
         }
         this.manager.setFocusedNode(this);
+        this.manager.setSelectedNode(this);
     }
 
     constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
@@ -413,9 +422,17 @@ extends GraphManager<
     public  preventUnfocus_: boolean = false;
 
     private focusedNode: SoundcloudNode | null = null;
+    private selectedNode: SoundcloudNode | null = null;
     private firstDragTransform: Transform | null = null;
 
     public readonly templateEmbed: HTMLIFrameElement;
+
+    public setSelectedNode(node: SoundcloudNode | null){
+        if( node === this.selectedNode ) return;
+        this.selectedNode?.setSelect(false);
+        this.selectedNode = node;
+        node?.setSelect(true);
+    }
 
     public setFocusedNode(node: SoundcloudNode | null){
 
@@ -443,6 +460,8 @@ extends GraphManager<
             node.setFocus(true);
             instant.addV( node.pos );
             zoom = getZoomScaleMul() * NODE_SUPER_RESOLUTION / node.diameter;
+
+            this.setSelectedNode(node);
         }
 
         this.simulationToPanzoomOrigin(instant);
@@ -466,6 +485,7 @@ extends GraphManager<
 
                 if( diff < 1 ){
                     window.clearInterval(interval);
+                    console.log(zoom)
                     this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
                 }
 
@@ -624,6 +644,7 @@ extends GraphManager<
             setTimeout(() => {
                 if( !this.focusChanged && !this.preventUnfocus_ ){  // preventUnfocus triggers when opening a link by clicking a node again
                     this.setFocusedNode(null);
+                    if( !this.dragging ) this.setSelectedNode(null);
                 }
                 this.preventUnfocus_    = false;
                 this.held               = false;
