@@ -55,6 +55,17 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
     private toColor: Color = Color.BLACK;
     private fromColor: Color = Color.BLACK;
 
+    private _fromForceScalar!: number;
+    private get fromForceScalar() {
+        return this._fromForceScalar ??= (this.to.diameter / (this.to.diameter + this.from.diameter));
+    }
+
+    private _toForceScalar!: number;
+    private get toForceScalar() {
+        return this._toForceScalar ??= (this.from.diameter / (this.to.diameter + this.from.diameter));
+    }
+
+
     public override get verts(): [Vec2, Color][] {
 
         if( this.width === 0 ) return [];
@@ -131,16 +142,17 @@ export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdge
         const toNode = this.to!;
 
         const dist = fromNode.pos.distance(toNode.pos);
-        let factor = clamp( (dist - toNode.diameter - fromNode.diameter) * 0.05, -0.2, 1) * 
+        let factor = clamp( (dist - toNode.diameter - fromNode.diameter) * 0.025, -0.2, 2) * 
                      (1 + this.width * 0.25) * 
                      (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
                      ( (0.5 * fromNode.diameter + 0.5 * toNode.diameter) / BASE_NODE_SIZE ) *
                      (this.bidirectional ? 2 : 0.5);
 
-        const dir  = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
+        const dir    = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
+        const dircpy = dir.copy;
 
-        fromNode.vel.addV(dir);
-        toNode.vel.subV(dir);
+        fromNode.vel.addV(dir.scaleBy(this.fromForceScalar));
+        toNode.vel.subV(dircpy.scaleBy(this.toForceScalar));
 
     }
 
