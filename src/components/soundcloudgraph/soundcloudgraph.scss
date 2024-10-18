@@ -18,6 +18,13 @@
     --base-scale: 100px;
 
     .node {
+
+        pointer-events: none;
+
+        * {
+            pointer-events: all;
+        }
+
         --node-scale: 1;
     
         .scale {
