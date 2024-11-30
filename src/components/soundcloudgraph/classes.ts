@@ -225,7 +225,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         iframe.hidden = false;
         placeholder.replaceWith(iframe);
 
-        const widget = window.SC.Widget(iframe);
+        let widget = window.SC.Widget(iframe);
         widget.bind('ready', () => {
             widget.setVolume(40);
         });
@@ -287,7 +287,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         this._selected = is;
 
         if( !is ){
-            const iframe = this.descriptor.querySelector('iframe') as HTMLIFrameElement | null;
+            const iframe = this.html.querySelector('iframe') as HTMLIFrameElement | null;
             if( !iframe ) return;
     
             const placeholder = document.createElement('div');
@@ -458,6 +458,8 @@ extends GraphManager<
     }
 
     public setFocusedNode(node: SoundcloudNode | null){
+
+        console.warn('setFocusedNode', node?.data.artist.username);
 
         if( node === this.focusedNode ) return;
         
