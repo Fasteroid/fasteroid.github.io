@@ -217,7 +217,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     private onFirstVisible = () => {
         this.descriptor.hidden = false;
         
-        const placeholder = this.descriptor.querySelector('.iframe-placeholder') as HTMLElement | null;
+        const placeholder = this.html.querySelector('.iframe-placeholder') as HTMLElement | null;
         if( !placeholder || !this.data.track ) return;
 
         const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
@@ -242,6 +242,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private anim?: Animation;
+    private anim2?: Animation;
     public setFocus(is: boolean){
         this._focused = is;
 
@@ -259,6 +260,16 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
                 fill: 'both'
             }
         );
+        this.html.querySelector(".iframe-holder")?.animate(
+            [ 
+                { opacity: is ? 1 : 0 } 
+            ], 
+            {
+                duration: 500,
+                easing: 'ease-in-out',
+                fill: 'both'
+            }   
+        )
 
         this.html.classList.remove('anim-top');
         this.html.classList.add('anim-middle');
@@ -401,8 +412,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
+
         const center = this.manager.offsetPos;
         const size = this.manager.selfComputedSize;
+
         this.style.transform = `
         translate(
             ${this.pos.x - center.x + size.width / 2}px, 
@@ -412,7 +425,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
     
 }
-
 
 export class SoundcloudGraphManager
 extends GraphManager<
@@ -592,6 +604,12 @@ extends GraphManager<
             float a = lightFalloff(dist);
             outColor = vec4(v_color.xyz * a, a);
         }`
+    }
+
+    public pickRandom() {
+        let choices = [...this.nodes]
+        let choiche = choices[ Math.floor(Math.random() * choices.length) ];
+        this.setFocusedNode(choiche[1]);
     }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){

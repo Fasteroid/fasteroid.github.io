@@ -44,10 +44,10 @@
                     <li><i>"What's your favorite genre?"</i></li>
                 </ul>
                 <div class="minibr"></div>
-                And I get embarassed every time someone asks!  It's impossible to describe every niche subgenres of electronic music I've fallen in love with over the years.  
-                I don't even have a clear favorite artist!<br/>
+                And I get embarassed every time someone asks!  Answering that would require catching them up on a rabbit hole YEARS in the making.  
+                Not something EITHER of us would have time for in the setting of an icebreaker question like this.
                 <div class="minibr"></div>
-                Instead of me trying to describe my musical tastes, why not explore them for yourself?
+                I made this page instead to refer people to when they ask.  Click on an artist to listen!
             </div>
             <SoundcloudGraph/>
             <div class="p2">
@@ -100,6 +100,7 @@
                     </li>
                 </ul>
             </div>
+            PS: If you find something weird in this graph, it's probably a meme or shitpost account.  I'm following a few of those here.
         </section>
     </div>
 </body>

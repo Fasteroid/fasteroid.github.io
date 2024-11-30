@@ -12,12 +12,15 @@
 }
 
 .node-container {
-    
-    text-rendering: geometricPrecision !important;
 
     --base-scale: 100px;
 
     .node {
+
+        z-index: 2;
+
+        transition: transform 0.1s;
+        // transform: translate3d(0,0,0);
 
         pointer-events: none;
 
@@ -105,7 +108,7 @@
             left: 110%;
             background-color: globals.$section-background;
             z-index: 10;
-            width: 200%;
+            width: round( 200%, 1px );
             height: round( 100%, 1px );
             padding: 3px;
     
@@ -168,13 +171,9 @@
                     flex: 0;
                 }
 
-                .iframe-holder {
-                    height: 12px;
-                }
-
                 .featured-track {
                     font-size: 5.5px;
-                    padding-bottom: 2px;
+                    padding-bottom: 11px;
                 }
 
                 .text-featured-track {
@@ -187,17 +186,26 @@
                 justify-content: space-between;
     
                 padding: 3px;
-                
-                iframe {
-                    $zoom-factor: 2;
-                    height: 20px;
-                    width: calc(100% * $zoom-factor);
-                    transform: translate(-50%, -50%) scale(calc(1 / $zoom-factor)) translate(50%, 50%);
-                }
 
             }
         }
     
     }
+}
+
+// It's so fucking stupid I have to do the CSS this way
+.iframe-holder {
+    $zoom-factor: 2;
+    transform: translate(-50%, -50%) scale(calc(1 / $zoom-factor)) translate(50%, -50%);
+
+    left: calc(110% + 6px);
+    bottom: 6px;
+
+    width: calc( (200% - 12px) * $zoom-factor);
+
+    contain: strict;
+    z-index: 11;
+    // $zoom-factor: 2;
+    height: 20px
 }
   

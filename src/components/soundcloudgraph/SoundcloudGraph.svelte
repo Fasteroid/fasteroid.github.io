@@ -35,7 +35,6 @@
                     <div class="text-outline">b</div>
                     <div class="text-main">a</div>
                 </div>
-    
                 <!-- todo: experiment with creating this element lazily -->
                 <div class="descriptor">
                     <div class="inside">
@@ -44,10 +43,11 @@
                         <div class="featured-track noflex">
                             Featured Track: <span class="text-featured-track">placeholder</span>
                         </div>
-                        <div class="iframe-holder noflex">
-                            <div class="iframe-placeholder"></div>
-                        </div>
                     </div>
+                </div>
+                <!-- It would make much more sense to put this in the descriptor, but browser rendering is fucking stupid -->
+                <div class="iframe-holder noflex">
+                    <div class="iframe-placeholder"></div>
                 </div>
             </div>
         </div>
