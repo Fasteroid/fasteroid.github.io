@@ -390,7 +390,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private doCenterSeekingForce(){
-        const len = this.pos.length();
+        const len = this.pos.length() + REPEL_SOFTNESS;
         const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
         this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.trueDiameter) );
     }
@@ -412,6 +412,8 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public override render(){
+        this.vel.makeSafe();
+        this.pos.makeSafe();
 
         const center = this.manager.offsetPos;
         const size = this.manager.selfComputedSize;
@@ -508,9 +510,8 @@ extends GraphManager<
                     (deferred.y - curTransform.y) ** 2
                 );
 
-                if( diff < 10 ){
+                if( diff < 50 ){
                     window.clearInterval(interval);
-                    console.log('zooming')
                     this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
                 }
 

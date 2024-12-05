@@ -133,4 +133,10 @@ export class Vec2 {
         return [this.x, this.y];
     }
 
+    makeSafe(): Vec2 {
+        if (isNaN(this.x)) this.x = 0;
+        if (isNaN(this.y)) this.y = 0;
+        return this;
+    }
+
 }
