@@ -1,12 +1,22 @@
 [
     {
+        "url": "https://github.com/Fasteroid/",
+        "title": "Github",
+        "icon": "assets/icons/github.svg"
+    },
+    {
         "url": "https://discord.com/users/276913653230469122/",
         "title": "Discord",
         "icon": "assets/icons/discord.svg"
     },
     {
-        "url": "https://github.com/Fasteroid/",
-        "title": "Github",
-        "icon": "assets/icons/github.svg"
+        "url": "https://steamcommunity.com/id/Fasteroid",
+        "title": "Steam",
+        "icon": "assets/icons/steam.svg"
+    },
+    {
+        "url": "https://soundcloud.com/fasteroid-1",
+        "title": "SoundCloud",
+        "icon": "assets/icons/soundcloud.svg"
     }
 ]
