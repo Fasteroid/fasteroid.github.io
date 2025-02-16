@@ -38,6 +38,7 @@ export class Vec2 {
 
     normalize(): Vec2 {
         const length = this.length();
+        if(length === 0) return this;
         this.scaleBy(1 / length);
         this._length = 1;
         return this;
@@ -45,6 +46,7 @@ export class Vec2 {
 
     clampLength(min: number, max: number): Vec2 {
         const length = this.length();
+        if(length === 0) return this;
         const new_length = clamp(length, min, max);
         this._length = new_length;
         this.scaleBy( new_length / length );

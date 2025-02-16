@@ -1,22 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="0.8276in" height="0.8889in" viewBox="0 0 59.584 64">
-  <defs>
-    <style>
-      .cls-1 {
-        opacity: 0.4;
-      }
-
-      .cls-2 {
-        fill: #dd0031;
-      }
-
-      .cls-3 {
-        fill: #c3002f;
-      }
-    </style>
-  </defs>
-  <title>angular</title>
-  <g id="Layer_1" data-name="Layer 1" class="cls-1">
-    <polygon class="cls-2" points="29.792 7.104 29.792 7.072 29.792 0 0 10.624 4.544 50.016 29.792 64 29.792 39.488 29.792 7.104"/>
-    <polygon class="cls-3" points="29.792 0 29.792 7.072 29.792 7.104 29.792 39.488 29.792 64 55.04 50.016 59.584 10.624 29.792 0"/>
-  </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.5, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 59.6 64" style="enable-background:new 0 0 59.6 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{opacity:0.4;}
+	.st1{fill:#DB164A;}
+	.st2{fill:#C3002F;}
+</style>
+<title>angular</title>
+<g class="st0">
+	<polygon class="st1" points="29.8,7.1 29.8,7.1 29.8,0 0,10.6 4.5,50 29.8,64 29.8,39.5 	"/>
+	<polygon class="st2" points="29.8,0 29.8,7.1 29.8,7.1 29.8,39.5 29.8,64 55,50 59.6,10.6 	"/>
+</g>
 </svg>

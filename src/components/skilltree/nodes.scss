@@ -1,4 +1,9 @@
 @use "vars/base.scss" as base;
+@use 'sass:color';
+
+$js-color: #706425;
+$html-color: #5f3326;
+$css-color: #27314d;
 
 .redstone > .front {
     background-image: url(base.$base + '/assets/skilltree/redstone.svg');
@@ -39,7 +44,7 @@
     background-image: url(base.$base + '/assets/skilltree/js.svg');
 }
 .js > div {
-    background-color: #706425;
+    background-color: $js-color; // color.scale($js-color, $saturation: -30%, $lightness: -50%);
 }
 
 .nodejs > .front {
@@ -53,14 +58,14 @@
     background-image: url(base.$base + '/assets/skilltree/html.svg');
 }
 .html > div {
-    background-color: #6d3526;
+    background-color: $html-color; //color.scale($html-color, $saturation: -30%, $lightness: -50%);
 }
 
 .css > .front {
     background-image: url(base.$base + '/assets/skilltree/css.svg');
 }
 .css > div {
-    background-color: #27314d;
+    background-color: $css-color; //color.scale($css-color, $saturation: -30%, $lightness: -50%);
 }
 
 .electron > .front {
@@ -263,7 +268,7 @@
     background-image: url(base.$base + '/assets/skilltree/angular.svg');
 }
 .angular > div {
-    background-color: #490e1b;
+    background-color: #3d0f22;
 }
 
 .angular-mat > .front {
@@ -277,7 +282,7 @@
     background-image: url(base.$base + '/assets/skilltree/sass.svg');
 }
 .sass > div {
-    background-color: #611c44;
+    background-color: #611c36;
 }
 
 .svelte > .front {
@@ -306,6 +311,41 @@
 }
 .mssql > div {
     background-color: #501e1c;
+}
+
+@property --speen {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes speen {
+    from {
+        --speen: 0deg;
+    }
+    to {
+        --speen: 360deg;
+    }
+}
+
+.web-development > div {
+
+    animation: speen 2s linear infinite;
+    background: conic-gradient(
+        from var(--speen),
+
+        color.adjust($js-color, $lightness: -10%, $saturation: -5%) 0deg,
+        $css-color 120deg,
+        $html-color 240deg,
+        color.adjust($js-color, $lightness: -10%, $saturation: -5%) 360deg,
+    );
+}
+
+.npm > .front {
+    background-image: url(base.$base + '/assets/skilltree/npm.svg');
+}
+.npm > div {
+    background-color: #cb3837;
 }
 
 .invisible {

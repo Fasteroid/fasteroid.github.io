@@ -166,6 +166,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     }
 
     private startDrag(){
+        if(this.dragListener) return;
         this.manager.panzoom?.pause();
         this.dragListener = ((ev: MouseEvent | TouchEvent) => this.dragEvent(ev));
         this.html.classList.toggle("grabbed",true);
