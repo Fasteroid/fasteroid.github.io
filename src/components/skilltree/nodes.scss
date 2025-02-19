@@ -289,7 +289,7 @@ $css-color: #27314d;
     background-image: url(base.$base + '/assets/skilltree/svelte.svg');
 }
 .svelte > div {
-    background-color: #572d1e;
+    background-color: #5f210b;
 }
 
 .mariadb > .front {
@@ -345,9 +345,12 @@ $css-color: #27314d;
     background-image: url(base.$base + '/assets/skilltree/npm.svg');
 }
 .npm > div {
-    background-color: #cb3837;
+    background-color: #572020;
 }
 
-.invisible {
-    display: none
+.rxjs > .front {
+    background-image: url(base.$base + '/assets/skilltree/rxjs.svg');
+}
+.rxjs > div {
+    background-color: #2b0e2c;
 }
