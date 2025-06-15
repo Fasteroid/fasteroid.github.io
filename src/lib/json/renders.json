@@ -281,6 +281,12 @@
 
     "512": [
         {
+            "file": "assets/expression2/raytracer/ph_swimmingpool_2.png",
+            "title": "ph_swimmingpool",
+            "capt1": "768x Render",
+            "capt2": "Stupid Skies"
+        },
+        {
             "file": "assets/expression2/raytracer/tutel.png",
             "title": "Vedal (destructable)",
             "capt1": "512x Render",
