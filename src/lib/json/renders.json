@@ -275,6 +275,23 @@
             "title": "A Familiar Teapot",
             "capt1": "256x Render",
             "capt2": "End of the Line"
+        },{
+            "file": "assets/expression2/raytracer/cowmanglers.png",
+            "title": "Cow Manglers",
+            "capt1": "256x Render",
+            "capt2": "End of the Line"
+        },
+        {
+            "file": "assets/expression2/raytracer/dq.png",
+            "title": "Dairy Queen",
+            "capt1": "256x Render",
+            "capt2": "End of the Line"
+        },
+        {
+            "file": "assets/expression2/raytracer/servercrashofthecentury.png",
+            "title": "Server Crash of the Century",
+            "capt1": "256x Render",
+            "capt2": "End of the Line"
         }
 
     ],
