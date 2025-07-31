@@ -1,4 +1,4 @@
-name: Update data.time
+name: Update Soundcloud Graph
 
 on:
   repository_dispatch:
