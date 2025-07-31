@@ -8,17 +8,19 @@
 <script lang="ts">
     import { browser }                     from "$app/environment";
     import { SoundcloudGraphManager }      from "./classes";
-    import nodeDataset                     from "$lib/soundcloud/graph_soundcloud_v2.json"
-    import type { SoundcloudGraphDataset } from "$lib/soundcloud/types/native";
+    import type { SoundcloudGraphDataset } from "$lib/soundcloud/types_native";
+    import { loadDynamicJSON } from "$lib/utils";
 
     if( browser ) {
 
-        new SoundcloudGraphManager(
-            document.getElementById("template-node")!,
-            document.querySelector(".node-container")!,
-            document.querySelector(".lines-container")!,
-            nodeDataset as SoundcloudGraphDataset,
-        );
+        loadDynamicJSON<SoundcloudGraphDataset>("data.soundcloud", "soundcloud_graph_v2.json").then( dataset => {
+            new SoundcloudGraphManager(
+                document.getElementById("template-node")!,
+                document.querySelector(".node-container")!,
+                document.querySelector(".lines-container")!,
+                dataset,
+            );
+        } )
         
     }
 </script>

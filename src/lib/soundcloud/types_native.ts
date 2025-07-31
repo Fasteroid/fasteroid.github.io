@@ -1,5 +1,5 @@
-import { GraphDataset, GraphEdgeData, GraphNodeData } from "../../../components/graph/interfaces";
-import type { ScuffedCloudAPI } from "./external";
+import { GraphDataset, GraphEdgeData, GraphNodeData } from "../../components/graph/interfaces";
+import type { ScuffedCloudAPI } from "./types_external";
 
 export type SoundcloudEdgeData = GraphEdgeData;
 

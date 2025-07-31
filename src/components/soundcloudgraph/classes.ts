@@ -1,7 +1,7 @@
 import { clamp, Color } from "$lib/utils";
 import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
 
-import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types/native";
+import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types_native";
 import { base } from "$app/paths";
 import { getPaletteAsync } from "$lib/colorthiefextensions";
 import { Vec2 } from "$lib/vec2";

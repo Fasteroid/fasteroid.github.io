@@ -3,7 +3,7 @@
  *  This file is a way to say those things.
 */
 
-import type { SoundcloudNodeData } from "$lib/soundcloud/types/native";
+import type { SoundcloudNodeData } from "$lib/soundcloud/types_native";
 
 
 type Artist = SoundcloudNodeData["artist"];

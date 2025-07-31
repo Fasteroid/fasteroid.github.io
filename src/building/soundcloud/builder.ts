@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import { cacheWrap, groupBy } from "$lib/utils";
 import { getFollowings, getPlaylistTracks } from "./scripts/api";
-import { FASTEROID_ID, USE_API } from "./scripts/constants";
+import { FASTEROID_ID } from "./scripts/constants";
 import { getLikedTracks } from "./scripts/getLikedTracks";
 import { getPopularFollowingTracks } from "./scripts/getPopularFollowingTracks";
-import type { ScuffedCloudAPI } from "./types/external";
-import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "./types/native";
+import type { ScuffedCloudAPI } from "../../lib/soundcloud/types_external";
+import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "../../lib/soundcloud/types_native";
 import { AutoMap } from "./scripts/automap";
 
 const getCachedPopularity  = cacheWrap<SoundcloudNodeTrack, number>( getPopularity )
@@ -118,27 +118,21 @@ for( let [_id, tracks] of Object.entries(popular_following_tracks) ){
     );
 }
 
-
 for( let [_, trackChoices] of pool ){
     trackChoices.sort( (a, b) => getCachedPopularity(b) - getCachedPopularity(a) );
 }
 
 let edges: SoundcloudEdgeData[] = [];
 
-if( USE_API ){
-    for( let user of followings_lookup.values() ){
-        if( user.id === FASTEROID_ID ) continue;
+for( let user of followings_lookup.values() ){
+    if( user.id === FASTEROID_ID ) continue;
 
-        const linked_direct_following: ScuffedCloudAPI.User[] = (await getCachedFollowings(user.id)).filter( u => followings_lookup.has(u.id) );
+    const linked_direct_following: ScuffedCloudAPI.User[] = (await getCachedFollowings(user.id)).filter( u => followings_lookup.has(u.id) );
 
-        for( let linked of linked_direct_following ){
-            if( linked.id === FASTEROID_ID ) continue;
-            edges.push({from: user.id.toString(), to: linked.id.toString()});
-        }
+    for( let linked of linked_direct_following ){
+        if( linked.id === FASTEROID_ID ) continue;
+        edges.push({from: user.id.toString(), to: linked.id.toString()});
     }
-}
-else {
-    edges = JSON.parse( fs.readFileSync('./graph_soundcloud_v2.json', 'utf-8') ).edges;
 }
 
 let dataset: SoundcloudGraphDataset = {
@@ -148,5 +142,4 @@ let dataset: SoundcloudGraphDataset = {
     edges
 }
 
-
-fs.writeFileSync('./graph_soundcloud_v2.json', JSON.stringify(dataset))
+fs.writeFileSync('./graph_soundcloud_v2.json', JSON.stringify(dataset));

@@ -310,3 +310,11 @@ export function shortCircuitReplace( text: string, sentinel: RegExp, innerRegex:
 export function replaceOutsideHTMLTags( text: string, innerRegex: RegExp, replace: (...args: string[]) => string ){
     return shortCircuitReplace(text, /(\<.*?\>.*?\<.*?\>)/, innerRegex, replace)
 }
+
+
+export async function loadDynamicJSON<T>(branch: string, file: string): Promise<T> {
+    let resp = await fetch(`https://raw.githubusercontent.com/Fasteroid/fasteroid.github.io/${branch}/${file}`)
+    let json = await resp.text();
+
+    return JSON.parse(json)
+}

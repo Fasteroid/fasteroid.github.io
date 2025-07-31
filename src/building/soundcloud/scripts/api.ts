@@ -1,6 +1,6 @@
 import { getPublicAPIKey } from "./auth";
 import { getFullCollection } from "./collections";
-import type { ScuffedCloudAPI } from "./types/external";
+import type { ScuffedCloudAPI } from"../../../lib/soundcloud/types_external"
 
 
 const CLIENT_ID = await getPublicAPIKey();
