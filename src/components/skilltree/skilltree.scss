@@ -11,12 +11,6 @@
     background-image: url(base.$base + "/assets/grid.png");
 }
   
-.node::before {
-    content: '';
-    display: block;
-    padding-top: 100%;
-}
-  
 .node > * {
     width: 100%;
     height: 100%;
