@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { cacheWrap, groupBy } from "$lib/utils";
+import { cacheWrap, groupBy } from "../../lib/utils";
 import { getFollowings, getPlaylistTracks } from "./scripts/api";
 import { FASTEROID_ID } from "./scripts/constants";
 import { getLikedTracks } from "./scripts/getLikedTracks";
