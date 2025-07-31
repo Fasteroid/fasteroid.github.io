@@ -13,7 +13,7 @@
 
     if( browser ) {
 
-        loadDynamicJSON<SoundcloudGraphDataset>("data.soundcloud", "soundcloud_graph_v2.json").then( dataset => {
+        loadDynamicJSON<SoundcloudGraphDataset>("data.soundcloud", "graph_soundcloud_v2.json").then( dataset => {
             new SoundcloudGraphManager(
                 document.getElementById("template-node")!,
                 document.querySelector(".node-container")!,
