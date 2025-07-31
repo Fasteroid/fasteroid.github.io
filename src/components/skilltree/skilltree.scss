@@ -40,7 +40,6 @@
     width: calc( var(--node-size) );
     font-family: Roboto;
     font-size: 11pt;
-    backface-visibility: hidden;
     perspective: 20rem;
     perspective-origin: 50% 50%;
 
@@ -63,13 +62,15 @@
 /* Front and back shading */
 .node > div {
 
-    backface-visibility: hidden;
     transform-style: preserve-3d;
     transition: transform 0.4s;
 
     background-size: 70%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
+
+    // todo: does this cause blurry text?
+    backface-visibility: hidden;
 
 }
 
