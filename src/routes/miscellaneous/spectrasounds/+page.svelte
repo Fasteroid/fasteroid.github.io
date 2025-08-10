@@ -36,7 +36,7 @@
         analyzer.maxDecibels = 100;
         analyzer.minDecibels = -20;
         
-        const sigma_easter_egg   = new Audio(`${base}/assets/webdev/spectrasounds/what_is_that_melody.mp3`);
+        const sigma_easter_egg   = new Audio(`${base}/assets/miscellaneous/spectrasounds/what_is_that_melody.mp3`);
         let   easter_egg_timeout = 0;
         let   easter_egg_played  = false;
 
@@ -144,7 +144,7 @@
         gl.bindTexture(gl.TEXTURE_2D, fft_tex);
 
         const img = new Image();
-        img.src = `${base}/assets/webdev/spectrasounds/380_780_0.15_1.5.png`;
+        img.src = `${base}/assets/miscellaneous/spectrasounds/380_780_0.15_1.5.png`;
         img.onload = () => {
 
             gl.uniform1i(spectraUniform, 1);

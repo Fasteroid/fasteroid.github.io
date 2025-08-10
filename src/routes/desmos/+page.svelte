@@ -1,5 +1,5 @@
 <script>
-    import ProjectCollection from "../../components/projectcollection/ProjectCollection.svelte";
+    import ProjectCollection from "../../components/project-directory/ProjectDirectory.svelte";
 </script>
 
 <svelte:head>
@@ -8,4 +8,4 @@
     </style>
 </svelte:head>
 
-<ProjectCollection topic="desmos"></ProjectCollection>
+<ProjectCollection directory="desmos"></ProjectCollection>

@@ -9,6 +9,7 @@ body, html {
     margin: 0;
     padding: 0;
 }
+
 body {
     background-color: globals.$site-background;
     color: globals.$site-text;
@@ -23,12 +24,20 @@ section {
     line-height: 140%;
 }
 
+/** Root section; one per page at most.  Does the correct margins and whatnot. */
+section.root {
+    margin: 10px auto;
+    max-width: calc( min(80vw, 1920px) );
+    margin-top: 10px;
+}
+
 section, hgroup {
     background-color: globals.$section-background;
     padding: 15px;
     text-align: justify;
     display: block;
 }
+
 hgroup {
     text-align: center;
     margin-bottom: 15px;
@@ -58,12 +67,8 @@ hgroup.taller {
     }
 }
 
-section.no-background {
-    background-color: #0000;
-}
-section.extra-space {
-    margin: 15px;
-}
+
+
 
 
 img {

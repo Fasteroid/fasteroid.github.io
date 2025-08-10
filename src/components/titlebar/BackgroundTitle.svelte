@@ -1,5 +1,6 @@
+
 <script lang="ts">
-    export let title: string;
+    /** Path to the background image */
     export let background: string;
 </script>
 
@@ -10,7 +11,7 @@
 <section class="bgtitle">
     <div class="bg" style="background-image: url('{background}');">
         <hgroup>
-            <h1>{title}</h1>
+            <slot/>
         </hgroup>
     </div>
 </section>

@@ -1,6 +1,7 @@
 @use "vars/neons.scss" as neons;
 @use "vars/globals.scss" as globals;
 
+
 .project-shelf {
     
     display: flex;
@@ -9,6 +10,7 @@
     justify-content: center;
     margin: auto;
 
+    /** :global is needed as a workaround so we can externally style things inside this component */
     :global(a) {
         color: globals.$site-text;
         display: inline-block;
