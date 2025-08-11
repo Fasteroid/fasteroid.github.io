@@ -10,7 +10,9 @@
 
 <div class="margins">
     <section>
-        <BackgroundTitle title="{`Hammond's "Wrecking Ball" from Overwatch`}" background='{base}/assets/expression2/hampter/banner.jpg'/>
+        <BackgroundTitle background='{base}/assets/expression2/hampter/banner.jpg'>
+            Hammond's "Wrecking Ball" from Overwatch
+        </BackgroundTitle>
         <div class="dualcontent">
             <iframe 
                 src="https://www.youtube-nocookie.com/embed/FjhJLVtnZmw" 

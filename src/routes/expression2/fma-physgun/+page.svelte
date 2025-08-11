@@ -6,7 +6,9 @@
 
 <div class="margins">
     <section>
-        <BackgroundTitle title="Physically Accurate (F=MA) Physics Gun" background='{base}/assets/expression2/physgun/banner.jpg'/>
+        <BackgroundTitle background='{base}/assets/expression2/physgun/banner.jpg'>
+            Physically Accurate (F=MA) Physics Gun
+        </BackgroundTitle>
         <section class="extra-space" style="min-height: 306pt">
             <img 
                 src="{base}/assets/expression2/physgun/physgun-1.jpg" 
