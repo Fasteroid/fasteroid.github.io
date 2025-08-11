@@ -9,7 +9,7 @@
         <BackgroundTitle background='{base}/assets/expression2/physgun/banner.jpg'>
             Physically Accurate (F=MA) Physics Gun
         </BackgroundTitle>
-        <section class="extra-space" style="min-height: 306pt">
+        <section style="min-height: 306pt; margin: 15px;">
             <img 
                 src="{base}/assets/expression2/physgun/physgun-1.jpg" 
                 style="float:right; max-height: 306pt; margin-right: 0px;"

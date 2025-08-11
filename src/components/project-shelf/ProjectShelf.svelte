@@ -18,6 +18,7 @@
 </style>
 
 <div class="project-shelf">
+    <slot/>
     {#each pagetree.getChildrenAtPath(`/${directory}`) as node}
         <a href="{node.webPath}">
             <img src="{ sanitizeThumbnail(node.pageData?.thumbnail) }" alt="thumbnail">

@@ -6,25 +6,28 @@
 
 <div class="margins">
     <section>
-        <BackgroundTitle title="Gmod Plate Cutting Tool" background='{base}/assets/expression2/platecutter/banner.jpg'/>
-        <section class="extra-space" style="min-height: 306pt">
+        <BackgroundTitle background='{base}/assets/expression2/platecutter/banner.jpg'>
+            Plastic Plate Fabricator
+        </BackgroundTitle>
+        <section class="extra-space" style="min-height: 306pt; margin: 15px;">
             <img src="{base}/assets/expression2/platecutter/usage.jpg" style="float:left; max-height: 306pt; margin-left: 0px;" alt="A player preparing to split a 1x2 plate into two 1x1 plates">
-            For those unfamiliar, hunter plates are a subset of the default construction props in Garry's Mod.  They are my
-            favorite props to build with, and are objectively the most popular within the Garry's Mod community.<br>
+            Garry's Mod is a sandbox game.  For many, this means building things is a core principle.  To assist with this,
+            around 2008, in Gmod 13, many new Gmod-exclusive props were added to the base game.  This included a large set of
+            tiled cubes and plates which could be used to quickly and precisely construct houses, vehicles, etc.<br>
             <br>
-            There's just one problem.  The tiles that make up these plates are impossible to split apart by normal means.  
-            This meant that in the past, whenever I wanted to trim off excess, cut out shapes, or split faces, I had to 
-            manually reconstruct new and often complicated arrangements of plates.  Doing this was both time intensive
-            and wasteful in terms of entity count.<br>
+            There's just one problem.  You can't really cut them to size.  Sure, there's a pretty large selection of them,
+            but if you wanted something really weird like a 27x43 plate, your only option was building it out of smaller plates.  Gmod doesn't natively have that size.  
+            This was both time intensive and usually wasteful in terms of prop count.<br>
             <br>
-            So guess what?  About a year after concieving the idea, I'm proud to present my hunter plate cutter to the world—the hottest new
-            thing since Precision Alignment!  Now you can rip hunter plates along their seams like plywood boards on a table saw!<br>
+            One day, I had the idea to build an evil lair within the walls of the massive elevator shaft on <i>gm_genesis</i>.
+            It was going to be a tight fit though—I needed to get as close to the walls as possible to maximize the available square footage
+            inside the base.  The unfortunate thing is that these walls were made of a kind of source engine geometry called a displacement,
+            which are used for creating organic sloped surfaces.  This was not something I could adequately conform to with the
+            standard construction plate sizes—I needed a way to cut and manipulate them willy-nilly on-site.<br>
             <br>
-            This E2 aims to solve all three of the aforementioned problems in a single group of shared utilities.  These 
-            utilities are all powered by one piece of code—a recursive plate building function.  It can take orders
-            for any size hunter plate (even those that don't exist) and spawn it at any location and angle—all without
-            requiring prop resizing or custom models! This function not only allows you to summon whatever size 
-            plates your build calls for, but also lets you cut them in half and punch out holes of custom dimensions.<br>
+            So here it is!  In fact, it's more than that—being able to cut things in half first requires a way to summon
+            construction plates of any size.  So it can do that too.  And the other side of the saw is a variable-size hole-punch,
+            because yeah I needed that too to build my dreams.<br>
             <br>
             Make sure to first grab the <a href="https://github.com/Fasteroid/expression2-public/tree/master/plate_cutter_util">dependencies</a>
             from my Github if you want to try this out.  Cheers!<br>

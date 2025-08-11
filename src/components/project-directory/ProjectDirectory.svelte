@@ -30,6 +30,8 @@
         <BackgroundTitle background='{base}/assets/{directory}/banner.jpg'>
             {(pageData.longTitle ?? pageData.title) + " Adventures"}
         </BackgroundTitle>
-        <ProjectShelf directory={directory}/>
+        <ProjectShelf directory={directory}>
+            <slot/>
+        </ProjectShelf>
     </section>
 </div>
