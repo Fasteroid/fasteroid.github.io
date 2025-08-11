@@ -6,7 +6,9 @@
 
 <div class="margins">
     <section>
-        <BackgroundTitle title="VR Hologram Structure Designer" background='{base}/assets/expression2/vrholodesigner/banner.jpg'/>
+        <BackgroundTitle background='{base}/assets/expression2/vrholodesigner/banner.jpg'>
+            VR Hologram Structure Designer
+        </BackgroundTitle>
         <section class="extra-space" style="min-height: 306pt">
             <iframe 
                 style="float:left; max-width: 50%; width: 540px; height: 360px; margin: 0px 15px 15px 0px"
