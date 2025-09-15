@@ -38,6 +38,22 @@ function getZoomScaleMul(){
     return document.body.clientWidth * 0.065
 }
 
+function orderByMostNeighbors(a: SoundcloudNode, b: SoundcloudNode){
+    return b.neighbors.length - a.neighbors.length 
+}
+
+/**
+ * @stackoverflow https://stackoverflow.com/a/12646864/15204995
+ */
+function getShuffledCopy<T>(array: T[]) {
+    array = [...array];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
 
     public get width() {
@@ -214,7 +230,20 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         )
     }
 
-    private onFirstVisible = () => {
+    public playNextNode() {
+        const choices = getShuffledCopy(this.neighbors); // take a "random" walk, with some strategy involved.
+                
+        const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
+        
+        if( choice ) {
+            this.manager.walked.add( choice )
+            this.manager.setFocusedNode( choice )
+        }
+    }
+
+
+    /** When it starts fading in */
+    private onFirstVisible() {
         this.descriptor.hidden = false;
         
         const placeholder = this.html.querySelector('.iframe-placeholder') as HTMLElement | null;
@@ -226,17 +255,28 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         placeholder.replaceWith(iframe);
 
         let widget = window.SC.Widget(iframe);
-        widget.bind('ready', () => {
+        widget.bind(
+            window.SC.Widget.Events.READY, 
+            () => {
             widget.setVolume(40);
-        });
+            }
+        );
+
+        // randomly walk the graph
+        widget.bind(
+            window.SC.Widget.Events.FINISH,
+            this.playNextNode.bind(this)
+        )
     }
 
-    private onFullVisible = () => {
+    /** When it's done fading in */
+    private onFullVisible() {
         this.html.classList.remove('anim-middle');
         this.html.classList.add('anim-top');
     }
 
-    private onLastVisible = () => {
+    /** When it's done fading out */
+    private onLastVisible() {
         this.html.classList.remove('anim-middle');
         this.descriptor.hidden = true;
     }
@@ -276,10 +316,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         if( is ) {
             this.onFirstVisible();
-            this.anim.onfinish = this.onFullVisible;
+            this.anim.onfinish = this.onFullVisible.bind(this);
         }
         else {
-            this.anim.onfinish = this.onLastVisible;
+            this.anim.onfinish = this.onLastVisible.bind(this);
         }
     }
 
@@ -298,6 +338,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private onClick = () => {
+        this.manager.walked.clear();
+        this.manager.walked.add(this);
+
         if( this.manager.dragging ) {
             this.manager.setFocusedNode(null)
             return;
@@ -428,8 +471,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     
 }
 
-export class SoundcloudGraphManager
-extends GraphManager<
+export class SoundcloudGraphManager extends GraphManager<
     SoundcloudNodeData,
     SoundcloudEdgeData,
     SoundcloudEdge,
@@ -450,6 +492,8 @@ extends GraphManager<
     private selectedNode: SoundcloudNode | null = null;
     private firstDragTransform: Transform | null = null;
 
+    public readonly walked = new Set<SoundcloudNode>();
+
     public readonly templateEmbed: HTMLIFrameElement;
 
     public setSelectedNode(node: SoundcloudNode | null){
@@ -460,8 +504,6 @@ extends GraphManager<
     }
 
     public setFocusedNode(node: SoundcloudNode | null){
-
-        console.warn('setFocusedNode', node?.data.artist.username);
 
         if( node === this.focusedNode ) return;
         

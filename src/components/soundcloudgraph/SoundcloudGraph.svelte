@@ -33,7 +33,7 @@
         <div class="node initial" id="template-node" hidden>
             <div class="scale">
                 <div class="stack artist">
-                    <img alt="" title="Click twice to open in SoundCloud">
+                    <img alt="">
                     <div class="text-outline">b</div>
                     <div class="text-main">a</div>
                 </div>
