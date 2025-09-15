@@ -364,9 +364,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private onClick = () => {
-        this.manager.walked.clear();
-        this.manager.walked.add(this);
-
         if( this.manager.dragging ) {
             this.manager.setFocusedNode(null)
             return;
@@ -376,6 +373,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             this.manager.preventUnfocus_ = true;
             return;
         }
+        this.manager.walked.clear();
+        this.manager.walked.add(this);
+        
         this.manager.setFocusedNode(this);
         this.manager.setSelectedNode(this);
     }
