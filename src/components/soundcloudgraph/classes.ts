@@ -231,14 +231,21 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public playNextNode() {
-        const choices = getShuffledCopy(this.neighbors); // random walk to the next track
+        this.manager.panzoom!.smoothZoomAbs( this.manager.parentBox.width / 2, this.manager.parentBox.height / 2, 1 );
+
+        setTimeout( 
+            () => {
+                const choices = getShuffledCopy(this.neighbors); // random walk to the next track
+                    
+                const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
                 
-        const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
-        
-        if( choice ) {
-            this.manager.walked.add( choice )
-            this.manager.setFocusedNode( choice )
-        }
+                if( choice ) {
+                    this.manager.walked.add( choice )
+                    this.manager.setFocusedNode( choice )
+                }
+            },
+            1000 
+        );
     }
 
 
@@ -544,20 +551,22 @@ export class SoundcloudGraphManager extends GraphManager<
             this.panzoom!.smoothMoveTo( ...deferred.extract() );
 
             // zoom on it after we've aimed at it.  can't do sooner because panzoom library is jank.
-            const interval = window.setInterval(() => {
+            const interval = window.setInterval(
+                () => {
 
-                let curTransform = this.panzoom!.getTransform();
-                let diff = sqrt(
-                    (deferred.x - curTransform.x) ** 2 +
-                    (deferred.y - curTransform.y) ** 2
-                );
+                    let curTransform = this.panzoom!.getTransform();
+                    let diff = sqrt(
+                        (deferred.x - curTransform.x) ** 2 +
+                        (deferred.y - curTransform.y) ** 2
+                    );
 
-                if( diff < 10 ){
-                    window.clearInterval(interval);
-                    this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
+                    if( diff < 10 ){
+                        window.clearInterval(interval);
+                        this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
+                    }
+
                 }
-
-            })
+            )
 
             setTimeout(() => {
                 window.clearInterval(interval);
