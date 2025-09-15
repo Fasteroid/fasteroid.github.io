@@ -231,7 +231,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public playNextNode() {
-        const choices = getShuffledCopy(this.neighbors); // take a "random" walk, with some strategy involved.
+        const choices = getShuffledCopy(this.neighbors); // random walk to the next track
                 
         const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
         
