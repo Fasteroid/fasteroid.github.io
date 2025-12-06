@@ -10,3 +10,12 @@
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
+
+<script>
+	// Suppress hydration errors, since sveltekit provides no official way to disable hydration while keeping clientside scripts.
+	window.addEventListener('unhandledrejection', (event) => {
+		if (event.reason?.message?.includes('hydrate')) {
+			event.preventDefault();
+		}
+	});
+</script>

@@ -11,7 +11,7 @@
 		"deploy": "gh-pages -d build",
 		"buildtree": "tsx ./src/building/treebuilder.ts",
 		"buildscss": "tsx ./src/building/scssbase.ts",
-		"prebuild": "npm run buildtree & npm run buildscss",
+		"prebuild": "npm run buildtree && npm run buildscss",
 		"soundcloud": "cd ./src/lib/soundcloud & tsx getGraphData.ts"
 	},
 	"devDependencies": {
