@@ -6,19 +6,19 @@ My name is Fasteroid, and you've just discovered the source code to my portfolio
 
 This site is built with SvelteKit and Vite. &nbsp;To build, run this:
 ```bash
-npm run build
+bun run build
 ```
 
 If you want to just run the prebuild scripts without doing a full build, this command is for you:
 ```bash
-npm run prebuild
+bun run prebuild
 ```
 These do things like [automatically mapping the site](https://github.com/Fasteroid/fasteroid.github.io/blob/new/src/building/treebuilder.ts) so I don't have to manually manage what's in the navbar.
 
 ## Developing
 Most of the time all you'll need to do is run this:
 ```bash
-npm run dev
+bun run dev
 ```
 Sometimes you'll also have to run the prebuild scripts for a change to show up.
 
