@@ -26,8 +26,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@fasteroid/panzoom-revamped": "^11.0.0",
 		"@sveltejs/adapter-static": "^2.0.3",
+		"@types/d3": "^7.4.3",
 		"colorthief": "^2.2.0",
+		"d3": "^7.9.0",
 		"panzoom": "^9.4.3",
 		"sass": "^1.68.0",
 		"typescript-to-json-schema": "^0.6.1"
