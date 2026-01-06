@@ -1,7 +1,7 @@
 <svelte:head>
     <style lang="scss">
-        @import "./skilltree.scss";
-        @import "./nodes.scss";
+        @forward "./skilltree.scss";
+        @forward "./nodes.scss";
     </style>
 </svelte:head>
 

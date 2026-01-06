@@ -1,6 +1,6 @@
 <svelte:head>
     <style lang="scss">
-        @import "./soundcloudgraph.scss";
+        @forward "./soundcloudgraph.scss";
     </style>
     <script src="https://w.soundcloud.com/player/api.js"></script>
 </svelte:head>

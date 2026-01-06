@@ -1,9 +1,10 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import type { GraphDataset, GraphEdgeData, GraphNodeData } from "./interfaces";
 import { Map2D } from "$lib/utils";
-import type { Panzoom } from "@fasteroid/panzoom-revamped";
+import { Panzoom } from "@fasteroid/panzoom-revamped";
+import d3 from "d3";
 
-export abstract class GraphEdge2 implements SimulationLinkDatum<GraphNode2>{
+export abstract class GraphEdge2 implements SimulationLinkDatum<GraphNode2> {
 
     public bidirectional?: boolean;
     
@@ -24,9 +25,14 @@ export abstract class GraphNode2 implements SimulationNodeDatum {
 
 }
 
+type GraphManagerOptions = {
+    usePanzoom?: boolean,
+    useD3Simulation?: boolean,
+}
+
 export abstract class GraphManager2<
     NODE extends GraphNode2,
-    EDGE extends GraphEdge2,
+    EDGE extends GraphEdge2 & SimulationLinkDatum<NODE>,
     NODE_DATA extends GraphNodeData = GraphNodeData,
     EDGE_DATA extends GraphEdgeData = GraphEdgeData,
 > {
@@ -35,6 +41,7 @@ export abstract class GraphManager2<
     public readonly edges: Map2D<string, EDGE> = new Map2D(); // from, to
 
     public readonly panzoom?: Panzoom;
+    public readonly simulation?: d3.Simulation<NODE, EDGE>;
 
     private _selfBox?: DOMRect;
     /** The bounding box of the node container's */
@@ -79,8 +86,12 @@ export abstract class GraphManager2<
         public readonly edgeContainer: HTMLCanvasElement,
         public readonly createEdge: (data: EDGE_DATA) => EDGE,
         public readonly createNode: (data: NODE_DATA) => NODE,
-        data: GraphDataset<NODE_DATA, EDGE_DATA>
+        data: GraphDataset<NODE_DATA, EDGE_DATA>,
+        options?: GraphManagerOptions
     ){
+
+        // TODO: abstract d3 operations somehow
+
         for( const nodeData of data.nodes ){
             if( nodeData === null || nodeData === undefined ) continue;
             this.nodes.set(nodeData.id, this.createNode(nodeData));
@@ -106,6 +117,17 @@ export abstract class GraphManager2<
                 toNode.edges.push(edge);
                 this.edges.set(edgeData.from, edgeData.to, edge);
             }
+        }
+
+        if( options?.usePanzoom ){
+            this.panzoom = new Panzoom(this.nodeContainer);
+            this.panzoom.onTransformChanged( () => {
+                this.requestRender();
+            } );
+        }
+
+        if( options?.useD3Simulation ){ 
+            this.simulation = d3.forceSimulation<NODE, EDGE>( this.nodes.values().toArray() );
         }
 
         this.oldH = this.nodeContainer.clientHeight;

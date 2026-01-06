@@ -17,7 +17,7 @@
 </script>
 
 <style lang="scss">
-    @import "./voronoi-cobble.scss";
+    @forward "./voronoi-cobble.scss";
 </style>
 
 <div class="margins">

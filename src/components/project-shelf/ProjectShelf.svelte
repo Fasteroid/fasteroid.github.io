@@ -14,7 +14,7 @@
 </script>
 
 <style lang="scss" >
-    @import "./project-shelf.scss";
+    @forward "./project-shelf.scss";
 </style>
 
 <div class="project-shelf">

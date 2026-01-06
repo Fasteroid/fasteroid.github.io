@@ -19,7 +19,7 @@ const preprocessors = [
 	/* svelte-preprocess */
 	preprocess({
 		scss: {
-			includePaths: ["src/globalstyle"]
+			includePaths: ["src/globalstyle"],
 		}
 	})
 	

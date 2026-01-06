@@ -10,7 +10,7 @@
 </script>
 
 <style lang="scss">
-    @import "./metal-pipe.scss";
+    @forward "./metal-pipe.scss";
 </style>
 
 <div class="margins">

@@ -6,7 +6,7 @@
 </script>
 
 <style lang="scss">
-    @import "./carouselcaption.scss";
+    @forward "./carouselcaption.scss";
 </style>
 
 <div id="{id}" class="carousel-caption {first ? '':'hidden'}">

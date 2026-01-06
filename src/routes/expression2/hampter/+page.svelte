@@ -5,7 +5,7 @@
 </script>
 
 <style lang="scss">
-    @import "./hampter.scss";
+    @forward "./hampter.scss";
 </style>
 
 <div class="margins">

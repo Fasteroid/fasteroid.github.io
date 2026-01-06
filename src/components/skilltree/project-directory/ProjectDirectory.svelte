@@ -22,7 +22,7 @@
 </script>
 
 <style lang="scss">
-    @import "./project-directory.scss";
+    @forward "./project-directory.scss";
 </style>
 
 <div class="margins">

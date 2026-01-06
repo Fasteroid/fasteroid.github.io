@@ -183,7 +183,7 @@
 </script>
 
 <style lang="scss">
-    @import "./ptable.scss";
+    @forward "./ptable.scss";
 </style>
 
 <div class="margins">

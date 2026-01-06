@@ -124,7 +124,7 @@
 </script>
 
 <style lang="scss">
-    @import "./carousel.scss";
+    @forward "./carousel.scss";
 </style>
 
 <div class="carousel" style="max-width: {size}px;">

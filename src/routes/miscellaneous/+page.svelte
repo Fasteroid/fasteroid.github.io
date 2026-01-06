@@ -6,7 +6,7 @@
 
 <svelte:head>
     <style lang="scss">
-        @import "./webdev-project.scss";
+        @forward "./webdev-project.scss";
     </style>
 </svelte:head>
 

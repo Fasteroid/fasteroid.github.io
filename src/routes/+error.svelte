@@ -8,7 +8,7 @@
 </svelte:head>
 
 <style lang="scss">
-    @import "./404.scss";
+    @forward "./404.scss";
 </style>
 
 <body>

@@ -1,18 +1,42 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
+    "compileOnSave": true,
 	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
+
 		"allowJs": true,
 		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"isolatedModules": false,
-	}
-	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
-	//
-	// If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
-	// from the referenced tsconfig.json - TypeScript does not merge them in
+        
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "experimentalDecorators": true,
+        
+        "declaration": true,                                 /* Generates corresponding '.d.ts' file. */
+        "declarationMap": true,                              /* Generates a sourcemap for each corresponding '.d.ts' file. */
+        "sourceMap": true,                                   /* Generates corresponding '.map' file. */
+        
+        "moduleResolution": "bundler",
+        "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+        "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+        
+        /* Type Checking */
+        "strict": true,                                     /* Enable all strict type-checking options. */
+        "noImplicitAny": true,                               /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+        "noImplicitThis": true,                              /* Enable error reporting when 'this' is given the type 'any'. */
+        "strictNullChecks": true,                            /* Enable error reporting for nullable expressions. */
+        "strictFunctionTypes": true,                         /* Enable error reporting for wrong argument types of functions. */
+        "strictPropertyInitialization": true,                /* Enable error reporting for class properties that are not initialized in the constructor. */
+        "noImplicitReturns": true,                           /* Enable error reporting for codepaths not returning a value. */
+        "noImplicitOverride": true,                          /* Ensure overriding members in derived classes are marked with an override modifier. */
+        "noPropertyAccessFromIndexSignature": true,          /* Enforces using indexed accessors for keys declared using an indexed type. */
+        "exactOptionalPropertyTypes": true,                  /* Interpret optional property types as written, rather than adding 'undefined'. */
+        
+        "target": "esnext",
+        "module": "esnext",
+        "lib": [
+            "esnext"
+        ]
+    },
 }
