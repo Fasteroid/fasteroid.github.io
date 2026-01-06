@@ -128,6 +128,10 @@ export abstract class GraphManager2<
 
         if( options?.useD3Simulation ){ 
             this.simulation = d3.forceSimulation<NODE, EDGE>( this.nodes.values().toArray() );
+
+            this.simulation.on("tick", () => {
+                this.requestRender();
+            });
         }
 
         this.oldH = this.nodeContainer.clientHeight;
