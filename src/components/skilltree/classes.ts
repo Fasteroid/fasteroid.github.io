@@ -1,5 +1,6 @@
 import { clamp, Color } from '$lib/utils';
 import { Vec2 } from '$lib/vec2';
+import * as d3 from 'd3';
 import { GraphEdge2, GraphManager2, GraphNode2 } from '../graph/GraphManager2';
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
 
@@ -12,7 +13,7 @@ const NODE_DISTANCE  = 1.2;
 const NODE_PADDING   = 1.2;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
-const GRAVITY        = 1.5;
+const GRAVITY        = 5;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -157,6 +158,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private stopDrag(){
         if(!this.dragListener) return;
+        this.fx = undefined;
+        this.fy = undefined;
         document.removeEventListener("mousemove",this.dragListener);
         document.removeEventListener("touchmove",this.dragListener);
         this.html.classList.toggle("grabbed",false);
@@ -168,6 +171,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
         this.fx = event.clientX;
         this.fy = event.clientY;
+
+        console.log("Dragging to:", this.fx, this.fy);
         // this.manager.transformDragEventToSimulationCoords(this.pos);
 
         this.vx = 0;
@@ -240,6 +245,7 @@ extends GraphManager2<
                 return new SkillTreeEdge( this.nodes.get(edgeData.from)! , this.nodes.get(edgeData.to)!, edgeData)
             },
             function(this: SkillTreeManager2, nodeData) {
+                console.log("Creating node:", nodeData);
                 switch(nodeData.type) {
                     case 'dynamic':
                         return new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
@@ -250,22 +256,23 @@ extends GraphManager2<
             data
         )
 
+        this.simulation.force( "repulsion", d3.forceManyBody().strength(-40) );
+
+        this.linkForces.distance( (edge: SkillTreeEdge) => edge.dist * this.relativeDistance );
+
+        // gravity
+        this.simulation.force("gravity", (alpha: number) => {
+            for( const node of this.nodes.values() ){
+                if( node instanceof SkillTreeDynamicNode ){
+                    node.vy += GRAVITY;
+                }
+            }
+        });
+
+        this.simulation.velocityDecay(0.1)
+        this.simulation.alphaDecay(0);
+
     }
-
-    public transformDragEventToSimulationCoords(v: Vec2): Vec2 {
-        const thisRect = this.selfBox;
-        const parentRect = this.parentBox;
-        const style = this.selfComputedSize;
-
-        const scaleX = thisRect.width / style.width;
-        const scaleY = thisRect.height / style.height;
-
-        return v.setTo(
-            (v.x - thisRect.left) * scaleX + thisRect.left - parentRect.left,
-            (v.y - thisRect.top)  * scaleY + thisRect.top  - parentRect.top
-        );
-    }
-
 
     public serialize(): void {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());

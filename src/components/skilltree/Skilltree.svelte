@@ -13,7 +13,6 @@
     if( browser ) {
 
         ( async () => {
-            // dynamically import the class to prevent SSR issues
             const { SkillTreeManager2 } = await import( "./classes" );
 
             console.log(SkillTreeManager2)
@@ -34,7 +33,7 @@
     <div class="node-container" id="panzoom">
         
         <!-- template cell -->
-        <div class="node" id="template-node" hidden>
+        <div class="node" id="template-node">
             <div class="front">TEMPLATE</div>
             <div class="back">SAMPLE TEXT</div>
         </div>
