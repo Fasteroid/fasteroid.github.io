@@ -2,7 +2,7 @@ import type { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import type { GraphDataset, GraphEdgeData, GraphNodeData } from "./interfaces";
 import { Map2D } from "$lib/utils";
 import { Panzoom } from "@fasteroid/panzoom-revamped";
-import d3 from "d3";
+import * as d3 from "d3";
 
 export abstract class GraphEdge2 implements SimulationLinkDatum<GraphNode2> {
 
@@ -21,13 +21,24 @@ export abstract class GraphNode2 implements SimulationNodeDatum {
     public vx: number = 0;
     public vy: number = 0;
 
-    public edges: GraphEdge2[] = [];
+    public readonly edges: GraphEdge2[] = [];
 
-}
+    public readonly html: HTMLElement;
 
-type GraphManagerOptions = {
-    usePanzoom?: boolean,
-    useD3Simulation?: boolean,
+    constructor(manager: GraphManager2<GraphNode2, GraphEdge2>) {
+        this.html = manager.template.cloneNode(true) as HTMLElement;
+        manager.nodeContainer.appendChild(this.html);
+    }
+
+    public render(){
+        // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
+        this.html.style.transform = `translate(
+            ${Math.round(this.x)}px, 
+            ${Math.round(this.y)}px
+        )
+        translate(-50%, -50%)`;
+    }
+
 }
 
 export abstract class GraphManager2<
@@ -41,21 +52,23 @@ export abstract class GraphManager2<
     public readonly edges: Map2D<string, EDGE> = new Map2D(); // from, to
 
     public readonly panzoom?: Panzoom;
-    public readonly simulation?: d3.Simulation<NODE, EDGE>;
 
-    private _selfBox?: DOMRect;
+    public readonly simulation: d3.Simulation<NODE, EDGE>;
+    public readonly linkForces: d3.ForceLink<NODE, EDGE>;
+
+    private _selfBox: DOMRect | undefined;
     /** The bounding box of the node container's */
     public get selfBox(): DOMRect {
         return this._selfBox ??= this.nodeContainer.getBoundingClientRect();
     }
 
-    private _parentBox?: DOMRect;
+    private _parentBox?: DOMRect | undefined;
     /** The bounding box of the node container's *parent* */
     public get parentBox(): DOMRect {
         return this._parentBox ??= this.nodeContainer.parentElement!.getBoundingClientRect();
     }
 
-    private _selfComputedSize?: { width: number, height: number };
+    private _selfComputedSize: { width: number, height: number } | undefined;
     /** Width and height of the node container */
     public get selfComputedSize(): typeof this._selfComputedSize {
         if(this._selfComputedSize === undefined){
@@ -87,10 +100,8 @@ export abstract class GraphManager2<
         public readonly createEdge: (data: EDGE_DATA) => EDGE,
         public readonly createNode: (data: NODE_DATA) => NODE,
         data: GraphDataset<NODE_DATA, EDGE_DATA>,
-        options?: GraphManagerOptions
+        usePanzoom?: boolean
     ){
-
-        // TODO: abstract d3 operations somehow
 
         for( const nodeData of data.nodes ){
             if( nodeData === null || nodeData === undefined ) continue;
@@ -119,20 +130,25 @@ export abstract class GraphManager2<
             }
         }
 
-        if( options?.usePanzoom ){
+
+        if( usePanzoom ){
             this.panzoom = new Panzoom(this.nodeContainer);
             this.panzoom.onTransformChanged( () => {
                 this.requestRender();
             } );
         }
 
-        if( options?.useD3Simulation ){ 
-            this.simulation = d3.forceSimulation<NODE, EDGE>( this.nodes.values().toArray() );
 
-            this.simulation.on("tick", () => {
-                this.requestRender();
-            });
-        }
+        this.linkForces = d3.forceLink<NODE, EDGE>( this.edges.values() );
+        this.simulation = 
+            d3.forceSimulation<NODE, EDGE>( this.nodes.values().toArray() )
+            .force( "link", 
+                this.linkForces 
+            )
+            .on("tick", () => 
+                this.requestRender()
+            );
+        ;        
 
         this.oldH = this.nodeContainer.clientHeight;
         this.oldW = this.nodeContainer.clientWidth;
@@ -162,7 +178,10 @@ export abstract class GraphManager2<
 
     private renderRequested: Promise<void> | undefined = undefined;
     
-    public abstract render(): void;
+    public render() {
+        this.recalculateStyle();
+        this.nodes.forEach( node => node.render() );
+    }
 
     public requestRender() {
         if( this.renderRequested ) return;

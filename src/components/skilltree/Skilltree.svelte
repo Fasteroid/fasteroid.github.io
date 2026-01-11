@@ -7,18 +7,24 @@
 
 <script lang="ts">
     import { browser } from "$app/environment";
-    import { SkillTreeManager } from "./classes";
     import type { SkillTreeDataSet } from "./interfaces";
     import nodeDataset from "$lib/json/graph_skilltree.json"
 
     if( browser ) {
 
-        new SkillTreeManager(
-            document.getElementById("template-node")!,
-            document.querySelector(".node-container")!,
-            document.querySelector(".lines-container")!,
-            nodeDataset as SkillTreeDataSet
-        );
+        ( async () => {
+            // dynamically import the class to prevent SSR issues
+            const { SkillTreeManager2 } = await import( "./classes" );
+
+            console.log(SkillTreeManager2)
+
+            new SkillTreeManager2(
+                document.getElementById("template-node")!,
+                document.querySelector(".node-container")!,
+                document.querySelector(".lines-container")!,
+                nodeDataset as SkillTreeDataSet
+            );
+        } )();
         
     }
 </script>
