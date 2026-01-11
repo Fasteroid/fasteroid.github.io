@@ -13,7 +13,7 @@ const NODE_DISTANCE  = 1.2;
 const NODE_PADDING   = 1.2;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
-const GRAVITY        = 5;
+const GRAVITY        = 2;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -172,7 +172,6 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         this.fx = event.clientX;
         this.fy = event.clientY;
 
-        console.log("Dragging to:", this.fx, this.fy);
         // this.manager.transformDragEventToSimulationCoords(this.pos);
 
         this.vx = 0;
@@ -235,6 +234,8 @@ extends GraphManager2<
     public relativeDistance = 120;
     public relativePadding  = 120;
 
+    protected _someNode!: SkillTreeNode;
+
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
         super(
@@ -248,23 +249,51 @@ extends GraphManager2<
                 console.log("Creating node:", nodeData);
                 switch(nodeData.type) {
                     case 'dynamic':
-                        return new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
+                        return this._someNode = new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
                     case 'static':
-                        return new SkillTreeStaticNode(this, nodeData as SkillTreeStaticNodeData);
+                        return this._someNode = new SkillTreeStaticNode(this, nodeData as SkillTreeStaticNodeData);
                 }
             },
             data
         )
 
-        this.simulation.force( "repulsion", d3.forceManyBody().strength(-40) );
+        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth ).strength(0.1) ) // sqrt(2) / 2
 
-        this.linkForces.distance( (edge: SkillTreeEdge) => edge.dist * this.relativeDistance );
+        this.linkForces.distance( (edge: SkillTreeEdge) => edge.dist * this.relativeDistance * 1.5 );
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
             for( const node of this.nodes.values() ){
                 if( node instanceof SkillTreeDynamicNode ){
-                    node.vy += GRAVITY;
+                    node.vy += GRAVITY * alpha;
+                }
+            }
+        });
+
+        // keep nodes inside the container
+        this.simulation.force("containment", (alpha: number) => {
+            const w = this.nodeContainer.clientWidth;
+            const h = this.nodeContainer.clientHeight;
+
+            for( const node of this.nodes.values() ){
+                if( node instanceof SkillTreeDynamicNode ){
+
+                    // padding
+                    const paddingX = NODE_PADDING * this.relativePadding;
+                    const paddingY = NODE_PADDING * this.relativePadding;
+
+                    if( node.x < paddingX ){
+                        node.vx += (paddingX - node.x) * 0.1 * alpha;
+                    }
+                    if( node.x > w - paddingX ){
+                        node.vx -= (node.x - (w - paddingX)) * 0.1 * alpha;
+                    }
+                    if( node.y < paddingY ){
+                        node.vy += (paddingY - node.y) * 0.1 * alpha;
+                    }
+                    if( node.y > h - paddingY ){
+                        node.vy -= (node.y - (h - paddingY)) * 0.1 * alpha;
+                    }
                 }
             }
         });

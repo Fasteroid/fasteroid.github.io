@@ -23,8 +23,8 @@
         },
         {
             "id": "ADVANCED MATHEMATICS",
-            "x": 0.22,
-            "y": 0.4,
+            "x": 0.15,
+            "y": 0.12,
             "type": "static",
             "tier": 3
         },
@@ -222,7 +222,7 @@
             "type": "dynamic",
             "desc": [
                 "Learned during AP Computer Science A.",
-                "I used it to extend my Discord relay to a Minecraft server, but it sucked."
+                "Please never make me program in this again."
             ],
             "style": "java"
         },
@@ -265,8 +265,8 @@
             "y": 0.5096169719738369,
             "type": "dynamic",
             "desc": [
-                "A common language of game scripting.",
-                "I know the variant used in Garry's Mod."
+                "The language of game scripting and modding.",
+                "Initially learned for Garry's Mod, but used for many more."
             ],
             "style": "lua"
         },
@@ -375,8 +375,8 @@
             "y": 0.7272337037548716,
             "type": "dynamic",
             "desc": [
-                "It's JavaScript, but BETTER!",
-                "It has types and helps you write better code!"
+                "Since its type system<br/>is turing complete, this<br/> S-tier language is effectively two in one.",
+                "I can program in BOTH!"
             ],
             "style": "ts"
         },
@@ -398,7 +398,7 @@
             "type": "dynamic",
             "desc": [
                 "Google's FOSS web-dev framework.",
-                "Misunderstood and disliked by many...<br>but not me!"
+                "You must think outside the box to use it effectively."
             ],
             "style": "angular"
         },
@@ -430,8 +430,8 @@
             "y": 0.7718032936873219,
             "type": "dynamic",
             "desc": [
-                "CSS with more features, maintained by a volatile bunch.",
-                "Migrating their regular API changes is PAINFUL!"
+                "CSS with more features.",
+                "Maintained by libtards that love authoring breaking changes."
             ],
             "style": "sass"
         },
@@ -442,7 +442,7 @@
             "type": "dynamic",
             "desc": [
                 "Some common components for use with Angular.",
-                "Theming is really easy if you know Sass!"
+                "3 years in, these are actually rather disappointing."
             ],
             "style": "angular-mat"
         },
@@ -453,7 +453,7 @@
             "type": "dynamic",
             "desc": [
                 "A lightweight web development framework.",
-                "The docs are tough to follow sometimes."
+                "Good luck if you find an obscure bug."
             ],
             "style": "svelte"
         },
@@ -496,7 +496,7 @@
             "y": 0.9417420923664371,
             "type": "dynamic",
             "desc": [
-                "Angular's clockwork.",
+                "Angular's (old) clockwork.",
                 "Create Observables, subscribe to changes, and watch the magic happen."
             ],
             "style": "rxjs"
