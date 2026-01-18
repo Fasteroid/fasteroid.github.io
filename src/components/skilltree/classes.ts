@@ -14,6 +14,7 @@ const NODE_PADDING   = 1.2;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
 const GRAVITY        = 2;
+const PADDING_FORCE  = 0.2;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -33,6 +34,7 @@ export class SkillTreeEdge extends GraphEdge2 {
 
     public static readonly WHITE = new Color(1,1,1);
     public color = SkillTreeEdge.WHITE;
+    
 
     constructor(    
         public readonly source: SkillTreeNode,
@@ -43,11 +45,11 @@ export class SkillTreeEdge extends GraphEdge2 {
         this.dist = data.dist;
     }
 
-    public getSerialized(): SkillTreeEdgeData {
+    public getSerialized(scalar: number): SkillTreeEdgeData {
         return {
             from: this.source.id,
             to:   this.target.id,
-            dist: this.dist
+            dist: Math.sqrt( (this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2 ) / scalar
         }
     }
 
@@ -58,6 +60,8 @@ export abstract class SkillTreeNode extends GraphNode2 {
     declare edges: SkillTreeEdge[];
     public readonly type: 'static' | 'dynamic'; 
     public readonly id: string;
+
+    public abstract tier: number;
 
     constructor(manager: SkillTreeManager2, data: SkillTreeNodeData){
         super(manager as unknown as GraphManager2<GraphNode2, GraphEdge2>);
@@ -101,6 +105,20 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private homePos?: Vec2;
 
+    private _tier!: number;
+    public get tier(){
+        if( !this._tier ){
+            let tier = 0;
+            for( const edge of this.edges ){ // peek parents
+                if( edge.target === this ){      // are we the child?
+                    tier = Math.max(tier, edge.source.tier); // get the highest parent tier
+                }
+            }
+            this._tier = tier + 1; // we are one below the highest parent 
+        }
+        return this._tier;
+    }
+
     public readonly desc:     string[];
     public readonly cssClass: string;
 
@@ -111,6 +129,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
         this.desc     = data.desc;
         this.cssClass = data.style;
+
+        if( data.tier ) this._tier = data.tier;
 
         this.html.classList.add(this.cssClass);
 
@@ -198,14 +218,12 @@ export class SkillTreeStaticNode extends SkillTreeNode {
     public readonly tier: number;
 
     // d3 fixed position
-    public fx: number;
-    public fy: number;
+    public get fx() { return this.data.x * this.manager.nodeContainer.clientWidth; }
+    public get fy() { return this.data.y * this.manager.nodeContainer.clientHeight; }
 
-    constructor(private manager: SkillTreeManager2, data: SkillTreeStaticNodeData){
+    constructor(private manager: SkillTreeManager2, private data: SkillTreeStaticNodeData){
         super(manager, data);
         this.tier  = data.tier;
-        this.fx    = data.x * manager.nodeContainer.clientWidth;
-        this.fy    = data.y * manager.nodeContainer.clientHeight;
 
         this.html.classList.add("static")
         this.html.querySelector(".back")!.remove();
@@ -238,6 +256,11 @@ extends GraphManager2<
 
     protected _someNode!: SkillTreeNode;
 
+    private _maxTier?: number;
+    public get maxTier(): number {
+        return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
+    }
+
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
         super(
@@ -259,9 +282,11 @@ extends GraphManager2<
             data
         )
 
-        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth ).strength(0.1) ) // sqrt(2) / 2
+        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 2 ).strength(0.02) );
 
-        this.linkForces.distance( (edge: SkillTreeEdge) => edge.dist * this.relativeDistance * 1.5 );
+        this.linkForces.distance( (edge: SkillTreeEdge) => this.relativeDistance * edge.dist * 0.5 ).strength(0.1);
+
+        this.simulation.force('repulsion', d3.forceManyBody<SkillTreeNode>().strength(-100) );
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -285,20 +310,35 @@ extends GraphManager2<
                     const paddingY = NODE_PADDING * this.relativePadding;
 
                     if( node.x < paddingX ){
-                        node.vx += (paddingX - node.x) * 0.1 * alpha;
+                        node.vx += (paddingX - node.x) * PADDING_FORCE * alpha;
                     }
                     if( node.x > w - paddingX ){
-                        node.vx -= (node.x - (w - paddingX)) * 0.1 * alpha;
+                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE * alpha;
                     }
                     if( node.y < paddingY ){
-                        node.vy += (paddingY - node.y) * 0.1 * alpha;
+                        node.vy += (paddingY - node.y) * PADDING_FORCE * alpha;
                     }
                     if( node.y > h - paddingY ){
-                        node.vy -= (node.y - (h - paddingY)) * 0.1 * alpha;
+                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE * alpha;
                     }
                 }
             }
         });
+
+        // vaguely distribute nodes by tier ( y ~ tier )
+        this.simulation.force("tierY", (alpha: number) => {
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + 1);
+
+            for( const node of this.nodes.values() ){
+
+                if( node instanceof SkillTreeDynamicNode ){
+                    const targetY = tierHeight * (node.tier + 0.5);
+                    node.vy += (targetY - node.y) * 0.01 * alpha;
+                }
+
+            }
+        });
+
 
         this.simulation.velocityDecay(0.1)
         this.simulation.alphaDecay(0);
@@ -322,7 +362,7 @@ extends GraphManager2<
 
     public serialize(): void {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
-        const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
+        const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized(this.relativeDistance));
         
         const json = JSON.stringify({ nodes, edges }, undefined, 4);
 

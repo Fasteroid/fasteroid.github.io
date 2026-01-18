@@ -17,7 +17,7 @@
 
             console.log(SkillTreeManager2)
 
-            new SkillTreeManager2(
+            window.manager = new SkillTreeManager2(
                 document.getElementById("template-node")!,
                 document.querySelector(".node-container")!,
                 document.querySelector(".lines-container")!,

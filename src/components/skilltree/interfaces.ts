@@ -10,8 +10,9 @@ export interface SkillTreeNodeData extends GraphNodeData {
 
 export interface SkillTreeDynamicNodeData extends SkillTreeNodeData {
     desc:  string[],
-    style: string
-    type:  "dynamic"
+    style: string,
+    type:  "dynamic",
+    tier?: number;
 }
 
 export interface SkillTreeStaticNodeData extends SkillTreeNodeData {
