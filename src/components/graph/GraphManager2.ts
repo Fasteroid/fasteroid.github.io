@@ -4,6 +4,8 @@ import { Map2D } from "$lib/utils";
 import { Panzoom } from "@fasteroid/panzoom-revamped";
 import * as d3 from "d3";
 
+type WideHigh = { width: number, height: number };
+
 export abstract class GraphEdge2 implements SimulationLinkDatum<GraphNode2> {
 
     public bidirectional?: boolean;
@@ -68,9 +70,9 @@ export abstract class GraphManager2<
         return this._parentBox ??= this.nodeContainer.parentElement!.getBoundingClientRect();
     }
 
-    private _selfComputedSize: { width: number, height: number } | undefined;
+    private _selfComputedSize: WideHigh | undefined;
     /** Width and height of the node container */
-    public get selfComputedSize(): typeof this._selfComputedSize {
+    public get selfComputedSize(): WideHigh {
         if(this._selfComputedSize === undefined){
             let style = window.getComputedStyle(this.nodeContainer);
             this._selfComputedSize = {
