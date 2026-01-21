@@ -18,8 +18,8 @@ const NODE_PADDING   = 1.2;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
 const GRAVITY        = 5;
-const PADDING_FORCE  = 1;
-const HOME_RADIUS    = 30;
+const PADDING_FORCE  = 0.2;
+const HOME_RADIUS    = 50;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -119,19 +119,27 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
             if( Math.hypot( this.x - homeX, this.y - homeY ) < HOME_RADIUS ){
                 this._hasHomed = true;
+                this.vx *= 0.1;
+                this.vy *= 0.1;
                 console.log("Node", this.id, "has homed."); 
+                // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
                 return;
             }
 
-            this.vx = makeSafe( this.vx + (homeX - this.x) * 0.01 );
-            this.vy = makeSafe( this.vy + (homeY - this.y) * 0.01 );
+            this.vx += (homeX - this.x) * 0.1;
+            this.vy += (homeY - this.y) * 0.1;
+
+            this.x = this.x * 0.8 + homeX * 0.2;
+            this.y = this.y * 0.8 + homeY * 0.2;
         }
     }
         
 
     private _tier!: number;
+    private hasCustomTier = true;
     public get tier(){
         if( !this._tier ){
+            this.hasCustomTier = false;
             let tier = 0;
             for( const edge of this.edges ){ // peek parents
                 if( edge.target === this ){      // are we the child?
@@ -191,25 +199,26 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         this.y = 0;
 
 
-        // staggered unfixing
+        // staggered reveal
+
         SkillTreeDynamicNode.node_id += 1;
         this.fx = this.x;
         this.fy = this.y;
         this.html.hidden = true;
+
         window.setTimeout( 
             () => {
                 this.fx = undefined;
                 this.fy = undefined;
                 this.html.hidden = false;
+                this.html.animate(
+                    { opacity: [0, 1] },
+                    { duration: 50 }
+                );
             }, 
             SkillTreeDynamicNode.node_id * 50 
         );
 
-        // fade in
-        this.html.animate(
-            { opacity: [0, 1] },
-            { duration: 300 }
-        );
     }
 
     private startDrag(){
@@ -245,14 +254,20 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     }
 
     public getSerialized(): SkillTreeDynamicNodeData {
-        return {
+        const result: SkillTreeDynamicNodeData ={
             id:    this.id,
             x:     this.x / this.manager.nodeContainer.clientWidth,
             y:     this.y / this.manager.nodeContainer.clientHeight,
             type:  "dynamic",
             desc:  this.desc,
-            style: this.cssClass
+            style: this.cssClass,
         }
+
+        if( this.hasCustomTier ){
+            result.tier = this._tier;
+        }
+
+        return result;
     }
     
 }
@@ -295,8 +310,8 @@ extends GraphManager2<
     SkillTreeEdgeData
 > {
 
-    public relativeDistance = 130;
-    public relativePadding  = 120;
+    public relativeDistance = 120;
+    public relativePadding  = 240;
 
     protected _someNode!: SkillTreeNode;
 
@@ -328,7 +343,6 @@ extends GraphManager2<
 
 
         this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.2 / this.relativeDistance + 0.4, 1 ) )
-
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -374,7 +388,7 @@ extends GraphManager2<
         const Y_START = 0;
         this.simulation.force("tierY", (alpha: number) => {
 
-            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + 1 + Y_START);
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier * 0.8 + Y_START);
 
             for( const node of this.nodes.values() ){
 
@@ -386,14 +400,14 @@ extends GraphManager2<
             }
         });
 
-        this.simulation.velocityDecay(0.12);
+        this.simulation.velocityDecay(0.15);
         this.simulation.alphaDecay(0);
         this.simulation.alpha(0.25);
 
     }
 
     public override requestRender(): void {
-        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.5 ).strength(0.3) ); // this needs to be re-added each frame to update sizes
+        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.2 ).strength(0.3) ); // this needs to be re-added each frame to update sizes
         super.requestRender();
     }
 
