@@ -9,12 +9,17 @@ function rand(): number {
     return Math.random() * 2 - 1
 }
 
-const NODE_DISTANCE  = 1.2;
+function makeSafe(n: number){
+    if( isNaN(n) || !isFinite(n) ) return 0;
+    return n;
+}
+
 const NODE_PADDING   = 1.2;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
-const GRAVITY        = 2;
-const PADDING_FORCE  = 0.2;
+const GRAVITY        = 5;
+const PADDING_FORCE  = 1;
+const HOME_RADIUS    = 30;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -25,8 +30,6 @@ export class SkillTreeEdge extends GraphEdge2 {
 
     public width: number = SkillTreeEdge.thin;
 
-    public readonly dist: number;
-
     private _frame = () => {
         this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2), SkillTreeEdge.thin, SkillTreeEdge.thick);
         requestAnimationFrame(this._frame);
@@ -34,7 +37,10 @@ export class SkillTreeEdge extends GraphEdge2 {
 
     public static readonly WHITE = new Color(1,1,1);
     public color = SkillTreeEdge.WHITE;
-    
+
+    public get stress() {
+        return ( this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2
+    }
 
     constructor(    
         public readonly source: SkillTreeNode,
@@ -42,14 +48,12 @@ export class SkillTreeEdge extends GraphEdge2 {
         data: SkillTreeEdgeData
     ){
         super();
-        this.dist = data.dist;
     }
 
     public getSerialized(scalar: number): SkillTreeEdgeData {
         return {
             from: this.source.id,
             to:   this.target.id,
-            dist: Math.sqrt( (this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2 ) / scalar
         }
     }
 
@@ -70,6 +74,7 @@ export abstract class SkillTreeNode extends GraphNode2 {
         this.id   = data.id;
 
         this.html.querySelector(".front")!.innerHTML = data.id;
+        this.html.hidden = false;
 
         // fade the node in
         this.html.animate(
@@ -101,9 +106,28 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     protected fy: number | undefined;
 
     private canMouseOver: boolean = true;
-    private mouseForce:   number  = 0;
 
-    private homePos?: Vec2;
+    private homePos?: {x: number, y: number};
+    private _hasHomed: boolean = false;
+    public get hasHomed() { return this._hasHomed; }
+
+    public doHomingForces(w: number, h: number){
+        if( this.homePos && !this._hasHomed ){
+
+            const homeX = this.homePos.x * w;
+            const homeY = this.homePos.y * h;
+
+            if( Math.hypot( this.x - homeX, this.y - homeY ) < HOME_RADIUS ){
+                this._hasHomed = true;
+                console.log("Node", this.id, "has homed."); 
+                return;
+            }
+
+            this.vx = makeSafe( this.vx + (homeX - this.x) * 0.05 );
+            this.vy = makeSafe( this.vy + (homeY - this.y) * 0.05 );
+        }
+    }
+        
 
     private _tier!: number;
     public get tier(){
@@ -129,13 +153,19 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
         this.desc     = data.desc;
         this.cssClass = data.style;
-
+        
         if( data.tier ) this._tier = data.tier;
 
         this.html.classList.add(this.cssClass);
 
+        // fade in
+        this.html.animate(
+            { opacity: [0, 1] },
+            { duration: 300 }
+        )
+
         if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
-            this.homePos = new Vec2(data.x, data.y);
+            this.homePos = {x: data.x, y: data.y};
         }
 
         this.html.querySelector(".back")!.innerHTML = this.desc.join("<br><br>");
@@ -143,7 +173,6 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         // setupDragEvents
         this.html.addEventListener("mouseover",() => {
             if( this.canMouseOver ){
-                this.mouseForce = NODE_BOB_FORCE;
                 this.canMouseOver = false;
                 setTimeout(() => {this.canMouseOver = true;}, 100);
             }
@@ -164,8 +193,6 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         
         this.x = manager.nodeContainer.clientWidth * 0.5;
         this.y = 0;
-        this.vx = rand() * 10;
-        this.vy = rand() * 10;
     }
 
     private startDrag(){
@@ -251,7 +278,7 @@ extends GraphManager2<
     SkillTreeEdgeData
 > {
 
-    public relativeDistance = 120;
+    public relativeDistance = 130;
     public relativePadding  = 120;
 
     protected _someNode!: SkillTreeNode;
@@ -282,11 +309,10 @@ extends GraphManager2<
             data
         )
 
-        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 2 ).strength(0.02) );
+        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.5 ).strength(0.3) );
 
-        this.linkForces.distance( (edge: SkillTreeEdge) => this.relativeDistance * edge.dist * 0.5 ).strength(0.1);
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.2 / this.relativeDistance + 0.4, 1 ) )
 
-        this.simulation.force('repulsion', d3.forceManyBody<SkillTreeNode>().strength(-100) );
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -310,38 +336,44 @@ extends GraphManager2<
                     const paddingY = NODE_PADDING * this.relativePadding;
 
                     if( node.x < paddingX ){
-                        node.vx += (paddingX - node.x) * PADDING_FORCE * alpha;
+                        node.vx += (paddingX - node.x) * PADDING_FORCE;
                     }
                     if( node.x > w - paddingX ){
-                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE * alpha;
+                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE;
                     }
                     if( node.y < paddingY ){
-                        node.vy += (paddingY - node.y) * PADDING_FORCE * alpha;
+                        node.vy += (paddingY - node.y) * PADDING_FORCE;
                     }
                     if( node.y > h - paddingY ){
-                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE * alpha;
+                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE;
                     }
+
+                    node.doHomingForces(w, h);
+
                 }
             }
         });
 
         // vaguely distribute nodes by tier ( y ~ tier )
+        const Y_START = 0;
         this.simulation.force("tierY", (alpha: number) => {
-            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + 1);
+
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + 1 + Y_START);
 
             for( const node of this.nodes.values() ){
 
                 if( node instanceof SkillTreeDynamicNode ){
-                    const targetY = tierHeight * (node.tier + 0.5);
-                    node.vy += (targetY - node.y) * 0.01 * alpha;
+                    const targetY = tierHeight * (node.tier + 0.5 + Y_START);
+                    node.vy += (targetY - node.y) * 0.05 * alpha;
                 }
 
             }
         });
 
 
-        this.simulation.velocityDecay(0.1)
+        this.simulation.velocityDecay(0.12);
         this.simulation.alphaDecay(0);
+        this.simulation.alpha(0.25);
 
     }
 

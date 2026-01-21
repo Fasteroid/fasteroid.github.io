@@ -22,6 +22,4 @@ export interface SkillTreeStaticNodeData extends SkillTreeNodeData {
     type: "static"
 }
 
-export interface SkillTreeEdgeData extends GraphEdgeData {
-    dist: number
-}
+export interface SkillTreeEdgeData extends GraphEdgeData { }

@@ -33,7 +33,7 @@
     <div class="node-container" id="panzoom">
         
         <!-- template cell -->
-        <div class="node" id="template-node">
+        <div class="node" id="template-node" hidden>
             <div class="front">TEMPLATE</div>
             <div class="back">SAMPLE TEXT</div>
         </div>
