@@ -321,7 +321,7 @@ extends GraphManager2<
         return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
     }
 
-    public readonly updateCollisionRadii = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1 ).strength(0.3) );
+    public readonly updateCollisionRadii = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.05 ).strength(0.28) );
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
@@ -345,7 +345,7 @@ extends GraphManager2<
         )
 
 
-        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.1 / this.relativeDistance + 0.4, 1 ) )
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.2 / this.relativeDistance + 0.4, 1 ) )
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {

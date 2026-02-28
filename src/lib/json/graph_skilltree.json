@@ -24,7 +24,7 @@
         {
             "id": "ADVANCED MATHEMATICS",
             "x": 0.1,
-            "y": 0.4,
+            "y": 0.6,
             "type": "static",
             "tier": 8
         },
@@ -224,7 +224,8 @@
                 "A C-style language simplified enough for an amateur to pick up.",
                 "Used in Odyssey of the Mind in 2019 and helped us place second at world finals!"
             ],
-            "style": "arduino"
+            "style": "arduino",
+            "tier": 6
         },
         {
             "id": "C",
@@ -235,8 +236,7 @@
                 "Learned during second and third years of college.",
                 "Haven't mastered it, but I know the core concepts."
             ],
-            "style": "c",
-            "tier": 12
+            "style": "c"
         },
         {
             "id": "Java",
@@ -280,7 +280,8 @@
                 "An inspiring, free, and turing-complete online graphing calculator.",
                 "Anything is possible if you're determined enough!"
             ],
-            "style": "desmos"
+            "style": "desmos",
+            "tier": 9
         },
         {
             "id": "Lua",
@@ -370,7 +371,8 @@
                 "wait frick 💀",
                 "I recovered in 4 hours with no real backups!"
             ],
-            "style": "ubuntu"
+            "style": "ubuntu",
+            "tier": 9
         },
         {
             "id": "Bash",
@@ -485,13 +487,13 @@
             "style": "svelte"
         },
         {
-            "id": "cs_long_edge",
+            "id": "java-cs-bridge",
             "x": 0.5962949464233479,
             "y": 0.7431617871969435,
             "type": "dynamic",
             "desc": [],
             "style": "hidden",
-            "tier": 12
+            "tier": 14
         },
         {
             "id": "C#",
@@ -502,8 +504,7 @@
                 "Like Java, but way easier to work with.",
                 "Unfortunately, the same cannot be said for the rest of the .NET ecosystem!"
             ],
-            "style": "csharp",
-            "tier": 12
+            "style": "csharp"
         },
         {
             "id": "Microsoft SQL Server",
@@ -762,10 +763,10 @@
         },
         {
             "from": "Java",
-            "to": "cs_long_edge"
+            "to": "java-cs-bridge"
         },
         {
-            "from": "cs_long_edge",
+            "from": "java-cs-bridge",
             "to": "C#"
         },
         {
