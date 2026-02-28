@@ -4,6 +4,8 @@ import * as d3 from 'd3';
 import { GraphEdge2, GraphManager2, GraphNode2 } from '../graph/GraphManager2';
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
 
+import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
+import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
 
 function rand(): number {
     return Math.random() * 2 - 1
@@ -215,6 +217,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                     { opacity: [0, 1] },
                     { duration: 50 }
                 );
+                this.manager.updateCollisionRadii();
             }, 
             SkillTreeDynamicNode.node_id * 50 
         );
@@ -246,8 +249,6 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
         this.fx = posX;
         this.fy = posY;
-
-        // this.manager.transformDragEventToSimulationCoords(this.pos);
 
         this.vx = 0;
         this.vy = 0;
@@ -320,6 +321,8 @@ extends GraphManager2<
         return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
     }
 
+    public readonly updateCollisionRadii = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1 ).strength(0.3) );
+
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
         super(
@@ -342,7 +345,7 @@ extends GraphManager2<
         )
 
 
-        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.2 / this.relativeDistance + 0.4, 1 ) )
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.1 / this.relativeDistance + 0.4, 1 ) )
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -394,20 +397,23 @@ extends GraphManager2<
 
                 if( node instanceof SkillTreeDynamicNode ){
                     const targetY = tierHeight * (node.tier + 0.5 + Y_START);
-                    node.vy += (targetY - node.y) * 0.05 * alpha;
+                    node.vy += (targetY - node.y) * 0.03 * alpha;
                 }
 
             }
         });
 
-        this.simulation.velocityDecay(0.15);
+        this.simulation.velocityDecay(0.1);
         this.simulation.alphaDecay(0);
         this.simulation.alpha(0.25);
+
+
+        const resizeWatcher = new ResizeObserver(this.updateCollisionRadii);
+        resizeWatcher.observe(this._someNode.html);
 
     }
 
     public override requestRender(): void {
-        this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.2 ).strength(0.3) ); // this needs to be re-added each frame to update sizes
         super.requestRender();
     }
 
