@@ -17,11 +17,11 @@ function makeSafe(n: number){
     return n;
 }
 
-const NODE_PADDING   = 1.2;
+const NODE_PADDING   = 1;
 const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
-const GRAVITY        = 5;
-const PADDING_FORCE  = 0.2;
+const GRAVITY        = 3;
+const PADDING_FORCE  = 0.1;
 const HOME_RADIUS    = 100;
 
 export class SkillTreeEdge extends GraphEdge2 {
@@ -125,7 +125,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                 this.vx *= 0.1;
                 this.vy *= 0.1;
                 // console.log("Node", this.id, "has homed."); 
-                this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
+                // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
                 return;
             }
 
@@ -330,7 +330,7 @@ extends GraphManager2<
         return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
     }
 
-    public readonly onNodesResized = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.1 ).strength(0.28) );
+    public readonly onNodesResized = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.2 ).strength(0.3) );
 
     public readonly onCanvasResized = () => {
         const dpr = window.devicePixelRatio || 1;
@@ -372,7 +372,7 @@ extends GraphManager2<
 
 
 
-        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.1 / this.relativeDistance + 0.5, 1 ) )
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.3 / this.relativeDistance + 0.2, 1 ) )
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -418,13 +418,13 @@ extends GraphManager2<
         const Y_START = 0;
         this.simulation.force("tierY", (alpha: number) => {
 
-            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier * 0.8 + Y_START);
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier * 1.1 + Y_START);
 
             for( const node of this.nodes.values() ){
 
                 if( node instanceof SkillTreeDynamicNode ){
                     const targetY = tierHeight * (node.tier + 0.5 + Y_START);
-                    node.vy += (targetY - node.y) * 0.01 * alpha;
+                    node.vy += (targetY - node.y) * 0.03 * alpha;
                 }
 
             }
@@ -492,7 +492,7 @@ extends GraphManager2<
         }
 
     
-        this.simulation.velocityDecay(0.1);
+        this.simulation.velocityDecay(0.15);
         this.simulation.alphaDecay(0);
         this.simulation.alpha(0.25);
 

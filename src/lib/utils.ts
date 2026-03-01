@@ -137,7 +137,10 @@ export class Map2D<K, V> {
     }
 
     public get size(): number {
-        return this.mapMap.size;
+        let size = 0;
+        for( let inner of this.mapMap.values() )
+            size += inner.size;
+        return size;
     }
 
 }
