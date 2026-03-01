@@ -10,6 +10,11 @@
     height: calc( var(--node-size) * 28 + 0.7in );
     background-image: url(base.$base + "/assets/grid.png");
 }
+
+.lines-container {
+    width: 100% !important;
+    height: 100% !important;
+}
   
 .node > * {
     width: 100%;

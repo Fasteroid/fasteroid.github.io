@@ -136,6 +136,10 @@ export class Map2D<K, V> {
         return ret;
     }
 
+    public get size(): number {
+        return this.mapMap.size;
+    }
+
 }
 
 /**

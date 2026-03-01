@@ -6,6 +6,7 @@ import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, Ski
 
 import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
 import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
+import { WebGLUtils } from '$lib/webgl/utils';
 
 function rand(): number {
     return Math.random() * 2 - 1
@@ -21,7 +22,7 @@ const NODE_MAX_VEL   = 80;
 const NODE_BOB_FORCE = 2;
 const GRAVITY        = 5;
 const PADDING_FORCE  = 0.2;
-const HOME_RADIUS    = 50;
+const HOME_RADIUS    = 100;
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -123,8 +124,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                 this._hasHomed = true;
                 this.vx *= 0.1;
                 this.vy *= 0.1;
-                console.log("Node", this.id, "has homed."); 
-                // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
+                // console.log("Node", this.id, "has homed."); 
+                this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
                 return;
             }
 
@@ -217,7 +218,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                     { opacity: [0, 1] },
                     { duration: 50 }
                 );
-                this.manager.updateCollisionRadii();
+                this.manager.onNodesResized();
             }, 
             SkillTreeDynamicNode.node_id * 50 
         );
@@ -312,16 +313,41 @@ extends GraphManager2<
 > {
 
     public relativeDistance = 120;
-    public relativePadding  = 240;
+    public relativePadding  = 240;    
+    
+    private readonly gl: WebGL2RenderingContext;
+    private readonly edgeBuffer: WebGLBuffer;
+    private readonly resUniform: WebGLUniformLocation;
 
-    protected _someNode!: SkillTreeNode;
+    protected get _someNode(): SkillTreeNode {
+        const node = this.nodes.values().next().value;
+        if( !node ) throw new Error("No nodes in the graph!");
+        return node;
+    }
 
     private _maxTier?: number;
     public get maxTier(): number {
         return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
     }
 
-    public readonly updateCollisionRadii = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.05 ).strength(0.28) );
+    public readonly onNodesResized = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.1 ).strength(0.28) );
+
+    public readonly onCanvasResized = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = this.edgeContainer.clientWidth;
+        const displayHeight = this.edgeContainer.clientHeight;
+        
+        // Set actual canvas resolution
+        this.edgeContainer.width = displayWidth * dpr;
+        this.edgeContainer.height = displayHeight * dpr;
+
+        this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
+        this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
+
+        this.render(); // immediately rerender
+    }
+
+
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
@@ -336,16 +362,17 @@ extends GraphManager2<
                 console.log("Creating node:", nodeData);
                 switch(nodeData.type) {
                     case 'dynamic':
-                        return this._someNode = new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
+                        return new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
                     case 'static':
-                        return this._someNode = new SkillTreeStaticNode(this, nodeData as SkillTreeStaticNodeData);
+                        return new SkillTreeStaticNode(this, nodeData as SkillTreeStaticNodeData);
                 }
             },
             data
-        )
+        );
 
 
-        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.2 / this.relativeDistance + 0.4, 1 ) )
+
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.1 / this.relativeDistance + 0.5, 1 ) )
 
         // gravity
         this.simulation.force("gravity", (alpha: number) => {
@@ -397,24 +424,112 @@ extends GraphManager2<
 
                 if( node instanceof SkillTreeDynamicNode ){
                     const targetY = tierHeight * (node.tier + 0.5 + Y_START);
-                    node.vy += (targetY - node.y) * 0.03 * alpha;
+                    node.vy += (targetY - node.y) * 0.01 * alpha;
                 }
 
             }
         });
 
+        // webgl!
+        {
+            const gl = this.edgeContainer.getContext("webgl2");
+            if( !gl ) throw new Error("WebGL2 not supported!");
+            this.gl = gl;
+
+            const program = WebGLUtils.createProgram(
+                gl, 
+                EDGE_FRAG_SHADER, 
+                EDGE_VERT_SHADER
+            );
+
+            gl.useProgram(program);
+
+            const templateVertices = new Float32Array([
+                // First triangle
+                0.0, -0.5,  // start, left
+                1.0, -0.5,  // end, left
+                0.0,  0.5,  // start, right
+                
+                // Second triangle
+                0.0,  0.5,  // start, right
+                1.0, -0.5,  // end, left
+                1.0,  0.5,  // end, right
+            ]);
+
+            this.resUniform = gl.getUniformLocation(program, 'u_resolution')!;
+
+            const templateBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, templateVertices, gl.STATIC_DRAW);
+    
+            const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
+            gl.enableVertexAttribArray(a_templatePosition);
+            gl.vertexAttribPointer(a_templatePosition, 2, gl.FLOAT, false, 0, 0);
+
+            const edgeBuffer = this.edgeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.getRawEdgeData() ), gl.DYNAMIC_DRAW);
+    
+            // Set up per-instance attributes
+
+            const stride = 5 * 4; // 5 floats per edge (2 + 2 + 1) * 4 bytes each
+            
+            const a_startPoint = gl.getAttribLocation(program, 'a_startPoint');
+            gl.enableVertexAttribArray(a_startPoint);
+            gl.vertexAttribPointer(a_startPoint, 2, gl.FLOAT, false, stride, 0);
+            gl.vertexAttribDivisor(a_startPoint, 1); // One per instance!
+            
+            const a_endPoint = gl.getAttribLocation(program, 'a_endPoint');
+            gl.enableVertexAttribArray(a_endPoint);
+            gl.vertexAttribPointer(a_endPoint, 2, gl.FLOAT, false, stride, 2 * 4);
+            gl.vertexAttribDivisor(a_endPoint, 1);
+            
+            const a_width = gl.getAttribLocation(program, 'a_width');
+            gl.enableVertexAttribArray(a_width);
+            gl.vertexAttribPointer(a_width, 1, gl.FLOAT, false, stride, 4 * 4);
+            gl.vertexAttribDivisor(a_width, 1);
+
+        }
+
+    
         this.simulation.velocityDecay(0.1);
         this.simulation.alphaDecay(0);
         this.simulation.alpha(0.25);
 
 
-        const resizeWatcher = new ResizeObserver(this.updateCollisionRadii);
-        resizeWatcher.observe(this._someNode.html);
+        const nodeResizeWatcher = new ResizeObserver(this.onNodesResized);
+        nodeResizeWatcher.observe(this._someNode.html);
 
+        const canvasResizeWatcher = new ResizeObserver(this.onCanvasResized);
+        canvasResizeWatcher.observe(this.edgeContainer);
+    }
+
+    private *getRawEdgeData(): Generator<number, void, unknown> {
+        for( const edge of this.edges.values() ){
+            yield edge.source.x;
+            yield edge.source.y;
+            yield edge.target.x;
+            yield edge.target.y;
+            yield edge.width;
+        }
     }
 
     public override requestRender(): void {
         super.requestRender();
+    }
+
+    public override render() {
+        super.render();
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array( this.getRawEdgeData() ));
+        
+        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+            
+        // Draw all edges with one instanced draw call!
+        // 6 vertices per edge, numEdges instances
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
     }
 
     public transformDragEventToSimulationCoords(v: [number, number]) {
