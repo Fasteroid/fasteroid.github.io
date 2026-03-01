@@ -415,10 +415,10 @@ extends GraphManager2<
         });
 
         // vaguely distribute nodes by tier ( y ~ tier )
-        const Y_START = 0;
+        const Y_START = 1;
         this.simulation.force("tierY", (alpha: number) => {
 
-            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier * 1.1 + Y_START);
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + Y_START);
 
             for( const node of this.nodes.values() ){
 

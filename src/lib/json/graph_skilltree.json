@@ -30,8 +30,8 @@
         },
         {
             "id": "LEGO Technic",
-            "x": 0.3836368049607449,
-            "y": 0.0733558773776265,
+            "x": 0.38222088896002476,
+            "y": 0.0749661223771127,
             "type": "dynamic",
             "desc": [
                 "The bricks with holes that put functionality over beauty.",
@@ -41,8 +41,8 @@
         },
         {
             "id": "LEGO Mindstorms",
-            "x": 0.2782648748755589,
-            "y": 0.13798596318934933,
+            "x": 0.2795503263351268,
+            "y": 0.14047060497404865,
             "type": "dynamic",
             "desc": [
                 "Simple block-style programming for LEGO robots.",
@@ -52,8 +52,8 @@
         },
         {
             "id": "Percussion",
-            "x": 0.8658190726008939,
-            "y": 0.18217692556323664,
+            "x": 0.7652753846238743,
+            "y": 0.18955403571229362,
             "type": "dynamic",
             "desc": [
                 "A keeper of time and drummer of drums from 4th to 8th grade.",
@@ -63,8 +63,8 @@
         },
         {
             "id": "Redstone",
-            "x": 0.3271575978355516,
-            "y": 0.2731005979364372,
+            "x": 0.35780552555482165,
+            "y": 0.28305106293303867,
             "type": "dynamic",
             "desc": [
                 "Laid the foundations for my understanding of boolean logic.",
@@ -74,8 +74,8 @@
         },
         {
             "id": "Woodworking",
-            "x": 0.539900186176528,
-            "y": 0.10507195123043403,
+            "x": 0.5332572288918773,
+            "y": 0.10895980435247972,
             "type": "dynamic",
             "desc": [
                 "Officially picked up in 8th grade.",
@@ -85,8 +85,8 @@
         },
         {
             "id": "Audacity",
-            "x": 0.851734182100114,
-            "y": 0.26112691055209536,
+            "x": 0.7712406949799862,
+            "y": 0.26931085087240475,
             "type": "dynamic",
             "desc": [
                 "Does audio & waveform editing.",
@@ -96,8 +96,8 @@
         },
         {
             "id": "ps_long_edge",
-            "x": 0.8016353832299578,
-            "y": 0.2113143323115344,
+            "x": 0.8324232385548621,
+            "y": 0.21250902343213898,
             "type": "dynamic",
             "desc": [],
             "style": "hidden",
@@ -105,8 +105,8 @@
         },
         {
             "id": "Adobe Photoshop",
-            "x": 0.7950924416378491,
-            "y": 0.41783228654698873,
+            "x": 0.8654908473729107,
+            "y": 0.3979259720665897,
             "type": "dynamic",
             "desc": [
                 "Edits images in almost any way imaginable.",
@@ -117,8 +117,8 @@
         },
         {
             "id": "Expression 2",
-            "x": 0.3714854818864042,
-            "y": 0.4088722790279616,
+            "x": 0.4289921148790284,
+            "y": 0.41906194171243505,
             "type": "dynamic",
             "desc": [
                 "My first true coding language.",
@@ -129,8 +129,8 @@
         },
         {
             "id": "Adobe Illustrator",
-            "x": 0.7479193518443046,
-            "y": 0.524666917804184,
+            "x": 0.8538595857408657,
+            "y": 0.5466123032036357,
             "type": "dynamic",
             "desc": [
                 "Creates and edits vector graphics, which display crisply at all resolutions.",
@@ -140,8 +140,8 @@
         },
         {
             "id": "GIMP",
-            "x": 0.8821710985771115,
-            "y": 0.4848971538672968,
+            "x": 0.8740331994183618,
+            "y": 0.47209756771045286,
             "type": "dynamic",
             "desc": [
                 "The GNU Image Manipulation Program.",
@@ -151,8 +151,8 @@
         },
         {
             "id": "Sketchup",
-            "x": 0.6076665269931825,
-            "y": 0.2363634255805874,
+            "x": 0.575373087975067,
+            "y": 0.2514866778453882,
             "type": "dynamic",
             "desc": [
                 "A CAD program simple enough for the lay man to use.",
@@ -162,8 +162,8 @@
         },
         {
             "id": "Autodesk 123D Design",
-            "x": 0.6658379970936831,
-            "y": 0.3697924740764576,
+            "x": 0.612845194278331,
+            "y": 0.3874623002121222,
             "type": "dynamic",
             "desc": [
                 "The deprecated predecessor to Fusion 360.",
@@ -174,8 +174,8 @@
         },
         {
             "id": "Adobe After Effects",
-            "x": 0.815521915069891,
-            "y": 0.5997112926639964,
+            "x": 0.8687904546544091,
+            "y": 0.6226351764400062,
             "type": "dynamic",
             "desc": [
                 "Photoshop for video; puts the FX in VFX.",
@@ -185,8 +185,8 @@
         },
         {
             "id": "Blender",
-            "x": 0.6500815422037536,
-            "y": 0.46352553890908776,
+            "x": 0.7160723002585188,
+            "y": 0.5104096583894339,
             "type": "dynamic",
             "desc": [
                 "The 3D multipurpose program with a brutal learning curve",
@@ -196,8 +196,8 @@
         },
         {
             "id": "3D Printing",
-            "x": 0.5352435551700526,
-            "y": 0.4036351384850206,
+            "x": 0.7225558371210867,
+            "y": 0.43657627168461205,
             "type": "dynamic",
             "desc": [
                 "Abused so badly in Odyssey of the Mind that a policy was implemented to nerf my 3D printing!",
@@ -208,8 +208,8 @@
         },
         {
             "id": "Code.org / ES1 JavaScript",
-            "x": 0.3692052592366408,
-            "y": 0.5266669835207707,
+            "x": 0.4332655843777144,
+            "y": 0.5061662780086027,
             "type": "dynamic",
             "desc": [
                 "ES1 JavaScript from Code.org's App Lab.",
@@ -219,8 +219,8 @@
         },
         {
             "id": "Arduino",
-            "x": 0.48062302410736524,
-            "y": 0.4720674213112969,
+            "x": 0.5700382811088868,
+            "y": 0.4655214823922511,
             "type": "dynamic",
             "desc": [
                 "A C-style language simplified enough for an amateur to pick up.",
@@ -231,16 +231,16 @@
         },
         {
             "id": "arduino_c_bridge",
-            "x": 0.5769378061521904,
-            "y": 0.5262686536069502,
+            "x": 0.6516420230812301,
+            "y": 0.5335856535897202,
             "type": "dynamic",
             "desc": [],
             "style": "hidden"
         },
         {
             "id": "C",
-            "x": 0.6552744976070675,
-            "y": 0.5869815272907143,
+            "x": 0.7115403733405313,
+            "y": 0.5914682207994272,
             "type": "dynamic",
             "desc": [
                 "Learned during second and third years of college.",
@@ -251,8 +251,8 @@
         },
         {
             "id": "Java",
-            "x": 0.5122177998731735,
-            "y": 0.5512456365915874,
+            "x": 0.5786043215733083,
+            "y": 0.5457929426413501,
             "type": "dynamic",
             "desc": [
                 "Learned during AP Computer Science A.",
@@ -262,8 +262,8 @@
         },
         {
             "id": "Adobe Premiere",
-            "x": 0.8613536008117535,
-            "y": 0.6774507306836777,
+            "x": 0.8782080439523943,
+            "y": 0.7009051407854604,
             "type": "dynamic",
             "desc": [
                 "For compiling audio and video clips.",
@@ -273,8 +273,8 @@
         },
         {
             "id": "Calculus",
-            "x": 0.10910354503732884,
-            "y": 0.47677517060819835,
+            "x": 0.12546932304655778,
+            "y": 0.47856340470491615,
             "type": "dynamic",
             "desc": [
                 "Learned During AP Calc AB.",
@@ -284,8 +284,8 @@
         },
         {
             "id": "Desmos",
-            "x": 0.07704149984721742,
-            "y": 0.5542444817102768,
+            "x": 0.1231683163545862,
+            "y": 0.5599367892751704,
             "type": "dynamic",
             "desc": [
                 "An inspiring, free, and turing-complete online graphing calculator.",
@@ -296,8 +296,8 @@
         },
         {
             "id": "Lua",
-            "x": 0.2705331155946905,
-            "y": 0.4677834283994348,
+            "x": 0.2960078004870896,
+            "y": 0.46989190899075767,
             "type": "dynamic",
             "desc": [
                 "The language of game scripting and modding.",
@@ -308,8 +308,8 @@
         },
         {
             "id": "NodeJS",
-            "x": 0.22034615968714072,
-            "y": 0.5421511214216725,
+            "x": 0.292153815156133,
+            "y": 0.5479047494602707,
             "type": "dynamic",
             "desc": [
                 "ES6 JavaScript as a backend.",
@@ -319,8 +319,8 @@
         },
         {
             "id": "JavaScript",
-            "x": 0.2635572486273018,
-            "y": 0.651344440332093,
+            "x": 0.36061873217960816,
+            "y": 0.6224309644782285,
             "type": "dynamic",
             "desc": [
                 "Powers the interactivity of websites.",
@@ -330,8 +330,8 @@
         },
         {
             "id": "HTML",
-            "x": 0.41617012399244174,
-            "y": 0.6088624424741348,
+            "x": 0.4443357667779851,
+            "y": 0.5731929771196992,
             "type": "dynamic",
             "desc": [
                 "Defines the structure of websites.",
@@ -341,8 +341,8 @@
         },
         {
             "id": "CSS",
-            "x": 0.29744353069115165,
-            "y": 0.5912484436394979,
+            "x": 0.5280350880360392,
+            "y": 0.6277120642826002,
             "type": "dynamic",
             "desc": [
                 "Styles websites to look fabulous.",
@@ -352,8 +352,8 @@
         },
         {
             "id": "Web Development",
-            "x": 0.277281409957188,
-            "y": 0.7191691914493626,
+            "x": 0.4272061881122642,
+            "y": 0.6941495155050322,
             "type": "dynamic",
             "desc": [
                 "You could make a career out of this!"
@@ -363,8 +363,8 @@
         },
         {
             "id": "Regex",
-            "x": 0.1401559093898496,
-            "y": 0.6166482686384333,
+            "x": 0.21537943979975357,
+            "y": 0.6176458621435482,
             "type": "dynamic",
             "desc": [
                 "Forbidden pattern-matching runes with immense power.",
@@ -374,21 +374,20 @@
         },
         {
             "id": "Ubuntu/Linux",
-            "x": 0.5500852699184318,
-            "y": 0.6424052208819669,
+            "x": 0.712218600051245,
+            "y": 0.6671007878615931,
             "type": "dynamic",
             "desc": [
                 "𝚜𝚞𝚍𝚘 𝚌𝚑𝚘𝚠𝚗 -𝚁 𝚏𝚊𝚜𝚝𝚎𝚛𝚘𝚒𝚍 / ",
                 "wait frick 💀",
                 "I recovered in 4 hours with no real backups!"
             ],
-            "style": "ubuntu",
-            "tier": 9
+            "style": "ubuntu"
         },
         {
             "id": "Bash",
-            "x": 0.6964222502938452,
-            "y": 0.6684191273731358,
+            "x": 0.736379087305647,
+            "y": 0.7426825136494264,
             "type": "dynamic",
             "desc": [
                 "The beloved Bourne Again Shell.",
@@ -398,8 +397,8 @@
         },
         {
             "id": "Electron",
-            "x": 0.40886846316519054,
-            "y": 0.6825707103506033,
+            "x": 0.2822520535974468,
+            "y": 0.6841269949191429,
             "type": "dynamic",
             "desc": [
                 "Lets web developers make poorly optimized desktop apps!",
@@ -409,8 +408,8 @@
         },
         {
             "id": "TypeScript",
-            "x": 0.16347171729302973,
-            "y": 0.7685179717840235,
+            "x": 0.293620899881485,
+            "y": 0.7496547216115149,
             "type": "dynamic",
             "desc": [
                 "Since its type system<br/>is turing complete, this<br/> S-tier language is effectively two in one.",
@@ -421,16 +420,16 @@
         },
         {
             "id": "glesmos_adventure",
-            "x": 0.15606367535023755,
-            "y": 0.6575393437738283,
+            "x": 0.20569591492742795,
+            "y": 0.6612284032433989,
             "type": "dynamic",
             "desc": [],
             "style": "hidden"
         },
         {
             "id": "WebGL",
-            "x": 0.11907633113147009,
-            "y": 0.6933203039962902,
+            "x": 0.11990649306178688,
+            "y": 0.6870145468784424,
             "type": "dynamic",
             "desc": [
                 "A terrifying low-level GPU API for the web.",
@@ -440,8 +439,8 @@
         },
         {
             "id": "Angular",
-            "x": 0.23492253032408614,
-            "y": 0.8452801693186164,
+            "x": 0.33707180633339084,
+            "y": 0.8212915494843805,
             "type": "dynamic",
             "desc": [
                 "Google's FOSS web-dev framework.",
@@ -451,8 +450,8 @@
         },
         {
             "id": "Adobe ColdFusion",
-            "x": 0.43209591237815753,
-            "y": 0.7512053907645667,
+            "x": 0.573721427483759,
+            "y": 0.7157972768055193,
             "type": "dynamic",
             "desc": [
                 "A serverside scripting language written with XML tags.",
@@ -463,8 +462,8 @@
         },
         {
             "id": "MariaDB (MySQL)",
-            "x": 0.5185016189211297,
-            "y": 0.812556783181359,
+            "x": 0.6070435958794567,
+            "y": 0.7932652019566381,
             "type": "dynamic",
             "desc": [
                 "Perhaps the only practical information I learned in college.",
@@ -474,8 +473,8 @@
         },
         {
             "id": "Sass",
-            "x": 0.3936946773796244,
-            "y": 0.8654439314660968,
+            "x": 0.3770305480573895,
+            "y": 0.9033416475659046,
             "type": "dynamic",
             "desc": [
                 "CSS with more features.",
@@ -485,8 +484,8 @@
         },
         {
             "id": "Angular Material",
-            "x": 0.29242758789153117,
-            "y": 0.9222063907463186,
+            "x": 0.482473012820339,
+            "y": 0.8498926119467982,
             "type": "dynamic",
             "desc": [
                 "Some common components for use with Angular.",
@@ -496,8 +495,8 @@
         },
         {
             "id": "Svelte",
-            "x": 0.09432732036683929,
-            "y": 0.8410433456730153,
+            "x": 0.18207277377296355,
+            "y": 0.8114535741257578,
             "type": "dynamic",
             "desc": [
                 "A lightweight web development framework.",
@@ -506,9 +505,18 @@
             "style": "svelte"
         },
         {
-            "id": "java-cs-bridge",
-            "x": 0.5143943159227193,
-            "y": 0.6793528921851685,
+            "id": "java-cs-bridge-1",
+            "x": 0.6124132035845856,
+            "y": 0.6611221351762742,
+            "type": "dynamic",
+            "desc": [],
+            "style": "hidden",
+            "tier": 12
+        },
+        {
+            "id": "java-cs-bridge-2",
+            "x": 0.6525384162017978,
+            "y": 0.7519965710432711,
             "type": "dynamic",
             "desc": [],
             "style": "hidden",
@@ -516,19 +524,20 @@
         },
         {
             "id": "C#",
-            "x": 0.5919009276825634,
-            "y": 0.7369012587191397,
+            "x": 0.7638673458258584,
+            "y": 0.8241158121645652,
             "type": "dynamic",
             "desc": [
                 "Like Java, but way easier to work with.",
                 "Unfortunately, the same cannot be said for the rest of the .NET ecosystem!"
             ],
-            "style": "csharp"
+            "style": "csharp",
+            "tier": 18
         },
         {
             "id": "Microsoft SQL Server",
-            "x": 0.6571285905275829,
-            "y": 0.8488718161394718,
+            "x": 0.635899567024913,
+            "y": 0.8728577999436933,
             "type": "dynamic",
             "desc": [
                 "An (arguably) less intuitive flavor of SQL.",
@@ -538,8 +547,8 @@
         },
         {
             "id": "NPM",
-            "x": 0.3149553144353859,
-            "y": 0.7949984521004787,
+            "x": 0.4492837622716377,
+            "y": 0.771542084945757,
             "type": "dynamic",
             "desc": [
                 "The one-stop shop for all things JavaScript!",
@@ -549,8 +558,8 @@
         },
         {
             "id": "RxJS",
-            "x": 0.13929949619683832,
-            "y": 0.9141820544754635,
+            "x": 0.22990979459110494,
+            "y": 0.8850721137324147,
             "type": "dynamic",
             "desc": [
                 "Angular's (old) clockwork.",
@@ -790,10 +799,14 @@
         },
         {
             "from": "Java",
-            "to": "java-cs-bridge"
+            "to": "java-cs-bridge-1"
         },
         {
-            "from": "java-cs-bridge",
+            "from": "java-cs-bridge-1",
+            "to": "java-cs-bridge-2"
+        },
+        {
+            "from": "java-cs-bridge-2",
             "to": "C#"
         },
         {
