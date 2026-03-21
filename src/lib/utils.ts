@@ -116,25 +116,18 @@ export class Map2D<K, V> {
         this.mapMap.get(k1)?.delete(k2);
     }
 
-    forEach(callback: (v: V, k1: K, k2: K) => void){
-        this.mapMap.forEach((inner, k1) => {
-            inner.forEach((v, k2) => {
-                callback(v, k1, k2);
-            })
-        })
+    *values() {
+        for( let inner of this.mapMap.values() )
+            for( let v of inner.values() )
+                yield v;
     }
 
-    values(): V[] {
-        let ret: V[] = [];
-        this.forEach(v => ret.push(v));
-        return ret;
+    *keys() {
+        for( let [k1, inner] of this.mapMap.entries() )
+            for( let k2 of inner.keys() )
+                yield [k1, k2] as [K, K];
     }
 
-    keys(): [K, K][] {
-        let ret: [K, K][] = [];
-        this.forEach((_, k1, k2) => ret.push([k1, k2]));
-        return ret;
-    }
 
     public get size(): number {
         let size = 0;
@@ -143,48 +136,6 @@ export class Map2D<K, V> {
         return size;
     }
 
-}
-
-/**
- * 2D set using a pair of keys.
- * @author Fasteroid
- */
-export class Set2D<K> {
-    private setSet: Map<K, Set<K>> = new Map<K, Set<K>>();
-
-    add(k1: K, k2: K){
-        let inner: Set<K>;
-        if(!this.setSet.has(k1)){
-            inner = new Set<K>();
-            this.setSet.set(k1, inner);
-        }
-        else {
-            inner = this.setSet.get(k1)!;
-        }
-        inner.add(k2);
-    }
-
-    has(k1: K, k2: K): boolean {
-        return this.setSet.get(k1)?.has(k2) ?? false;
-    }
-
-    delete(k1: K, k2: K){
-        this.setSet.get(k1)?.delete(k2);
-    }
-
-    forEach(callback: (k1: K, k2: K) => void){
-        this.setSet.forEach((inner, k1) => {
-            inner.forEach(k2 => {
-                callback(k1, k2);
-            })
-        })
-    }
-
-    keys(): [K, K][] {
-        let ret: [K, K][] = [];
-        this.forEach((k1, k2) => ret.push([k1, k2]));
-        return ret;
-    }
 }
 
 /**
@@ -218,7 +169,7 @@ export function die(msg: string): never {
 */
 export function SetOnce() {
     return function(target: any, key: string) {
-        let dirty = false;
+        let dirty = false; 
         let val = target[key];
         Object.defineProperty(target, key, {
             get: () => val,

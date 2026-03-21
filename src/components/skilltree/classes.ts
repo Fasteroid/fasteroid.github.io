@@ -33,9 +33,8 @@ export class SkillTreeEdge extends GraphEdge2 {
 
     public width: number = SkillTreeEdge.thin;
 
-    private _frame = () => {
-        this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2), SkillTreeEdge.thin, SkillTreeEdge.thick);
-        requestAnimationFrame(this._frame);
+    public override render(dt: number): void {
+        this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2) * dt, SkillTreeEdge.thin, SkillTreeEdge.thick);
     }
 
     public static readonly WHITE = new Color(1,1,1);
@@ -111,6 +110,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     private canMouseOver: boolean = true;
 
     private homePos?: {x: number, y: number};
+    private homeForceMul: number = 1;
     private _hasHomed: boolean = false;
     public get hasHomed() { return this._hasHomed; }
 
@@ -121,19 +121,25 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
             const homeY = this.homePos.y * h;
 
             if( Math.hypot( this.x - homeX, this.y - homeY ) < HOME_RADIUS ){
-                this._hasHomed = true;
+                this.homeForceMul -= 0.02;
+                if( this.homeForceMul <= 0 ){
+                    this._hasHomed = true;
+                    console.log("Node", this.id, "has homed."); 
+                    this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
+                    return;
+                }
+                
+                
                 this.vx *= 0.1;
                 this.vy *= 0.1;
-                // console.log("Node", this.id, "has homed."); 
-                // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
-                return;
             }
 
-            this.vx += (homeX - this.x) * 0.1;
-            this.vy += (homeY - this.y) * 0.1;
+            this.vx += (homeX - this.x) * 0.1 * this.manager.dt * this.homeForceMul;
+            this.vy += (homeY - this.y) * 0.1 * this.manager.dt * this.homeForceMul;
 
-            this.x = this.x * 0.8 + homeX * 0.2;
-            this.y = this.y * 0.8 + homeY * 0.2;
+            const alpha = Math.exp(-6 * this.manager.dt * this.homeForceMul);
+            this.x = this.x * (1-alpha) + homeX * alpha;
+            this.y = this.y * (1-alpha) + homeY * alpha;        
         }
     }
         
@@ -378,7 +384,7 @@ extends GraphManager2<
         this.simulation.force("gravity", (alpha: number) => {
             for( const node of this.nodes.values() ){
                 if( node instanceof SkillTreeDynamicNode ){
-                    node.vy += GRAVITY * alpha;
+                    node.vy += GRAVITY * alpha * this.dt;
                 }
             }
         });
@@ -396,16 +402,16 @@ extends GraphManager2<
                     const paddingY = NODE_PADDING * this.relativePadding;
 
                     if( node.x < paddingX ){
-                        node.vx += (paddingX - node.x) * PADDING_FORCE;
+                        node.vx += (paddingX - node.x) * PADDING_FORCE * this.dt;
                     }
                     if( node.x > w - paddingX ){
-                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE;
+                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE * this.dt;
                     }
                     if( node.y < paddingY ){
-                        node.vy += (paddingY - node.y) * PADDING_FORCE;
+                        node.vy += (paddingY - node.y) * PADDING_FORCE * this.dt;
                     }
                     if( node.y > h - paddingY ){
-                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE;
+                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE * this.dt;
                     }
 
                     node.doHomingForces(w, h);
@@ -424,7 +430,7 @@ extends GraphManager2<
 
                 if( node instanceof SkillTreeDynamicNode ){
                     const targetY = tierHeight * (node.tier + 0.5 + Y_START);
-                    node.vy += (targetY - node.y) * 0.03 * alpha;
+                    node.vy += (targetY - node.y) * 0.03 * alpha * this.dt;
                 }
 
             }
