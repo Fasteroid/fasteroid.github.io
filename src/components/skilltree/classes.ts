@@ -31,10 +31,15 @@ export class SkillTreeEdge extends GraphEdge2 {
     public static readonly thin  = 4;
     public static readonly thick = 9;
 
-    public width: number = SkillTreeEdge.thin;
+    public get shouldRender() {
+        return !(this.source.html.hidden || this.target.html.hidden);
+    }
+
+    private _width: number = SkillTreeEdge.thin;
+    public get width() { return this.shouldRender ? this._width : 0; }
 
     public override render(dt: number): void {
-        this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2) * dt, SkillTreeEdge.thin, SkillTreeEdge.thick);
+        this._width = clamp(this._width + (this.hovered ? 0.2 : -0.2) * dt, SkillTreeEdge.thin, SkillTreeEdge.thick);
     }
 
     public static readonly WHITE = new Color(1,1,1);
@@ -111,6 +116,7 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private homePos?: {x: number, y: number};
     private homeForceMul: number = 1;
+    
     private _hasHomed: boolean = false;
     public get hasHomed() { return this._hasHomed; }
 
@@ -124,8 +130,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
                 this.homeForceMul -= 0.02;
                 if( this.homeForceMul <= 0 ){
                     this._hasHomed = true;
-                    console.log("Node", this.id, "has homed."); 
-                    this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
+                    // console.log("Node", this.id, "has homed."); 
+                    // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
                     return;
                 }
                 
