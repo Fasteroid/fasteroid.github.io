@@ -686,10 +686,6 @@
             "to": "HTML"
         },
         {
-            "from": "Code.org / ES1 JavaScript",
-            "to": "CSS"
-        },
-        {
             "from": "HTML",
             "to": "CSS"
         },

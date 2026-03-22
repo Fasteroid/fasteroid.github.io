@@ -8,21 +8,11 @@ import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
 import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
 import { WebGLUtils } from '$lib/webgl/utils';
 
-function rand(): number {
-    return Math.random() * 2 - 1
-}
-
-function makeSafe(n: number){
-    if( isNaN(n) || !isFinite(n) ) return 0;
-    return n;
-}
-
 const NODE_PADDING   = 1;
-const NODE_MAX_VEL   = 80;
-const NODE_BOB_FORCE = 2;
 const GRAVITY        = 3;
 const PADDING_FORCE  = 0.1;
 const HOME_RADIUS    = 100;
+
 
 export class SkillTreeEdge extends GraphEdge2 {
 
@@ -30,6 +20,7 @@ export class SkillTreeEdge extends GraphEdge2 {
 
     public static readonly thin  = 4;
     public static readonly thick = 9;
+    public static readonly edgeAnimRate = 0.5;
 
     public get shouldRender() {
         return !(this.source.html.hidden || this.target.html.hidden);
@@ -39,7 +30,7 @@ export class SkillTreeEdge extends GraphEdge2 {
     public get width() { return this.shouldRender ? this._width : 0; }
 
     public override render(dt: number): void {
-        this._width = clamp(this._width + (this.hovered ? 0.2 : -0.2) * dt, SkillTreeEdge.thin, SkillTreeEdge.thick);
+        this._width = clamp(this._width + (this.hovered ? 1 : -1) * dt * SkillTreeEdge.edgeAnimRate, SkillTreeEdge.thin, SkillTreeEdge.thick);
     }
 
     public static readonly WHITE = new Color(1,1,1);
@@ -504,7 +495,7 @@ extends GraphManager2<
         }
 
     
-        this.simulation.velocityDecay(0.15);
+        this.simulation.velocityDecay(0.05);
         this.simulation.alphaDecay(0);
         this.simulation.alpha(0.25);
 
