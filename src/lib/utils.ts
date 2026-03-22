@@ -276,3 +276,52 @@ export async function loadDynamicJSON<T>(branch: string, file: string): Promise<
 
     return JSON.parse(json)
 }
+
+export class RollingAverage {
+    private buffer: number[] = [];
+    private ptr: number = 0;
+    private value: number | undefined = 0;
+    constructor(public readonly size: number) {}
+
+    /**
+     * Pushed a value into the buffer, up to a size of {@linkcode size}, then starts overwriting old values.
+     */
+    public push(value: number) {
+        if( this.buffer.length < this.size ){
+            this.buffer.push(value);
+        }
+        else {
+            this.buffer[this.ptr] = value;
+            this.ptr = (this.ptr + 1) % this.size;
+        }
+        this.value = undefined;
+    }
+
+    private compute() {
+        if( this.buffer.length === 0 ) return 0;
+        const sum = this.buffer.reduce((a, b) => a + b, 0);
+        return sum / this.buffer.length;
+    }
+
+    /**
+     * Gets (or computes) the average of the values in the buffer.
+     */
+    public get(): number {
+        return this.value ??= this.compute();
+    }
+}
+
+export class Derivative {
+    private lastValue!: number;
+
+    /**
+     * Pushes a value into the derivative calculator, and returns the derivative (change) since the last value was pushed.
+     */
+    public push(value: number, dt: number): number {
+        if( dt === 0 ) return 0; // bail
+        this.lastValue ??= value; // just in case; don't want undefined here.
+        const derivative = (value - this.lastValue) / dt;
+        this.lastValue = value;
+        return derivative;
+    }
+}

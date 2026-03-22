@@ -1,5 +1,4 @@
-import { clamp, Color } from '$lib/utils';
-import { Vec2 } from '$lib/vec2';
+import { clamp, Color, Derivative, RollingAverage } from '$lib/utils';
 import * as d3 from 'd3';
 import { GraphEdge2, GraphManager2, GraphNode2 } from '../graph/GraphManager2';
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
@@ -7,11 +6,14 @@ import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, Ski
 import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
 import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
 import { WebGLUtils } from '$lib/webgl/utils';
+import { dev } from '$app/environment';
 
 const NODE_PADDING   = 1;
 const GRAVITY        = 3;
 const PADDING_FORCE  = 0.1;
 const HOME_RADIUS    = 100;
+
+type Vec2 = [number, number]
 
 
 export class SkillTreeEdge extends GraphEdge2 {
@@ -181,26 +183,24 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         this.html.querySelector(".back")!.innerHTML = this.desc.join("<br><br>");
 
         // setupDragEvents
-        this.html.addEventListener("mouseover",() => {
+        this.html.addEventListener("pointerenter",() => {
             if( this.canMouseOver ){
                 this.canMouseOver = false;
-                setTimeout(() => {this.canMouseOver = true;}, 100);
+                setTimeout(() => {this.canMouseOver = true;}, 1000); // failsafe in case pointerleave doesn't fire (a node moving off the cursor while hovering will cause this)
+
+                // boop
+                this.vx += this.manager.mouse_dx * 0.3;
+                this.vy += this.manager.mouse_dy * 0.3;
             }
         });
 
-        this.html.addEventListener("mouseout",() => {
-            if( this.canMouseOver ){
-                this.canMouseOver = false;
-                setTimeout(() => {this.canMouseOver = true;}, 100);
-            }
+        this.html.addEventListener('pointerleave', () => {
+            setTimeout(() => {this.canMouseOver = true;}, 100);
         });
-        
-        this.html.addEventListener("mousedown",() => this.startDrag());
-        this.html.addEventListener("touchstart",() => this.startDrag());
 
-        document.addEventListener("mouseup",() => this.stopDrag());
-        document.addEventListener("touchend",() => this.stopDrag());
-        
+        document.addEventListener("pointerup", () => this.stopDrag());
+        this.html.addEventListener("pointerdown", () => { this.stopDrag(); this.startDrag() }); // stopDrag again just in case the first one didn't fire somehow 
+
         this.x = manager.nodeContainer.clientWidth * 0.5;
         this.y = 0;
 
@@ -350,7 +350,12 @@ extends GraphManager2<
         this.render(); // immediately rerender
     }
 
+    private readonly mouse_dxs = new RollingAverage(10);
+    private readonly mouse_dys = new RollingAverage(10);
+    private mouse_ticked: boolean = false;
 
+    public get mouse_dx() { return this.mouse_dxs.get(); }
+    public get mouse_dy() { return this.mouse_dys.get(); }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
 
@@ -373,7 +378,23 @@ extends GraphManager2<
             data
         );
 
+        const mouse_dx = new Derivative();
+        const mouse_dy = new Derivative();
 
+        const current_mouse_pos: Vec2 = [0, 0];
+    
+        document.addEventListener("pointermove", (e) => {
+            if( this.mouse_ticked ) return;
+            this.mouse_ticked = true;
+
+            current_mouse_pos[0] = e.clientX;
+            current_mouse_pos[1] = e.clientY;
+
+            this.transformDragEventToSimulationCoords(current_mouse_pos);
+
+            this.mouse_dxs.push( mouse_dx.push(current_mouse_pos[0], this.dt) );
+            this.mouse_dys.push( mouse_dy.push(current_mouse_pos[1], this.dt) );
+        })
 
         this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.3 / this.relativeDistance + 0.2, 1 ) )
 
@@ -523,19 +544,20 @@ extends GraphManager2<
 
     public override render() {
         super.render();
+        this.mouse_ticked = false;
 
+        // Thanks to Anthropic's Claude (and all programmers it learned from) for this more optimized GPU instanced drawing of edges.
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
         this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array( this.getRawEdgeData() ));
         
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-            
-        // Draw all edges with one instanced draw call!
-        // 6 vertices per edge, numEdges instances
+
+        // the '6' here = 6 verts per edge (2 tris)
         this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
     }
 
-    public transformDragEventToSimulationCoords(v: [number, number]) {
+    public transformDragEventToSimulationCoords(v: Vec2) {
         const thisRect = this.selfBox;
         const parentRect = this.parentBox;
         const style = this.selfComputedSize;

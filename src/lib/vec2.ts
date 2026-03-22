@@ -9,6 +9,8 @@ export type ImmutableVec2 = Omit<Vec2, 'add' | 'sub' | 'addV' | 'subV' | 'setTo'
 /**
  * NOTE: For memory efficiency, most of these methods self-modify.
  *       Access the 'copy' field to get a new one.
+ * 
+ * @deprecated
  */
 export class Vec2 {
 

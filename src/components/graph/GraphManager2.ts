@@ -1,6 +1,6 @@
 import type { SimulationLinkDatum, SimulationNodeDatum } from "d3";
 import type { GraphDataset, GraphEdgeData, GraphNodeData } from "./interfaces";
-import { clamp, Map2D } from "$lib/utils";
+import { clamp, Map2D, RollingAverage } from "$lib/utils";
 import { Panzoom } from "@fasteroid/panzoom-revamped";
 import * as d3 from "d3";
 
@@ -33,7 +33,7 @@ export abstract class GraphNode2 implements SimulationNodeDatum {
         manager.nodeContainer.appendChild(this.html);
     }
 
-    public render(_: number){
+    public render(dt: number){
         // I know I could use percent here, but that might make the text blurry.  This ensures it's always integer pixels.
         this.html.style.transform = `translate(
             ${Math.round(this.x)}px, 
@@ -187,17 +187,14 @@ export abstract class GraphManager2<
     private renderRequested: Promise<void> | undefined = undefined;
 
     private lastTick = performance.now();
-    private _dt: number = 0;
-    private dtLog: number[] = [];
+    private readonly _dt = new RollingAverage(60); // this worked pretty good for 4x slowdown via devtools
 
     private set dt(value: number){
         value = clamp(value, 0, 1); // if the tab is inactive for a while and then becomes active again, the first frame back will have giga dt.  clamp it.
-        this.dtLog.push(value);
-        if( this.dtLog.length > 30 ) this.dtLog.shift();
-        this._dt = this.dtLog.reduce( (a, b) => a + b, 0 ) / this.dtLog.length; // average of last 30 frames, to smooth out spikes.
+        this._dt.push(value);
     }
 
-    public get dt(): number { return this._dt; }
+    public get dt(): number { return this._dt.get(); }
     
     public render() {
         this.recalculateStyle();
