@@ -18,5 +18,10 @@
         "url": "https://soundcloud.com/fasteroid-1",
         "title": "SoundCloud",
         "icon": "assets/icons/soundcloud.svg"
+    },
+    {
+        "url": "https://www.shadertoy.com/user/Fasteroid",
+        "title": "Shadertoy",
+        "icon": "assets/icons/shadertoy.svg"
     }
 ]
