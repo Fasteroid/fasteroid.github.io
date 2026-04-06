@@ -7,21 +7,26 @@
 
 <script lang="ts">
     import { browser }                     from "$app/environment";
-    import { SoundcloudGraphManager }      from "./classes";
     import type { SoundcloudGraphDataset } from "$lib/soundcloud/types_native";
     import { loadDynamicJSON } from "$lib/utils";
 
     if( browser ) {
 
-        loadDynamicJSON<SoundcloudGraphDataset>("data.soundcloud", "graph_soundcloud_v2.json").then( dataset => {
-            new SoundcloudGraphManager(
+        ( async () => {
+            const dataset = await loadDynamicJSON<SoundcloudGraphDataset>("data.soundcloud", "graph_soundcloud_v2.json")
+
+            const { SoundcloudGraphManager } = await import( "./classes" );
+
+            console.log(SoundcloudGraphManager)
+
+            window.manager = new SoundcloudGraphManager(
                 document.getElementById("template-node")!,
                 document.querySelector(".node-container")!,
                 document.querySelector(".lines-container")!,
-                dataset,
+                dataset
             );
-        } )
-        
+        } )();
+
     }
 </script>
 

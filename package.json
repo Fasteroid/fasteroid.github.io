@@ -29,11 +29,12 @@
 	"dependencies": {
 		"@fasteroid/panzoom-revamped": "^11.0.0",
 		"@sveltejs/adapter-static": "^3.0.0",
+		"@types/colorthief": "^2.6.1",
 		"@types/d3": "^7.4.3",
-		"colorthief": "^2.2.0",
+		"colorthief": "^3.3.1",
 		"d3": "^7.9.0",
 		"panzoom": "^9.4.3",
-		"sass": "1.32.13",
+		"sass": "1.65",
 		"typescript-to-json-schema": "^0.6.1"
 	}
 }
