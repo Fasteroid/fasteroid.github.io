@@ -12,6 +12,7 @@ import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
 import { Color } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
+import * as d3 from "d3";
 
 const sqrt = Math.sqrt
 const max = Math.max
@@ -55,6 +56,10 @@ export class SoundcloudEdge extends GraphEdge2 {
 
     public get width() {
         return max(this.target.edgeWidth, this.source.edgeWidth) * 3;
+    }
+
+    public get stress() {
+        return ( this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2
     }
 
     public readonly color: Color = Color.BLACK;
@@ -123,7 +128,7 @@ export class SoundcloudNode extends GraphNode2 {
     // artists with large followings need the extra circumference
     private _trueDiameter!: number;
     public get trueDiameter(){
-        return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
+        return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
     }
 
     private _palette?: Color[];
@@ -267,6 +272,9 @@ export class SoundcloudNode extends GraphNode2 {
 
         super(manager as unknown as GraphManager2<GraphNode2, GraphEdge2>);
 
+        this.x = Math.random() * 1000 - 500;
+        this.y = Math.random() * 1000 - 500;
+
         const {artist, track} = data;
 
         // this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
@@ -285,7 +293,7 @@ export class SoundcloudNode extends GraphNode2 {
         const img = this.html.querySelector("img") as HTMLImageElement;
 
         img.crossOrigin = "Anonymous";
-        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
+        img.src = /*artist.avatar_url ?? */`${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', this.onClick);
         img.addEventListener('touchend', this.onClick);
@@ -308,7 +316,6 @@ export class SoundcloudNode extends GraphNode2 {
 
         addHyperlinks(text_bio); // make the links clickable; cursed.
         
-
         img.addEventListener('load', async () => {
             const colors = await getPalette(img, {worker: true, colorCount: 5});
             if( !colors ) return;
@@ -414,7 +421,18 @@ export class SoundcloudGraphManager extends GraphManager2<
             data,
             true
         );
-        (window as any).manager = this;
+
+        this.simulation.force('center', d3.forceCenter(0, 0) );
+        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -50 * d.trueDiameter ) );
+        this.simulation.force('collisions', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.trueDiameter * 1.1 / 4).strength(1) );
+        this.simulation.force("x", d3.forceX().strength(0.6))
+        this.simulation.force("y", d3.forceY().strength(0.6))
+
+        this.simulation.velocityDecay(0.2);
+        this.simulation.alpha(0.05);
+        this.simulation.alphaDecay(0);
+
+
         this.handleResize();
 
         this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
