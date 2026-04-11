@@ -13,6 +13,8 @@ import { Color } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
+import type { Panzoom } from "@fasteroid/panzoom-revamped";
+import type { PanzoomTransform } from "@fasteroid/panzoom-revamped/transform";
 
 const sqrt = Math.sqrt
 const max = Math.max
@@ -193,7 +195,6 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     private anim?: Animation;
-    private anim2?: Animation;
     public setFocus(is: boolean){
         this._focused = is;
 
@@ -265,6 +266,8 @@ export class SoundcloudNode extends GraphNode2 {
         this.manager.setSelectedNode(this);
     }
 
+    private marker: HTMLElement;
+
     constructor(
         public readonly manager: SoundcloudGraphManager, 
         public readonly data: Readonly<SoundcloudNodeData>
@@ -328,7 +331,10 @@ export class SoundcloudNode extends GraphNode2 {
                 return Color.fromHSV(hsv.h, hsv.s, hsv.v);
             } )
         });
-        
+
+        this.marker = document.createElement("div");
+            this.marker.style = "pointer-events: none; width: 10px; height: 10px; background-color: red; position: absolute;"
+        document.body.appendChild(this.marker);
         
     }
 
@@ -347,15 +353,13 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     public override render(){
-        const center = {x: 0, y: 0}
         const size   = this.manager.selfComputedSize;
 
-        this.html.style.transform = `
-        translate(
-            ${this.x - center.x + size.width / 2}px, 
-            ${this.y - center.y + size.height / 2}px
-        ) 
-        `;
+        this.html.style.transform = `translate(${this.x + size.width / 2}px,${this.y + size.height / 2}px)`;
+
+        let [x, y] = this.manager.toDocumentPos(this.x, this.y);
+        this.marker.style.top = y+"px";
+        this.marker.style.left = x+"px";
     }
     
 }
@@ -366,6 +370,8 @@ export class SoundcloudGraphManager extends GraphManager2<
     SoundcloudNodeData,
     SoundcloudEdgeData
 > {
+
+    declare panzoom: Panzoom;
 
     protected get frametime(){
         return 30;
@@ -379,6 +385,8 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     private focusedNode:  SoundcloudNode | null = null;
     private selectedNode: SoundcloudNode | null = null;
+
+    private panzoomTransform: PanzoomTransform = {x: 0, y: 0, zoom: 1};
     // private firstDragTransform: Transform | null = null;
 
     public readonly walked = new Set<SoundcloudNode>();
@@ -422,13 +430,14 @@ export class SoundcloudGraphManager extends GraphManager2<
             true
         );
 
+        this.panzoom.onTransformChanged( (transform) => this.panzoomTransform = transform );
+
         this.simulation.force('center', d3.forceCenter(0, 0) );
         this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -50 * d.trueDiameter ) );
-        this.simulation.force('collisions', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.trueDiameter * 1.1 / 4).strength(1) );
         this.simulation.force("x", d3.forceX().strength(0.6))
         this.simulation.force("y", d3.forceY().strength(0.6))
 
-        this.simulation.velocityDecay(0.2);
+        this.simulation.velocityDecay(0.4);
         this.simulation.alpha(0.05);
         this.simulation.alphaDecay(0);
 
@@ -538,5 +547,17 @@ export class SoundcloudGraphManager extends GraphManager2<
         document.body.removeChild(element);
     }
     
+    private toDocumentPos_buffer: [number, number] = [0, 0];
+    public toDocumentPos(x: number, y: number) {
+        x *= this.panzoomTransform.zoom;
+        y *= this.panzoomTransform.zoom;
+        x += this.panzoomTransform.x;
+        y += this.panzoomTransform.y;
+        x += this.parentBox.x + this.parentBox.width / 2;
+        y += this.parentBox.y + this.parentBox.height / 2;
+        this.toDocumentPos_buffer[0] = x;
+        this.toDocumentPos_buffer[1] = y;
+        return this.toDocumentPos_buffer;
+    }
 
 }
