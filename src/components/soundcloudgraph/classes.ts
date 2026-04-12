@@ -9,7 +9,7 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { Color, Derivative } from "$lib/utils";
+import { clamp, Color, Derivative, lerp } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -33,6 +33,10 @@ const BASE_NODE_SIZE              = 48;   // self-explanatory
 const UNFOCUS_DRAG_DIST           = 50;  // how far to drag before unfocusing; allows micro-movements during selection
 
 const NODE_SUPER_RESOLUTION       = 4;
+
+const FOCUS_TIME = 60; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
+
+const ZERO_VEC: readonly [number, number] = [0, 0];
 
 function getZoomScaleMul(){
     return document.body.clientWidth * 0.065
@@ -163,7 +167,7 @@ export class SoundcloudNode extends GraphNode2 {
         if( !placeholder || !this.data.track ) return;
 
         const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
-        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
+        // iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
         iframe.hidden = false;
         placeholder.replaceWith(iframe);
 
@@ -195,6 +199,9 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     private anim?: Animation;
+    /**
+     * Shows / hides soundcloud overlay
+     */
     public setFocus(is: boolean){
         this._focused = is;
 
@@ -235,6 +242,9 @@ export class SoundcloudNode extends GraphNode2 {
         }
     }
 
+    /**
+     * Decides if this node should be playing music or not
+     */
     public setSelect(is: boolean){
         this._selected = is;
 
@@ -371,6 +381,8 @@ export class SoundcloudNode extends GraphNode2 {
 
 
     public override render(){
+        // const [cx, cy] = this.manager.offsetPos;
+
         const isOutside = this.isOutsideViewport();
         const skipRender = isOutside && this.html.hidden;
         this.html.hidden = isOutside;
@@ -399,6 +411,7 @@ export class SoundcloudGraphManager extends GraphManager2<
     public  held:          boolean = false;
     public  dragging:      boolean = false;
     private focusChanged:  boolean = false;
+    private focusStrength: number  = 0;
 
     public  preventUnfocus_: boolean = false;
 
@@ -415,6 +428,9 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     public readonly templateEmbed: HTMLIFrameElement;
 
+    /**
+     * Sets the node as selected and notes it on the {@link SoundcloudGraphManager | manager}
+     */
     public setSelectedNode(node: SoundcloudNode | null){
         if( node === this.selectedNode ) return;
         this.selectedNode?.setSelect(false);
@@ -422,13 +438,23 @@ export class SoundcloudGraphManager extends GraphManager2<
         node?.setSelect(true);
     }
 
+    /**
+     * Selects a node and moves the panzoom
+     */
     public setFocusedNode(node: SoundcloudNode | null){
 
         if( node === this.focusedNode ) return;
-        
-        (window as any).focusedNode = node;
 
-        throw new Error("todo");
+        this.focusedNode?.setFocus(false);
+        
+        this.focusedNode = node;
+        this.focusChanged = true;
+        this.focusStrength = 0;
+
+        if( node ){
+            node.setFocus(true);
+            this.setSelectedNode(node);
+        }
 
     }
 
@@ -453,7 +479,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         );
 
         this.panzoom.onTransformChanged( (transform) => {
-            this._panzoomTransform = transform 
+            this._panzoomTransform = transform;
         } );
 
         this.simulation.force('center', d3.forceCenter(0, 0) );
@@ -570,9 +596,38 @@ export class SoundcloudGraphManager extends GraphManager2<
             element.click();
         document.body.removeChild(element);
     }
+
+    public override render(): void {
+        this.focusStrength = clamp(this.focusStrength + this.dt, 0, FOCUS_TIME);
+        if( this.focusedNode ) {
+
+            const fac = this.focusStrength / FOCUS_TIME;
+
+            this.panzoom.editTransform( (transform) => {
+                transform.zoom = lerp( transform.zoom, getZoomScaleMul() * 4 / this.focusedNode!.diameter, fac * 0. );
+                transform.x    = lerp( transform.x, -this.focusedNode!.x * transform.zoom, fac );
+                transform.y    = lerp( transform.y, -this.focusedNode!.y * transform.zoom, fac );
+            } )
+        }
+
+
+        super.render();
+    }
     
+    private offsetPos_buffer: [number, number] = [0, 0];
+    public get offsetPos(): [number, number] {
+        if( !this.focusedNode ) {
+            this.offsetPos_buffer[0] = 0;
+            this.offsetPos_buffer[1] = 0;
+        }
+        else {
+            this.offsetPos_buffer[0] = this.focusedNode.x;
+            this.offsetPos_buffer[1] = this.focusedNode.y;
+        }
+        return this.offsetPos_buffer;
+    }
+
     private toDocumentPos_buffer: [number, number] = [0, 0];
-    
     public toDocumentPos(x: number, y: number) {
         x *= this._panzoomTransform.zoom;
         y *= this._panzoomTransform.zoom;

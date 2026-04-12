@@ -194,6 +194,9 @@ export abstract class GraphManager2<
         this._dt.push(value);
     }
 
+    /**
+     * Measured in sixtieths of a second.
+     */
     public get dt(): number { return this._dt.get(); }
     
     public render() {
@@ -213,7 +216,7 @@ export abstract class GraphManager2<
     public requestRender() {
         if( this.renderRequested ) return;
 
-        this.dt = ( performance.now() - this.lastTick ) * 0.06;
+        this.dt = ( performance.now() - this.lastTick ) * 0.06; // same as dividing by (1000ms / 60fps)
         this.lastTick = performance.now();
 
         this.renderRequested = new Promise( (resolve) => {
@@ -223,6 +226,6 @@ export abstract class GraphManager2<
                 resolve();
             });
         });
-    }   
+    }
 
 }

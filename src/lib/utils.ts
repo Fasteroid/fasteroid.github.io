@@ -84,6 +84,10 @@ export function clamp(n: number, min: number, max: number): number {
     return ret;
 }
 
+export function lerp(a: number, b: number, t: number): number {
+    return a * (1 - t) + b * t;
+}
+
 /**
  * 2D map using a pair of keys.
  * @author Fasteroid
