@@ -9,7 +9,7 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { Color } from "$lib/utils";
+import { Color, Derivative } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -352,14 +352,33 @@ export class SoundcloudNode extends GraphNode2 {
         }
     }
 
+    public isOutsideViewport() {
+        const { zoom, x: panX, y: panY } = this.manager.panzoomTransform;
+        const { width, height } = this.manager.parentBox;
+    
+        const lx = this.x * zoom + panX;
+        const ly = this.y * zoom + panY;
+        const halfW = width / 2;
+        const halfH = height / 2;
+    
+        return (
+            lx + this.diameter < -halfW ||
+            lx - this.diameter >  halfW ||
+            ly + this.diameter < -halfH ||
+            ly - this.diameter >  halfH
+        );
+    }
+
+
     public override render(){
+        const isOutside = this.isOutsideViewport();
+        const skipRender = isOutside && this.html.hidden;
+        this.html.hidden = isOutside;
+    
+        if (skipRender) return;
+    
         const size   = this.manager.selfComputedSize;
-
         this.html.style.transform = `translate(${this.x + size.width / 2}px,${this.y + size.height / 2}px)`;
-
-        let [x, y] = this.manager.toDocumentPos(this.x, this.y);
-        this.marker.style.top = y+"px";
-        this.marker.style.left = x+"px";
     }
     
 }
@@ -386,7 +405,10 @@ export class SoundcloudGraphManager extends GraphManager2<
     private focusedNode:  SoundcloudNode | null = null;
     private selectedNode: SoundcloudNode | null = null;
 
-    private panzoomTransform: PanzoomTransform = {x: 0, y: 0, zoom: 1};
+    private _panzoomTransform: PanzoomTransform = {x: 0, y: 0, zoom: 1};
+    public get panzoomTransform() {
+        return this._panzoomTransform as Readonly<PanzoomTransform>;
+    }
     // private firstDragTransform: Transform | null = null;
 
     public readonly walked = new Set<SoundcloudNode>();
@@ -430,7 +452,9 @@ export class SoundcloudGraphManager extends GraphManager2<
             true
         );
 
-        this.panzoom.onTransformChanged( (transform) => this.panzoomTransform = transform );
+        this.panzoom.onTransformChanged( (transform) => {
+            this._panzoomTransform = transform 
+        } );
 
         this.simulation.force('center', d3.forceCenter(0, 0) );
         this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -50 * d.trueDiameter ) );
@@ -548,11 +572,12 @@ export class SoundcloudGraphManager extends GraphManager2<
     }
     
     private toDocumentPos_buffer: [number, number] = [0, 0];
+    
     public toDocumentPos(x: number, y: number) {
-        x *= this.panzoomTransform.zoom;
-        y *= this.panzoomTransform.zoom;
-        x += this.panzoomTransform.x;
-        y += this.panzoomTransform.y;
+        x *= this._panzoomTransform.zoom;
+        y *= this._panzoomTransform.zoom;
+        x += this._panzoomTransform.x;
+        y += this._panzoomTransform.y;
         x += this.parentBox.x + this.parentBox.width / 2;
         y += this.parentBox.y + this.parentBox.height / 2;
         this.toDocumentPos_buffer[0] = x;
