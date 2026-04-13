@@ -9,7 +9,7 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { clamp, Color, Derivative, lerp } from "$lib/utils";
+import { clamp, Color, Derivative, lerp, logerp } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -150,12 +150,10 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     public playNextNode() {
-        const TARGET_ZOOM = 1.5;
-
         const choices = getShuffledCopy(this.neighbors); // random walk to the next track
         const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
 
-        throw new Error("todo");
+        this.manager.setFocusedNode( choice ?? choices[0] ?? null ); // if there are no neighbors, just unfocus
     }
 
 
@@ -184,6 +182,10 @@ export class SoundcloudNode extends GraphNode2 {
             window.SC.Widget.Events.FINISH,
             this.playNextNode.bind(this)
         )
+
+        // DEBUG
+        setTimeout( () => this.playNextNode(), 3000 )
+            
     }
 
     /** When it's done fading in */
@@ -597,19 +599,58 @@ export class SoundcloudGraphManager extends GraphManager2<
         document.body.removeChild(element);
     }
 
-    public override render(): void {
+    public override render(): void { 
         this.focusStrength = clamp(this.focusStrength + this.dt, 0, FOCUS_TIME);
         if( this.focusedNode ) {
+            const factor = this.focusStrength / FOCUS_TIME;
+            const node   = this.focusedNode;
 
-            const fac = this.focusStrength / FOCUS_TIME;
+            // COMMENT(fasteroid):
+            // after being given lots of reference code, claude sonnet came up with this math. 
+            // idk wtf it's doing, but it makes the zoom look good so we'll stick with it.
 
-            this.panzoom.editTransform( (transform) => {
-                transform.zoom = lerp( transform.zoom, getZoomScaleMul() * 4 / this.focusedNode!.diameter, fac * 0. );
-                transform.x    = lerp( transform.x, -this.focusedNode!.x * transform.zoom, fac );
-                transform.y    = lerp( transform.y, -this.focusedNode!.y * transform.zoom, fac );
-            } )
+            // Snapshot the node's current screen position BEFORE mutating the transform.
+            // (simToDoc reads the live transform, so any mutations would corrupt this.)
+            const [nodeDocX, nodeDocY] = this.simToDoc(node.x, node.y);
+    
+            // The goal of panning is to pull the node toward the viewport center.
+            // Measure how far off-center the node currently is, in document (screen) space.
+            const centerX = this.parentBox.x + this.parentBox.width  / 2;
+            const centerY = this.parentBox.y + this.parentBox.height / 2;
+            const panErrX = nodeDocX - centerX;
+            const panErrY = nodeDocY - centerY;
+    
+            this.panzoom.editTransform((transform) => {
+                const targetZoom = 4 * getZoomScaleMul() / node.diameter;
+                const newZoom = lerp(transform.zoom, targetZoom, factor);
+    
+                // How much are we scaling the canvas this frame?
+                const zoomFactor = newZoom / transform.zoom;
+    
+                // When the canvas scales, every point drifts outward from the viewport center
+                // by a factor of (zoomFactor - 1). Compute how far the node drifts in child space.
+                // (child space = screen-relative but pre-translation, so just sim * zoom, no x/y offset)
+                const nodeChildX = node.x * transform.zoom;
+                const nodeChildY = node.y * transform.zoom;
+                const zoomErrX = nodeChildX * (zoomFactor - 1);
+                const zoomErrY = nodeChildY * (zoomFactor - 1);
+    
+                transform.zoom = newZoom;
+    
+                // Cancel the drift caused by zooming, so the node stays
+                // stationary on screen during the zoom step (same technique as doWheelZoom).
+                transform.x -= zoomErrX;
+                transform.y -= zoomErrY;
+    
+                // Independently, nudge the node a small step toward viewport center.
+                // Because we already canceled zoom drift above, this is now a pure pan —
+                // the two corrections don't interfere with each other.
+                transform.x -= panErrX * factor;
+                transform.y -= panErrY * factor;
+            });
+
+
         }
-
 
         super.render();
     }
@@ -627,17 +668,38 @@ export class SoundcloudGraphManager extends GraphManager2<
         return this.offsetPos_buffer;
     }
 
-    private toDocumentPos_buffer: [number, number] = [0, 0];
-    public toDocumentPos(x: number, y: number) {
+    private simToDoc_buffer: [number, number] = [0, 0];
+    public simToDoc(x: number, y: number) {
         x *= this._panzoomTransform.zoom;
         y *= this._panzoomTransform.zoom;
         x += this._panzoomTransform.x;
         y += this._panzoomTransform.y;
         x += this.parentBox.x + this.parentBox.width / 2;
         y += this.parentBox.y + this.parentBox.height / 2;
-        this.toDocumentPos_buffer[0] = x;
-        this.toDocumentPos_buffer[1] = y;
-        return this.toDocumentPos_buffer;
+        this.simToDoc_buffer[0] = x;
+        this.simToDoc_buffer[1] = y;
+        return this.simToDoc_buffer;
+    }
+    
+
+    private docToChild_buffer: [number, number] = [0, 0];
+    public docToChild(x: number, y: number) {
+        const bounds = this.parentBox;
+        this.docToChild_buffer[0] = x - bounds.x - bounds.width / 2 - this._panzoomTransform.x;
+        this.docToChild_buffer[1] = y - bounds.y - bounds.height / 2 - this._panzoomTransform.y;
+        return this.docToChild_buffer;
     }
 
+    private simToChild_buffer: [number, number] = [0, 0];
+    public simToChild(x: number, y: number) {
+        x = x * this._panzoomTransform.zoom;
+        y = y * this._panzoomTransform.zoom;
+        this.simToChild_buffer[0] = x;
+        this.simToChild_buffer[1] = y;
+        return this.simToChild_buffer;
+    }
+
+
 }
+
+

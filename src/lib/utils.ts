@@ -88,6 +88,11 @@ export function lerp(a: number, b: number, t: number): number {
     return a * (1 - t) + b * t;
 }
 
+export function logerp(a: number, b: number, t: number) {
+    return a * Math.pow(b / a, t);
+}
+  
+
 /**
  * 2D map using a pair of keys.
  * @author Fasteroid
