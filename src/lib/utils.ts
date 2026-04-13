@@ -88,10 +88,21 @@ export function lerp(a: number, b: number, t: number): number {
     return a * (1 - t) + b * t;
 }
 
-export function logerp(a: number, b: number, t: number) {
-    return a * Math.pow(b / a, t);
+/**
+ * Damped harmonic oscillator, as an easing function.  Bakes one with the constants precomputed.
+ * @author Claude Sonnet 4.6, Github Copilot, Fasteroid
+ */
+export function makeHarmonicOscillator(damping = 0.35, frequency = 12) {
+    const wd       = frequency * Math.sqrt(1 - damping * damping);
+    const decay    = damping * frequency;
+    const sinScale = damping / Math.sqrt(1 - damping * damping);
+
+    const f1 = (t: number) => 1 - Math.exp(-decay * t) * (Math.cos(wd * t) + sinScale * Math.sin(wd * t));
+    const offset = f1(0);
+    const stretch = f1(1) - offset;
+    return (t: number) => (f1(t) - offset) / stretch;
 }
-  
+
 
 /**
  * 2D map using a pair of keys.

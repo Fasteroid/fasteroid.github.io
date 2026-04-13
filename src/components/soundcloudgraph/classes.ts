@@ -2,14 +2,12 @@
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types_native";
 import { base } from "$app/paths";
-import { Vec2 } from "$lib/vec2";
-import type { ImmutableVec2 } from "$lib/vec2"
 import { addHyperlinks } from "./url-adder";
 import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { clamp, Color, Derivative, lerp, logerp } from "$lib/utils";
+import { Color, lerp, makeHarmonicOscillator } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -34,7 +32,10 @@ const UNFOCUS_DRAG_DIST           = 50;  // how far to drag before unfocusing; a
 
 const NODE_SUPER_RESOLUTION       = 4;
 
-const FOCUS_TIME = 60; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
+const FOCUS_TIME = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
+
+const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
+const EASE_FN = (t: number) => OSCILLATOR(t ** 2);
 
 const ZERO_VEC: readonly [number, number] = [0, 0];
 
@@ -122,7 +123,7 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     private _diameter!: number;
-    public get diameter(){
+    public get radius(){
         return this._diameter ??= (
             BASE_NODE_SIZE +                       // base size
             this.data.artist.likes_count * LIKES_SIZE_MUL +
@@ -134,7 +135,7 @@ export class SoundcloudNode extends GraphNode2 {
     // artists with large followings need the extra circumference
     private _trueDiameter!: number;
     public get trueDiameter(){
-        return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
+        return this._trueDiameter ??= max(this.radius * 2, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
     }
 
     private _palette?: Color[];
@@ -300,7 +301,7 @@ export class SoundcloudNode extends GraphNode2 {
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
         // const pixelPerfectDiameter = Math.round( this.diameter * BASE_NODE_SIZE / NODE_SUPER_RESOLUTION ) * NODE_SUPER_RESOLUTION / BASE_NODE_SIZE
-        this.html.style.setProperty('--node-scale', `${this.diameter / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
+        this.html.style.setProperty('--node-scale', `${this.radius / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
 
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
@@ -374,10 +375,10 @@ export class SoundcloudNode extends GraphNode2 {
         const halfH = height / 2;
     
         return (
-            lx + this.diameter < -halfW ||
-            lx - this.diameter >  halfW ||
-            ly + this.diameter < -halfH ||
-            ly - this.diameter >  halfH
+            lx + this.radius * 2 < -halfW ||
+            lx - this.radius * 2 >  halfW ||
+            ly + this.radius * 2 < -halfH ||
+            ly - this.radius * 2 >  halfH
         );
     }
 
@@ -412,8 +413,11 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     public  held:          boolean = false;
     public  dragging:      boolean = false;
-    private focusChanged:  boolean = false;
-    private focusStrength: number  = 0;
+
+    private focusChanged:   boolean = false;
+    private focusTime:  number  = 0;
+    /** snapshot of {@linkcode panzoomTransform} last time {@linkcode focusTime} was 0 */
+    private focusStart: PanzoomTransform | null = null;
 
     public  preventUnfocus_: boolean = false;
 
@@ -451,7 +455,8 @@ export class SoundcloudGraphManager extends GraphManager2<
         
         this.focusedNode = node;
         this.focusChanged = true;
-        this.focusStrength = 0;
+        this.focusTime = 0;
+        this.focusStart = { ...this.panzoomTransform };
 
         if( node ){
             node.setFocus(true);
@@ -485,7 +490,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         } );
 
         this.simulation.force('center', d3.forceCenter(0, 0) );
-        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -50 * d.trueDiameter ) );
+        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -30 * d.trueDiameter ) );
         this.simulation.force("x", d3.forceX().strength(0.6))
         this.simulation.force("y", d3.forceY().strength(0.6))
 
@@ -600,57 +605,24 @@ export class SoundcloudGraphManager extends GraphManager2<
     }
 
     public override render(): void { 
-        this.focusStrength = clamp(this.focusStrength + this.dt, 0, FOCUS_TIME);
-        if( this.focusedNode ) {
-            const factor = this.focusStrength / FOCUS_TIME;
-            const node   = this.focusedNode;
+        this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
 
-            // COMMENT(fasteroid):
-            // after being given lots of reference code, claude sonnet came up with this math. 
-            // idk wtf it's doing, but it makes the zoom look good so we'll stick with it.
+        if( this.focusedNode ){
+            const node = this.focusedNode;
 
-            // Snapshot the node's current screen position BEFORE mutating the transform.
-            // (simToDoc reads the live transform, so any mutations would corrupt this.)
-            const [nodeDocX, nodeDocY] = this.simToDoc(node.x, node.y);
+            const t = this.focusTime / FOCUS_TIME;
+            const curved_t = EASE_FN(t);
     
-            // The goal of panning is to pull the node toward the viewport center.
-            // Measure how far off-center the node currently is, in document (screen) space.
-            const centerX = this.parentBox.x + this.parentBox.width  / 2;
-            const centerY = this.parentBox.y + this.parentBox.height / 2;
-            const panErrX = nodeDocX - centerX;
-            const panErrY = nodeDocY - centerY;
+            const targetZoom = 4 * getZoomScaleMul() / node.radius;
+            const targetX = -node.x * targetZoom;
+            const targetY = -node.y * targetZoom;
     
             this.panzoom.editTransform((transform) => {
-                const targetZoom = 4 * getZoomScaleMul() / node.diameter;
-                const newZoom = lerp(transform.zoom, targetZoom, factor);
-    
-                // How much are we scaling the canvas this frame?
-                const zoomFactor = newZoom / transform.zoom;
-    
-                // When the canvas scales, every point drifts outward from the viewport center
-                // by a factor of (zoomFactor - 1). Compute how far the node drifts in child space.
-                // (child space = screen-relative but pre-translation, so just sim * zoom, no x/y offset)
-                const nodeChildX = node.x * transform.zoom;
-                const nodeChildY = node.y * transform.zoom;
-                const zoomErrX = nodeChildX * (zoomFactor - 1);
-                const zoomErrY = nodeChildY * (zoomFactor - 1);
-    
-                transform.zoom = newZoom;
-    
-                // Cancel the drift caused by zooming, so the node stays
-                // stationary on screen during the zoom step (same technique as doWheelZoom).
-                transform.x -= zoomErrX;
-                transform.y -= zoomErrY;
-    
-                // Independently, nudge the node a small step toward viewport center.
-                // Because we already canceled zoom drift above, this is now a pure pan —
-                // the two corrections don't interfere with each other.
-                transform.x -= panErrX * factor;
-                transform.y -= panErrY * factor;
+                transform.zoom = lerp(this.focusStart!.zoom, targetZoom, curved_t);
+                transform.x    = lerp(this.focusStart!.x, targetX, curved_t);
+                transform.y    = lerp(this.focusStart!.y, targetY, curved_t);
             });
-
-
-        }
+        } 
 
         super.render();
     }
