@@ -34,8 +34,10 @@ const NODE_SUPER_RESOLUTION       = 4;
 
 const FOCUS_TIME = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
+
+// technically this easing isn't physically accurate, but to do what I actually want I'd need to implement RK4 and tune a fuckton of parameters.  Close enough.
 const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
-const EASE_FN = (t: number) => OSCILLATOR(t ** 2);
+const EASE_FN = (t: number) => OSCILLATOR(t ** 1.5);
 
 const ZERO_VEC: readonly [number, number] = [0, 0];
 
@@ -107,23 +109,8 @@ export class SoundcloudNode extends GraphNode2 {
         return this._edgeWidth;
     }
 
-    private _fewFollowingMul!: number;
-    public get fewFollowingMul(){
-        return (
-            this._fewFollowingMul ??= 1 / ( // only calculate it once
-                min(
-                    0.1 * this.edges.reduce<number>( 
-                        (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 
-                        0 
-                    ),
-                    4
-                )
-            )
-        );
-    }
-
     private _diameter!: number;
-    public get radius(){
+    public get diameter(){
         return this._diameter ??= (
             BASE_NODE_SIZE +                       // base size
             this.data.artist.likes_count * LIKES_SIZE_MUL +
@@ -135,7 +122,7 @@ export class SoundcloudNode extends GraphNode2 {
     // artists with large followings need the extra circumference
     private _trueDiameter!: number;
     public get trueDiameter(){
-        return this._trueDiameter ??= max(this.radius * 2, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
+        return this._trueDiameter ??= max(this.diameter, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
     }
 
     private _palette?: Color[];
@@ -185,7 +172,7 @@ export class SoundcloudNode extends GraphNode2 {
         )
 
         // DEBUG
-        setTimeout( () => this.playNextNode(), 3000 )
+        // setTimeout( () => this.playNextNode(), 3000 )
             
     }
 
@@ -301,7 +288,7 @@ export class SoundcloudNode extends GraphNode2 {
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
         // const pixelPerfectDiameter = Math.round( this.diameter * BASE_NODE_SIZE / NODE_SUPER_RESOLUTION ) * NODE_SUPER_RESOLUTION / BASE_NODE_SIZE
-        this.html.style.setProperty('--node-scale', `${this.radius / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
+        this.html.style.setProperty('--node-scale', `${this.diameter / (BASE_NODE_SIZE * NODE_SUPER_RESOLUTION)}`);
 
         (this.html.querySelector(".text-main")! as HTMLDivElement).innerText = artist.username;
 
@@ -375,10 +362,10 @@ export class SoundcloudNode extends GraphNode2 {
         const halfH = height / 2;
     
         return (
-            lx + this.radius * 2 < -halfW ||
-            lx - this.radius * 2 >  halfW ||
-            ly + this.radius * 2 < -halfH ||
-            ly - this.radius * 2 >  halfH
+            lx + this.diameter * 0.5 * this.manager.panzoomTransform.zoom < -halfW ||
+            lx - this.diameter * 0.5 * this.manager.panzoomTransform.zoom >  halfW ||
+            ly + this.diameter * 0.5 * this.manager.panzoomTransform.zoom < -halfH ||
+            ly - this.diameter * 0.5 * this.manager.panzoomTransform.zoom >  halfH
         );
     }
 
@@ -490,7 +477,8 @@ export class SoundcloudGraphManager extends GraphManager2<
         } );
 
         this.simulation.force('center', d3.forceCenter(0, 0) );
-        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -30 * d.trueDiameter ) );
+        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -25 * d.trueDiameter ) );
+        this.simulation.force('collision', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.diameter * 0.25 ).strength(0.8) );
         this.simulation.force("x", d3.forceX().strength(0.6))
         this.simulation.force("y", d3.forceY().strength(0.6))
 
@@ -605,6 +593,8 @@ export class SoundcloudGraphManager extends GraphManager2<
     }
 
     public override render(): void { 
+        if(Math.random() < 0.01) this.nodes.forEach( node => node.html.style.zIndex = `${Math.round(node.y)}` ); // sort by y position for better occlusion; only do this occasionally since it's expensive
+
         this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
 
         if( this.focusedNode ){
@@ -613,8 +603,8 @@ export class SoundcloudGraphManager extends GraphManager2<
             const t = this.focusTime / FOCUS_TIME;
             const curved_t = EASE_FN(t);
     
-            const targetZoom = 4 * getZoomScaleMul() / node.radius;
-            const targetX = -node.x * targetZoom;
+            const targetZoom = 4 * getZoomScaleMul() / node.diameter;
+            const targetX = -node.x * targetZoom - this.parentBox.width * 0.15;
             const targetY = -node.y * targetZoom;
     
             this.panzoom.editTransform((transform) => {
