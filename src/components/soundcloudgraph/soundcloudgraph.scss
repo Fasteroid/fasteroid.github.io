@@ -3,6 +3,15 @@
 @use "../graph/graph.scss" as graph;
 
 
+@keyframes force-rerender {
+    0% {
+        transform: rotate(0.0001deg);
+    }
+    99% {
+        transform: rotate(0.0deg);
+    }
+}
+
 .grid {
     padding: 0px;
     height: 70vh;
@@ -17,9 +26,9 @@
     --base-scale: 100px;
 
     .node {
-
+        
+        will-change: transform; // don't try to find nice groups of nodes - far too expensive. 
         z-index: 2;
-
 
         pointer-events: none;
 
@@ -41,9 +50,17 @@
         line-height: 1;
     
         translate: -50% -50%;
+
+        .descriptor, .artist {
+            animation: force-rerender 0.01s step-end infinite; // but also don't prerender them once... we might zoom on a node.
+        }
     
         &.anim-top {
             z-index: 3;
+
+            .descriptor {
+                transform: scale(2); // this is a no-op due to the animation above, but somehow it triggers a redraw.  we'll take it.
+            }
         }
     
         &.anim-middle {
@@ -51,7 +68,7 @@
         }
     
         .artist {
-    
+
             &.stack {
                 overflow-x: visible;
                 overflow-y: visible;
@@ -95,7 +112,7 @@
         }
     
         .descriptor {
-    
+
             font-size: 6px;
     
             line-height: 1.2;

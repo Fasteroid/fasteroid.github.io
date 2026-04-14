@@ -180,6 +180,9 @@ export class SoundcloudNode extends GraphNode2 {
     private onFullVisible() {
         this.html.classList.remove('anim-middle');
         this.html.classList.add('anim-top');
+
+        this.html.hidden = true;
+        this.html.hidden = false;
     }
 
     /** When it's done fading out */
@@ -266,8 +269,6 @@ export class SoundcloudNode extends GraphNode2 {
         this.manager.setSelectedNode(this);
     }
 
-    private marker: HTMLElement;
-
     constructor(
         public readonly manager: SoundcloudGraphManager, 
         public readonly data: Readonly<SoundcloudNodeData>
@@ -296,7 +297,7 @@ export class SoundcloudNode extends GraphNode2 {
         const img = this.html.querySelector("img") as HTMLImageElement;
 
         img.crossOrigin = "Anonymous";
-        img.src = /*artist.avatar_url ?? */`${base}/assets/soundcloud/missing.png`;
+        img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
 
         img.addEventListener('click', this.onClick);
         img.addEventListener('touchend', this.onClick);
@@ -331,10 +332,6 @@ export class SoundcloudNode extends GraphNode2 {
                 return Color.fromHSV(hsv.h, hsv.s, hsv.v);
             } )
         });
-
-        this.marker = document.createElement("div");
-            this.marker.style = "pointer-events: none; width: 10px; height: 10px; background-color: red; position: absolute;"
-        document.body.appendChild(this.marker);
         
     }
 
@@ -369,10 +366,8 @@ export class SoundcloudNode extends GraphNode2 {
         );
     }
 
-
+    private wasHidden: boolean = false;
     public override render(){
-        // const [cx, cy] = this.manager.offsetPos;
-
         const isOutside = this.isOutsideViewport();
         const skipRender = isOutside && this.html.hidden;
         this.html.hidden = isOutside;
@@ -593,8 +588,7 @@ export class SoundcloudGraphManager extends GraphManager2<
     }
 
     public override render(): void { 
-        if(Math.random() < 0.01) this.nodes.forEach( node => node.html.style.zIndex = `${Math.round(node.y)}` ); // sort by y position for better occlusion; only do this occasionally since it's expensive
-
+       
         this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
 
         if( this.focusedNode ){
