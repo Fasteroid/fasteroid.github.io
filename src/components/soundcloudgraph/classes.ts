@@ -153,7 +153,7 @@ export class SoundcloudNode extends GraphNode2 {
         if( !placeholder || !this.data.track ) return;
 
         const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
-        // iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
+        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
         iframe.hidden = false;
         placeholder.replaceWith(iframe);
 
