@@ -7,7 +7,7 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { Color, lerp, makeHarmonicOscillator } from "$lib/utils";
+import { Color, lerp, makeHarmonicOscillator, Pool } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -34,6 +34,44 @@ const NODE_SUPER_RESOLUTION       = 4;
 
 const FOCUS_TIME = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
+
+class SoundcloudPlayer {
+
+    private placeholder: HTMLElement | null = null;
+
+    private readonly frame = document.getElementById('template-embed')?.cloneNode() as HTMLIFrameElement;
+    private readonly widget = window.SC.Widget(this.frame);
+
+
+    constructor() {
+        this.frame.src = "https://w.soundcloud.com/player/?color=%23ff5500&inverse=true&auto_play=true&show_user=true"
+        this.frame.hidden = false;
+    }
+
+    public load(url: string, where: HTMLElement) {
+        this.placeholder = where;
+        where.replaceWith(this.frame)
+
+        this.widget.load(url);
+        this.widget.unbind(window.SC.Widget.Events.READY)
+        this.widget.bind(
+            window.SC.Widget.Events.READY, 
+            () => {
+                this.widget.seekTo(0);
+                this.widget.play();
+            }
+        );
+    }
+
+    public unload() {
+        if( !this.placeholder ) throw "wtf";
+        this.frame.replaceWith(this.placeholder);
+        this.placeholder = null;
+
+        this.widget.pause();
+    }
+
+}
 
 // technically this easing isn't physically accurate, but to do what I actually want I'd need to implement RK4 and tune a fuckton of parameters.  Close enough.
 const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
@@ -101,6 +139,9 @@ export class SoundcloudNode extends GraphNode2 {
 
     declare readonly edges:   SoundcloudEdge[];
 
+    /** The current soundcloud player iframe, if applicable */
+    private _player: SoundcloudPlayer | null = null;
+
     private _focused:  boolean = false;
     private _selected: boolean = false;
 
@@ -152,28 +193,8 @@ export class SoundcloudNode extends GraphNode2 {
         const placeholder = this.html.querySelector('.iframe-placeholder') as HTMLElement | null;
         if( !placeholder || !this.data.track ) return;
 
-        const iframe = this.manager.templateEmbed.cloneNode(true) as HTMLIFrameElement
-        iframe.src = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${this.data.track.id}&color=%23ff5500&inverse=true&auto_play=true&show_user=true`
-        iframe.hidden = false;
-        placeholder.replaceWith(iframe);
-
-        let widget = window.SC.Widget(iframe);
-        widget.bind(
-            window.SC.Widget.Events.READY, 
-            () => {
-            widget.setVolume(40);
-            }
-        );
-
-        // randomly walk the graph
-        widget.bind(
-            window.SC.Widget.Events.FINISH,
-            this.playNextNode.bind(this)
-        )
-
-        // DEBUG
-        // setTimeout( () => this.playNextNode(), 3000 )
-            
+        this._player = this.manager.playerPool.get();
+        this._player.load(this.data.track.permalink_url, placeholder);
     }
 
     /** When it's done fading in */
@@ -189,6 +210,13 @@ export class SoundcloudNode extends GraphNode2 {
     private onLastVisible() {
         this.html.classList.remove('anim-middle');
         this.descriptor.hidden = true;
+
+        if( this._player ){
+            this._player.unload();
+            this.manager.playerPool.release( this._player );
+
+            this._player = null;
+        }
     }
 
     private anim?: Animation;
@@ -414,7 +442,7 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     public readonly walked = new Set<SoundcloudNode>();
 
-    public readonly templateEmbed: HTMLIFrameElement;
+    public readonly playerPool = new Pool<SoundcloudPlayer>( () => new SoundcloudPlayer() );
 
     /**
      * Sets the node as selected and notes it on the {@link SoundcloudGraphManager | manager}
@@ -481,10 +509,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         this.simulation.alpha(0.05);
         this.simulation.alphaDecay(0);
 
-
         this.handleResize();
-
-        this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
 
         const urlLookupMap = new Map<string, SoundcloudNode>();
 

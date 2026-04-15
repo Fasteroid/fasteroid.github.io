@@ -345,3 +345,22 @@ export class Derivative {
         return derivative;
     }
 }
+
+export class Pool<T> {
+    private pool: T[] = [];
+    constructor(private factory: () => T) {}
+
+    /**
+     * Gets an item from the pool, or creates one if the pool is empty.
+     */
+    public get(): T {
+        return this.pool.pop() ?? this.factory();
+    }
+
+    /**
+     * Returns an item to the pool.
+     */
+    public release(item: T) {
+        this.pool.push(item);
+    }
+}
