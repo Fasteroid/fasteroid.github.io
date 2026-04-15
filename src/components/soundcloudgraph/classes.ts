@@ -338,8 +338,14 @@ export class SoundcloudNode extends GraphNode2 {
             e.stopPropagation();
         }
 
+        const cancel = (e: Event) => e.stopPropagation();
+
         img.addEventListener('pointerup', pointerUp);
         img.addEventListener('pointerdown', pointerDown);
+
+        const desc = this.html.querySelector(".descriptor")!;
+        desc.addEventListener('pointerdown', cancel)
+        desc.addEventListener('pointerup', cancel)
 
     }
 
