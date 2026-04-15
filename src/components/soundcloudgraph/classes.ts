@@ -481,13 +481,15 @@ export class SoundcloudGraphManager extends GraphManager2<
         } );
 
         this.simulation.force('center', d3.forceCenter(0, 0) );
-        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -25 * d.trueDiameter ) );
-        this.simulation.force('collision', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.diameter * 0.25 ).strength(0.8) );
-        this.simulation.force("x", d3.forceX().strength(0.6))
-        this.simulation.force("y", d3.forceY().strength(0.6))
+        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -60 * d.trueDiameter ) );
+        this.simulation.force('collision', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.diameter * 0.25 ).strength(0.4).iterations(4) );
+        this.simulation.force("x", d3.forceX().strength(0.5))
+        this.simulation.force("y", d3.forceY().strength(0.5))
 
-        this.simulation.velocityDecay(0.4);
-        this.simulation.alpha(0.05);
+        this.linkForces.strength(0.02).distance(0).iterations(5)
+
+        this.simulation.velocityDecay(0.8);
+        this.simulation.alpha(0.08);
         this.simulation.alphaDecay(0);
 
 
