@@ -7,12 +7,13 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { Color, lerp, makeHarmonicOscillator } from "$lib/utils";
+import { Color, lerp, makeHarmonicOscillator, nextMicrotask } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
 import type { Panzoom } from "@fasteroid/panzoom-revamped";
 import type { PanzoomTransform } from "@fasteroid/panzoom-revamped/transform";
+import { Debug } from "$lib/debug";
 
 const sqrt = Math.sqrt
 const max = Math.max
@@ -161,7 +162,7 @@ export class SoundcloudNode extends GraphNode2 {
         widget.bind(
             window.SC.Widget.Events.READY, 
             () => {
-            widget.setVolume(40);
+            widget.setVolume(20);
             }
         );
 
@@ -252,23 +253,6 @@ export class SoundcloudNode extends GraphNode2 {
         }
     }
 
-    private onClick = () => {
-        if( this.manager.dragging ) {
-            this.manager.setFocusedNode(null)
-            return;
-        };
-        if( this._focused ) {
-            window.open(this.data.artist.permalink_url, '_blank');
-            this.manager.preventUnfocus_ = true;
-            return;
-        }
-        this.manager.walked.clear();
-        this.manager.walked.add(this);
-        
-        this.manager.setFocusedNode(this);
-        this.manager.setSelectedNode(this);
-    }
-
     constructor(
         public readonly manager: SoundcloudGraphManager, 
         public readonly data: Readonly<SoundcloudNodeData>
@@ -298,9 +282,6 @@ export class SoundcloudNode extends GraphNode2 {
 
         img.crossOrigin = "Anonymous";
         img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
-
-        img.addEventListener('click', this.onClick);
-        img.addEventListener('touchend', this.onClick);
 
         (img as any).__data__ = this.data; // for devs; this will be what gets inspect-elemented
 
@@ -333,6 +314,33 @@ export class SoundcloudNode extends GraphNode2 {
             } )
         });
         
+    
+        const pointerUp = (e: PointerEvent) => { 
+            const distance = Math.hypot(e.clientX - this.manager.downEvent.clientX, e.clientY - this.manager.downEvent.clientY);
+            if( distance > UNFOCUS_DRAG_DIST ) {
+                // we dragged far, probably don't want to click
+                return;
+            }
+
+            if( this._focused ) {
+                window.open(this.data.artist.permalink_url, '_blank');
+                return;
+            }
+            this.manager.walked.clear();
+            this.manager.walked.add(this);
+            
+            this.manager.setFocusedNode(this);
+            this.manager.setSelectedNode(this);
+        }
+
+        const pointerDown = (e: PointerEvent) => {
+            this.manager.downEvent = e;
+            e.stopPropagation();
+        }
+
+        img.addEventListener('pointerup', pointerUp);
+        img.addEventListener('pointerdown', pointerDown);
+
     }
 
     private _neighbors!: SoundcloudNode[];
@@ -366,7 +374,6 @@ export class SoundcloudNode extends GraphNode2 {
         );
     }
 
-    private wasHidden: boolean = false;
     public override render(){
         const isOutside = this.isOutsideViewport();
         const skipRender = isOutside && this.html.hidden;
@@ -393,15 +400,12 @@ export class SoundcloudGraphManager extends GraphManager2<
         return 30;
     }
 
-    public  held:          boolean = false;
-    public  dragging:      boolean = false;
+    public  downEvent!: PointerEvent;
+    public  dragging:   boolean = false;
 
-    private focusChanged:   boolean = false;
     private focusTime:  number  = 0;
     /** snapshot of {@linkcode panzoomTransform} last time {@linkcode focusTime} was 0 */
     private focusStart: PanzoomTransform | null = null;
-
-    public  preventUnfocus_: boolean = false;
 
     private focusedNode:  SoundcloudNode | null = null;
     private selectedNode: SoundcloudNode | null = null;
@@ -420,6 +424,7 @@ export class SoundcloudGraphManager extends GraphManager2<
      * Sets the node as selected and notes it on the {@link SoundcloudGraphManager | manager}
      */
     public setSelectedNode(node: SoundcloudNode | null){
+        Debug.logFancy("node", node, "selected")
         if( node === this.selectedNode ) return;
         this.selectedNode?.setSelect(false);
         this.selectedNode = node;
@@ -430,13 +435,12 @@ export class SoundcloudGraphManager extends GraphManager2<
      * Selects a node and moves the panzoom
      */
     public setFocusedNode(node: SoundcloudNode | null){
-
         if( node === this.focusedNode ) return;
+        Debug.logFancy("node", node, "focused")
 
         this.focusedNode?.setFocus(false);
         
         this.focusedNode = node;
-        this.focusChanged = true;
         this.focusTime = 0;
         this.focusStart = { ...this.panzoomTransform };
 
@@ -444,7 +448,6 @@ export class SoundcloudGraphManager extends GraphManager2<
             node.setFocus(true);
             this.setSelectedNode(node);
         }
-
     }
 
     constructor(
@@ -508,65 +511,40 @@ export class SoundcloudGraphManager extends GraphManager2<
             })
         });
 
-
-        // this.panzoom!.on('pan', () => {
-        //     if( !this.held ) return;
-        //     this.firstDragTransform ??= this.getPanzoomTransform();
-        //     let curDragTransform = this.panzoom!.getTransform();
-
-        //     if( sqrt(
-        //         ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
-        //         ( this.firstDragTransform.y - curDragTransform.y ) ** 2
-        //     ) > UNFOCUS_DRAG_DIST ) {
-        //         this.dragging = true;
-        //         this.setFocusedNode(null);
-        //     }
-        // });
-
         const wheel = (e: WheelEvent) => {
             this.setFocusedNode(null);
         }
 
+        const pointerUp = async (e: PointerEvent) => {
+            const distance = Math.hypot(e.clientX - this.downEvent.clientX, e.clientY - this.downEvent.clientY);
+            Debug.logFancy("root pointerUp", 1, e.type)
+            if( 
+                this.dragging && 
+                distance < UNFOCUS_DRAG_DIST &&
+                !(this.downEvent.target as HTMLElement).closest(".node")
+            ) {
+                // we didn't drag far and didn't click a node to begin with... user probably wants to deselect
+                this.setSelectedNode(null);
+            }
+
+            this.dragging = false;
+        };
+
+        const pointerDown = (e: PointerEvent) => {
+            Debug.logFancy("root pointerDown", 1, e.type)
+            this.downEvent = e;
+            this.setFocusedNode(null);
+            this.dragging = true;
+        };
+
         this.edgeContainer.addEventListener('wheel', wheel)
         this.nodeContainer.addEventListener('wheel', wheel)
 
-        const mouseUp = () => {
-            setTimeout(() => {
-                if( !this.focusChanged && !this.preventUnfocus_ ){  // preventUnfocus triggers when opening a link by clicking a node again
-                    this.setFocusedNode(null);
-                    if( !this.dragging ) this.setSelectedNode(null);
-                }
-                this.preventUnfocus_    = false;
-                this.held               = false;
-                this.dragging           = false;
-                this.focusChanged       = false;
-                // this.firstDragTransform = null;
-            })
-        };
+        this.nodeContainer.addEventListener('pointerup', pointerUp);
+        this.edgeContainer.addEventListener('pointerup', pointerUp);
 
-        this.nodeContainer.addEventListener('mouseup', mouseUp);
-        this.edgeContainer.addEventListener('mouseup', mouseUp);
-
-        this.nodeContainer.addEventListener('touchend', mouseUp);
-        this.edgeContainer.addEventListener('touchend', mouseUp);
-
-        const mouseDown = () => {
-            this.held         = true;
-            this.dragging     = false;
-            this.focusChanged = false;
-        };
-
-        this.nodeContainer.addEventListener('mousedown', mouseDown);
-        this.edgeContainer.addEventListener('mousedown', mouseDown);
-
-        this.edgeContainer.addEventListener('touchstart', mouseDown);
-        this.nodeContainer.addEventListener('touchstart', mouseDown);
-
-        // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
-
-        // window.setTimeout(() => {
-        //     this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
-        // }, 1000);
+        this.nodeContainer.addEventListener('pointerdown', pointerDown);
+        this.edgeContainer.addEventListener('pointerdown', pointerDown);
 
     }
 

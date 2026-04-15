@@ -345,3 +345,7 @@ export class Derivative {
         return derivative;
     }
 }
+
+export function nextMicrotask(): Promise<void> {
+    return new Promise( (resolve) => queueMicrotask(resolve) )
+}

@@ -28,7 +28,7 @@
     .node {
         
         will-change: transform; // don't try to find nice groups of nodes - far too expensive. 
-        z-index: 2;
+        z-index: 1;
 
         pointer-events: none;
 

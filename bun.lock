@@ -4,6 +4,7 @@
     "": {
       "name": "svelte-portfolio",
       "dependencies": {
+        "@fasteroid/maps": "^3.0.0",
         "@fasteroid/panzoom-revamped": "^11.0.0",
         "@sveltejs/adapter-static": "^3.0.0",
         "@types/colorthief": "^2.6.1",
@@ -75,6 +76,8 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.18.20", "", { "os": "win32", "cpu": "ia32" }, "sha512-Wv7QBi3ID/rROT08SABTS7eV4hX26sVduqDOTe1MvGMjNd3EjOz4b7zeexIR62GTIEKrfJXKL9LFxTYgkyeu7g=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.18.20", "", { "os": "win32", "cpu": "x64" }, "sha512-kTdfRcSiDfQca/y9QIkng02avJ+NCaQvrMejlsB3RRv5sE9rRoeBPISaZpKxHELzRxZyLvNts1P27W3wV+8geQ=="],
+
+    "@fasteroid/maps": ["@fasteroid/maps@3.0.0", "", {}, "sha512-Cc5CIIOTWQFC+L0cq0XQeZzn1vjmS1xj620bx38z26/HwM/jxVfCu+9zsXZvfpYXj4cBjNdtiNF48ATvoBOqww=="],
 
     "@fasteroid/panzoom-revamped": ["@fasteroid/panzoom-revamped@11.0.0", "", {}, "sha512-fwiM3xQiLUuhWqeEjRAtY0/i9Pa5WwEBiAiMFFU3urp7HRJBgrBuJbU9ApOA/21DG6OhRTIxkG8eak5nnU8JyQ=="],
 

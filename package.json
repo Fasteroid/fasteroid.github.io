@@ -27,6 +27,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@fasteroid/maps": "^3.0.0",
 		"@fasteroid/panzoom-revamped": "^11.0.0",
 		"@sveltejs/adapter-static": "^3.0.0",
 		"@types/colorthief": "^2.6.1",
