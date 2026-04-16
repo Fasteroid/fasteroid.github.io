@@ -1,11 +1,14 @@
 
-export class WebGLUtils {
+
+
+export namespace WebGLUtils {
 
     // Credits:
     // - https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html
     // - Github Copilot
+    // - Claude Sonnet 4.6
 
-    public static createProgram(gl: WebGL2RenderingContext, fragmentSource: string, vertexSource: string ): WebGLProgram {
+    export function createProgram(gl: WebGL2RenderingContext, fragmentSource: string, vertexSource: string ): WebGLProgram {
         const program = gl.createProgram();
         if (!program) { throw new Error('Failed to create program'); }
 
@@ -35,7 +38,7 @@ export class WebGLUtils {
         return program;
     }
 
-    public static createTexture(gl: WebGL2RenderingContext, image: TexImageSource): WebGLTexture {
+    export function createTexture(gl: WebGL2RenderingContext, image: TexImageSource): WebGLTexture {
         const texture = gl.createTexture();
         if (!texture) { throw new Error('Failed to create texture'); }
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -46,4 +49,57 @@ export class WebGLUtils {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         return texture;
     }
+
+    /**
+     * Lookup table for sizes in bytes of certain units from WebGL
+     */
+    export const SIZE_LOOKUP = {
+        [WebGL2RenderingContext.FLOAT]:          4,
+        [WebGL2RenderingContext.UNSIGNED_BYTE]:  1,
+        [WebGL2RenderingContext.BYTE]:           1,
+        [WebGL2RenderingContext.UNSIGNED_SHORT]: 2,
+        [WebGL2RenderingContext.SHORT]:          2,
+        [WebGL2RenderingContext.UNSIGNED_INT]:   4,
+        [WebGL2RenderingContext.INT]:            4,
+        [WebGL2RenderingContext.HALF_FLOAT]:     2
+    } as const;
+
+    export type AttributeDescriptor = [
+        name:    string,
+        count:   number,
+        type:    keyof typeof SIZE_LOOKUP,
+    ]
+
+    /**
+    * Sets up the provided per-instance attributes (divisor=1) in order.  The stride and offsets are calculated automatically.
+    * Assumes the correct VAO and buffer are already bound.
+    * 
+    * @param gl        - WebGL2 rendering context
+    * @param program   - The compiled shader program to bind attributes against
+    * @param attributes - Ordered list of attribute descriptors matching the buffer layout
+    */
+    export function setupInstanceAttributes(
+        gl:         WebGL2RenderingContext,
+        program:    WebGLProgram,
+        attributes: AttributeDescriptor[],
+    ): void {
+        const stride = attributes.reduce((sum, attr) => sum + attr[1] * SIZE_LOOKUP[ attr[2] ], 0);
+        let offset = 0;
+
+        for (const attr of attributes) {
+            const loc = gl.getAttribLocation(program, attr[0]);
+
+            if (loc === -1) {
+                console.warn(`Attribute "${attr[0]}" not found in shader program!!`);
+            } 
+            else {
+                gl.enableVertexAttribArray(loc);
+                gl.vertexAttribPointer(loc, attr[1], attr[2], false, stride, offset);
+                gl.vertexAttribDivisor(loc, 1);
+            }
+
+            offset += attr[1] * SIZE_LOOKUP[attr[2]];
+        }
+    }
+    
 }

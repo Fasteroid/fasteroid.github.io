@@ -31,6 +31,8 @@ const NODE_SUPER_RESOLUTION       = 4;
 const FOCUS_TIME = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
 
+
+
 // technically this easing isn't physically accurate, but to do what I actually want I'd need to implement RK4 and tune a fuckton of parameters.  Close enough.
 const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
 const EASE_FN = (t: number) => OSCILLATOR(t ** 1.5);
@@ -595,25 +597,12 @@ export class SoundcloudGraphManager extends GraphManager2<
             gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.getRawEdgeData() ), gl.DYNAMIC_DRAW);
 
-            // Set up per-instance attributes
-
-            const stride = 5 * 4; // 5 floats per edge (2 + 2 + 1) * 4 bytes each
-            
-            const a_startPoint = gl.getAttribLocation(program, 'a_startPoint');
-            gl.enableVertexAttribArray(a_startPoint);
-            gl.vertexAttribPointer(a_startPoint, 2, gl.FLOAT, false, stride, 0);
-            gl.vertexAttribDivisor(a_startPoint, 1); // One per instance!
-            
-            const a_endPoint = gl.getAttribLocation(program, 'a_endPoint');
-            gl.enableVertexAttribArray(a_endPoint);
-            gl.vertexAttribPointer(a_endPoint, 2, gl.FLOAT, false, stride, 2 * 4);
-            gl.vertexAttribDivisor(a_endPoint, 1);
-            
-            const a_width = gl.getAttribLocation(program, 'a_width');
-            gl.enableVertexAttribArray(a_width);
-            gl.vertexAttribPointer(a_width, 1, gl.FLOAT, false, stride, 4 * 4);
-            gl.vertexAttribDivisor(a_width, 1);
-
+            WebGLUtils.setupInstanceAttributes(gl, program, [
+                ['a_startPoint', 2, gl.FLOAT],
+                ['a_endPoint',   2, gl.FLOAT],
+                ['a_width',      1, gl.FLOAT],
+                // ['a_color',      4, gl.FLOAT]
+            ])
 
             const onCanvasResized = () => {
                 const dpr = window.devicePixelRatio || 1;
