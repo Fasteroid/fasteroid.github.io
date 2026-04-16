@@ -209,6 +209,10 @@
     }
 }
 
+.lines-container {
+    mix-blend-mode: screen;
+}
+
 // It's so fucking stupid I have to do the CSS this way
 .iframe-holder {
     $zoom-factor: 2;

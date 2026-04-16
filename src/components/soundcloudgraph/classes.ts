@@ -13,7 +13,6 @@ import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants
 import * as d3 from "d3";
 import type { Panzoom } from "@fasteroid/panzoom-revamped";
 import type { PanzoomTransform } from "@fasteroid/panzoom-revamped/transform";
-import { Debug } from "$lib/debug";
 import { WebGLUtils } from "$lib/webgl/utils";
 
 import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
@@ -69,7 +68,6 @@ export class SoundcloudEdge extends GraphEdge2 {
         return ( this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2
     }
 
-    public readonly color: Color = Color.BLACK;
     constructor(
         public readonly source: SoundcloudNode,
         public readonly target: SoundcloudNode,
@@ -79,11 +77,9 @@ export class SoundcloudEdge extends GraphEdge2 {
         // this.bidirectional = data.bidirectional;
     }
 
-    private $lastToPalette: Color[] = [];
-    private $lastFromPalette: Color[] = [];
-
-    private toColor:   Color = Color.BLACK;
-    private fromColor: Color = Color.BLACK;
+    public get color() {
+        return this.target.palette?.[0] ?? Color.BLACK;
+    }
 
     public getSerialized(): SoundcloudEdgeData {
         return {
@@ -124,8 +120,8 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     private _palette?: Color[];
-    public get palette(): Color[] {
-        return this._palette ?? [Color.BLACK];
+    public get palette(): Color[] | undefined {
+        return this._palette;
     }
 
     private _descriptor!: HTMLElement;
@@ -432,7 +428,7 @@ export class SoundcloudGraphManager extends GraphManager2<
      * Sets the node as selected and notes it on the {@link SoundcloudGraphManager | manager}
      */
     public setSelectedNode(node: SoundcloudNode | null){
-        Debug.logFancy("node", node, "selected")
+        // Debug.logFancy("node", node, "selected")
         if( node === this.selectedNode ) return;
         this.selectedNode?.setSelect(false);
         this.selectedNode = node;
@@ -444,7 +440,7 @@ export class SoundcloudGraphManager extends GraphManager2<
      */
     public setFocusedNode(node: SoundcloudNode | null){
         if( node === this.focusedNode ) return;
-        Debug.logFancy("node", node, "focused")
+        // Debug.logFancy("node", node, "focused")
 
         this.focusedNode?.setFocus(false);
         
@@ -527,7 +523,7 @@ export class SoundcloudGraphManager extends GraphManager2<
 
         const pointerUp = async (e: PointerEvent) => {
             const distance = Math.hypot(e.clientX - this.downEvent.clientX, e.clientY - this.downEvent.clientY);
-            Debug.logFancy("root pointerUp", 1, e.type)
+            // Debug.logFancy("root pointerUp", 1, e.type)
             if( 
                 this.dragging && 
                 distance < UNFOCUS_DRAG_DIST &&
@@ -541,7 +537,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         };
 
         const pointerDown = (e: PointerEvent) => {
-            Debug.logFancy("root pointerDown", 1, e.type)
+            // Debug.logFancy("root pointerDown", 1, e.type)
             this.downEvent = e;
             this.setFocusedNode(null);
             this.dragging = true;
@@ -601,7 +597,7 @@ export class SoundcloudGraphManager extends GraphManager2<
                 ['a_startPoint', 2, gl.FLOAT],
                 ['a_endPoint',   2, gl.FLOAT],
                 ['a_width',      1, gl.FLOAT],
-                // ['a_color',      4, gl.FLOAT]
+                ['a_color',      3, gl.FLOAT]
             ])
 
             const onCanvasResized = () => {
@@ -613,12 +609,7 @@ export class SoundcloudGraphManager extends GraphManager2<
                 this.edgeContainer.width = displayWidth * dpr;
                 this.edgeContainer.height = displayHeight * dpr;
         
-                this.gl.viewport(
-                    -this.panzoomTransform.x, 
-                    -this.panzoomTransform.y,
-                    this.edgeContainer.width * this.panzoomTransform.zoom,
-                    this.edgeContainer.height * this.panzoomTransform.zoom
-                );
+                this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
                 this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
         
                 this.render(); // immediately rerender
@@ -648,6 +639,9 @@ export class SoundcloudGraphManager extends GraphManager2<
             yield edge.target.x;
             yield edge.target.y;
             yield edge.width;
+            yield edge.color.r;
+            yield edge.color.g;
+            yield edge.color.b;
         }
     }
 
@@ -676,6 +670,8 @@ export class SoundcloudGraphManager extends GraphManager2<
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
         // the '6' here = 6 verts per edge (2 tris)
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
         this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
     }
 

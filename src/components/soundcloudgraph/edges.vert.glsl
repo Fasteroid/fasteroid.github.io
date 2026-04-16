@@ -9,6 +9,10 @@ in vec2 a_templatePosition;
 in vec2 a_startPoint;
 in vec2 a_endPoint;
 in float a_width;
+in vec3 a_color;
+
+// we need to output color for the fragment shader to read
+out vec3 v_color;
 
 uniform vec2 u_resolution;
 uniform vec3 u_panzoom;
@@ -36,4 +40,5 @@ void main() {
     clipSpace.y *= -1.0; // Flip Y axis
     
     gl_Position = vec4(clipSpace, 0.0, 1.0);
+    v_color = a_color;
 }
