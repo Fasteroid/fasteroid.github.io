@@ -14,18 +14,13 @@ import * as d3 from "d3";
 import type { Panzoom } from "@fasteroid/panzoom-revamped";
 import type { PanzoomTransform } from "@fasteroid/panzoom-revamped/transform";
 import { Debug } from "$lib/debug";
+import { WebGLUtils } from "$lib/webgl/utils";
 
-const sqrt = Math.sqrt
+import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
+import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
+
 const max = Math.max
 const min = Math.min
-
-const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 100; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
-
-const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges
-
-const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shrink
 
 const BASE_NODE_SIZE              = 48;   // self-explanatory
 
@@ -65,7 +60,7 @@ function getShuffledCopy<T>(array: T[]) {
 export class SoundcloudEdge extends GraphEdge2 {
 
     public get width() {
-        return max(this.target.edgeWidth, this.source.edgeWidth) * 3;
+        return 3;
     }
 
     public get stress() {
@@ -402,6 +397,11 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     declare panzoom: Panzoom;
 
+    private readonly gl: WebGL2RenderingContext;
+    private readonly edgeBuffer: WebGLBuffer;
+    private readonly resUniform: WebGLUniformLocation;
+    private readonly panzoomUniform: WebGLUniformLocation;
+
     protected get frametime(){
         return 30;
     }
@@ -554,6 +554,112 @@ export class SoundcloudGraphManager extends GraphManager2<
         this.nodeContainer.addEventListener('pointerdown', pointerDown);
         this.edgeContainer.addEventListener('pointerdown', pointerDown);
 
+        // webgl!
+        {
+            const gl = this.edgeContainer.getContext("webgl2");
+            if( !gl ) throw new Error("WebGL2 not supported!");
+            this.gl = gl;
+
+            const program = WebGLUtils.createProgram(
+                gl, 
+                EDGE_FRAG_SHADER, 
+                EDGE_VERT_SHADER
+            );
+
+            gl.useProgram(program);
+
+            const templateVertices = new Float32Array([
+                // First triangle
+                0.0, -0.5,  // start, left
+                1.0, -0.5,  // end, left
+                0.0,  0.5,  // start, right
+                
+                // Second triangle
+                0.0,  0.5,  // start, right
+                1.0, -0.5,  // end, left
+                1.0,  0.5,  // end, right
+            ]);
+
+            this.resUniform     = gl.getUniformLocation(program, 'u_resolution')!;
+            this.panzoomUniform = gl.getUniformLocation(program, 'u_panzoom')!;
+
+            const templateBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, templateVertices, gl.STATIC_DRAW);
+
+            const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
+            gl.enableVertexAttribArray(a_templatePosition);
+            gl.vertexAttribPointer(a_templatePosition, 2, gl.FLOAT, false, 0, 0);
+
+            const edgeBuffer = this.edgeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.getRawEdgeData() ), gl.DYNAMIC_DRAW);
+
+            // Set up per-instance attributes
+
+            const stride = 5 * 4; // 5 floats per edge (2 + 2 + 1) * 4 bytes each
+            
+            const a_startPoint = gl.getAttribLocation(program, 'a_startPoint');
+            gl.enableVertexAttribArray(a_startPoint);
+            gl.vertexAttribPointer(a_startPoint, 2, gl.FLOAT, false, stride, 0);
+            gl.vertexAttribDivisor(a_startPoint, 1); // One per instance!
+            
+            const a_endPoint = gl.getAttribLocation(program, 'a_endPoint');
+            gl.enableVertexAttribArray(a_endPoint);
+            gl.vertexAttribPointer(a_endPoint, 2, gl.FLOAT, false, stride, 2 * 4);
+            gl.vertexAttribDivisor(a_endPoint, 1);
+            
+            const a_width = gl.getAttribLocation(program, 'a_width');
+            gl.enableVertexAttribArray(a_width);
+            gl.vertexAttribPointer(a_width, 1, gl.FLOAT, false, stride, 4 * 4);
+            gl.vertexAttribDivisor(a_width, 1);
+
+
+            const onCanvasResized = () => {
+                const dpr = window.devicePixelRatio || 1;
+                const displayWidth = this.edgeContainer.clientWidth;
+                const displayHeight = this.edgeContainer.clientHeight;
+                
+                // Set actual canvas resolution
+                this.edgeContainer.width = displayWidth * dpr;
+                this.edgeContainer.height = displayHeight * dpr;
+        
+                this.gl.viewport(
+                    -this.panzoomTransform.x, 
+                    -this.panzoomTransform.y,
+                    this.edgeContainer.width * this.panzoomTransform.zoom,
+                    this.edgeContainer.height * this.panzoomTransform.zoom
+                );
+                this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
+        
+                this.render(); // immediately rerender
+            }
+
+            const canvasResizeWatcher = new ResizeObserver(onCanvasResized);
+            canvasResizeWatcher.observe(this.edgeContainer);
+
+            const onPanzoomChanged = () => {
+                this.gl.uniform3f(this.panzoomUniform, this.panzoomTransform.x, this.panzoomTransform.y, this.panzoomTransform.zoom);
+                this.renderWebGL();
+            }
+
+            this.panzoom.onTransformChanged(onPanzoomChanged)
+            onPanzoomChanged();
+
+        }
+
+    }
+
+
+
+    private *getRawEdgeData(): Generator<number, void, unknown> {
+        for( const edge of this.edges.values() ){
+            yield edge.source.x;
+            yield edge.source.y;
+            yield edge.target.x;
+            yield edge.target.y;
+            yield edge.width;
+        }
     }
 
     public serialize(): void {
@@ -573,8 +679,18 @@ export class SoundcloudGraphManager extends GraphManager2<
         document.body.removeChild(element);
     }
 
+    private renderWebGL() {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array( this.getRawEdgeData() ));
+        
+        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+        // the '6' here = 6 verts per edge (2 tris)
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
+    }
+
     public override render(): void { 
-       
         this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
 
         if( this.focusedNode ){
@@ -595,6 +711,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         } 
 
         super.render();
+        this.renderWebGL();
     }
     
     private offsetPos_buffer: [number, number] = [0, 0];
