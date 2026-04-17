@@ -349,3 +349,7 @@ export class Derivative {
 export function nextMicrotask(): Promise<void> {
     return new Promise( (resolve) => queueMicrotask(resolve) )
 }
+
+export function chooseRandomly<T>(choices: T[]) {
+    return choices[ Math.floor(Math.random() * choices.length) ] as T | undefined;
+}

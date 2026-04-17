@@ -7,7 +7,7 @@ import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
 import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
-import { Color, lerp, makeHarmonicOscillator, nextMicrotask } from "$lib/utils";
+import { chooseRandomly, clamp, Color, lerp, makeHarmonicOscillator, nextMicrotask } from "$lib/utils";
 import { getPalette } from "colorthief";
 import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
 import * as d3 from "d3";
@@ -21,15 +21,23 @@ import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
 const max = Math.max
 const min = Math.min
 
-const BASE_NODE_SIZE              = 48;   // self-explanatory
+const BASE_NODE_SIZE        = 48;   // self-explanatory
+const UNFOCUS_DRAG_DIST     = 50;  // how far to drag before unfocusing; allows micro-movements during selection
+const NODE_SUPER_RESOLUTION = 4;
+const FOCUS_TIME            = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
-const UNFOCUS_DRAG_DIST           = 50;  // how far to drag before unfocusing; allows micro-movements during selection
+const HOVER_EDGE_THICKNESS = 1.5;
+const SELECT_EDGE_THICKNESS = 6;
 
-const NODE_SUPER_RESOLUTION       = 4;
-
-const FOCUS_TIME = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
-
-
+const EDGE_VERTS = new Float32Array([
+    1, 0, 
+    0, -0.5,
+    0, 0.5,
+    
+    0, 0,
+    1, -0.5,
+    1, 0.5
+])
 
 
 // technically this easing isn't physically accurate, but to do what I actually want I'd need to implement RK4 and tune a fuckton of parameters.  Close enough.
@@ -61,7 +69,7 @@ function getShuffledCopy<T>(array: T[]) {
 export class SoundcloudEdge extends GraphEdge2 {
 
     public get width() {
-        return 3;
+        return max( this.source.edgeWidth, this.target.edgeWidth )
     }
 
     public get stress() {
@@ -74,11 +82,32 @@ export class SoundcloudEdge extends GraphEdge2 {
         data: SoundcloudEdgeData
     ){
         super();
-        // this.bidirectional = data.bidirectional;
     }
 
-    public get color() {
-        return this.target.palette?.[0] ?? Color.BLACK;
+    private _targetColor?: Color;
+    private _sourceColor?: Color;
+
+
+    public get targetColor() {
+        if( this._targetColor ) return this._targetColor;
+
+        if( this.target.palette ) {
+            this._targetColor = chooseRandomly(this.target.palette) ?? Color.BLACK;
+            return this._targetColor;
+        }
+
+        return Color.BLACK;
+    }
+
+    public get sourceColor() {
+        if( this._sourceColor ) return this._sourceColor;
+
+        if( this.source.palette ) {
+            this._sourceColor = chooseRandomly(this.source.palette) ?? Color.BLACK;
+            return this._sourceColor;
+        }
+
+        return Color.BLACK;
     }
 
     public getSerialized(): SoundcloudEdgeData {
@@ -98,9 +127,9 @@ export class SoundcloudNode extends GraphNode2 {
     private _focused:  boolean = false;
     private _selected: boolean = false;
 
-    private _edgeWidth: number = 0;
+    private _selectEdgeWidth:      number = 0;
     public get edgeWidth() {
-        return this._edgeWidth;
+        return this._selectEdgeWidth;
     }
 
     private _diameter!: number;
@@ -374,6 +403,8 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     public override render(){
+        this._selectEdgeWidth = clamp( this._selectEdgeWidth + (this._selected ? 1 : -1) * this.manager.dt * 0.1, 0, SELECT_EDGE_THICKNESS)
+
         const isOutside = this.isOutsideViewport();
         const skipRender = isOutside && this.html.hidden;
         this.html.hidden = isOutside;
@@ -399,6 +430,7 @@ export class SoundcloudGraphManager extends GraphManager2<
     private readonly edgeBuffer: WebGLBuffer;
     private readonly resUniform: WebGLUniformLocation;
     private readonly panzoomUniform: WebGLUniformLocation;
+    private readonly timeUniform: WebGLUniformLocation;
 
     protected get frametime(){
         return 30;
@@ -566,24 +598,13 @@ export class SoundcloudGraphManager extends GraphManager2<
 
             gl.useProgram(program);
 
-            const templateVertices = new Float32Array([
-                // First triangle
-                0.0, -0.5,  // start, left
-                1.0, -0.5,  // end, left
-                0.0,  0.5,  // start, right
-                
-                // Second triangle
-                0.0,  0.5,  // start, right
-                1.0, -0.5,  // end, left
-                1.0,  0.5,  // end, right
-            ]);
-
             this.resUniform     = gl.getUniformLocation(program, 'u_resolution')!;
             this.panzoomUniform = gl.getUniformLocation(program, 'u_panzoom')!;
+            this.timeUniform    = gl.getUniformLocation(program, 'u_time')!;
 
             const templateBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, templateVertices, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, EDGE_VERTS, gl.STATIC_DRAW);
 
             const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
             gl.enableVertexAttribArray(a_templatePosition);
@@ -639,9 +660,9 @@ export class SoundcloudGraphManager extends GraphManager2<
             yield edge.target.x;
             yield edge.target.y;
             yield edge.width;
-            yield edge.color.r;
-            yield edge.color.g;
-            yield edge.color.b;
+            yield edge.sourceColor.r;
+            yield edge.sourceColor.g;
+            yield edge.sourceColor.b;
         }
     }
 
@@ -669,14 +690,15 @@ export class SoundcloudGraphManager extends GraphManager2<
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
-        // the '6' here = 6 verts per edge (2 tris)
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
-        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, this.edges.size);
     }
 
     public override render(): void { 
         this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
+
+        this.gl.uniform1f(this.timeUniform, performance.now() / 1000);
 
         if( this.focusedNode ){
             const node = this.focusedNode;

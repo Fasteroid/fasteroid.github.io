@@ -13,11 +13,16 @@ in vec3 a_color;
 
 // we need to output color for the fragment shader to read
 out vec3 v_color;
+out vec3 v_barycentric;
 
 uniform vec2 u_resolution;
 uniform vec3 u_panzoom;
 
 void main() {
+    if(a_width <= 0.0) {
+        return;
+    }
+
     // Calculate the edge direction and perpendicular
     vec2 direction = normalize(a_endPoint - a_startPoint);
     vec2 perpendicular = vec2(-direction.y, direction.x);
@@ -40,5 +45,9 @@ void main() {
     clipSpace.y *= -1.0; // Flip Y axis
     
     gl_Position = vec4(clipSpace, 0.0, 1.0);
-    v_color = a_color;
+    v_color     = a_color;
+
+    // finally, uvs
+    v_barycentric = vec3(0.0);
+    v_barycentric[int(gl_VertexID % 3)] = 1.0;
 }

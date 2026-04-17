@@ -13,6 +13,18 @@ const GRAVITY        = 3;
 const PADDING_FORCE  = 0.1;
 const HOME_RADIUS    = 100;
 
+const EDGE_VERTS = new Float32Array([
+    // First triangle
+    0.0, -0.5,  // start, left
+    1.0, -0.5,  // end, left
+    0.0,  0.5,  // start, right
+    
+    // Second triangle
+    0.0,  0.5,  // start, right
+    1.0, -0.5,  // end, left
+    1.0,  0.5,  // end, right
+])
+
 type Vec2 = [number, number]
 
 
@@ -468,23 +480,11 @@ extends GraphManager2<
 
             gl.useProgram(program);
 
-            const templateVertices = new Float32Array([
-                // First triangle
-                0.0, -0.5,  // start, left
-                1.0, -0.5,  // end, left
-                0.0,  0.5,  // start, right
-                
-                // Second triangle
-                0.0,  0.5,  // start, right
-                1.0, -0.5,  // end, left
-                1.0,  0.5,  // end, right
-            ]);
-
             this.resUniform = gl.getUniformLocation(program, 'u_resolution')!;
 
             const templateBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, templateVertices, gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, EDGE_VERTS, gl.STATIC_DRAW);
     
             const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
             gl.enableVertexAttribArray(a_templatePosition);
@@ -554,7 +554,7 @@ extends GraphManager2<
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
         // the '6' here = 6 verts per edge (2 tris)
-        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, this.edges.size);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, this.edges.size);
     }
 
     public transformDragEventToSimulationCoords(v: Vec2) {
