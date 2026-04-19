@@ -1,5 +1,6 @@
 
 
+const WebGL2RenderingContext = globalThis.WebGL2RenderingContext ?? undefined;
 
 export namespace WebGLUtils {
 
@@ -54,14 +55,14 @@ export namespace WebGLUtils {
      * Lookup table for sizes in bytes of certain units from WebGL
      */
     export const SIZE_LOOKUP = {
-        [WebGL2RenderingContext.FLOAT]:          4,
-        [WebGL2RenderingContext.UNSIGNED_BYTE]:  1,
-        [WebGL2RenderingContext.BYTE]:           1,
-        [WebGL2RenderingContext.UNSIGNED_SHORT]: 2,
-        [WebGL2RenderingContext.SHORT]:          2,
-        [WebGL2RenderingContext.UNSIGNED_INT]:   4,
-        [WebGL2RenderingContext.INT]:            4,
-        [WebGL2RenderingContext.HALF_FLOAT]:     2
+        [WebGL2RenderingContext?.FLOAT]:          4,
+        [WebGL2RenderingContext?.UNSIGNED_BYTE]:  1,
+        [WebGL2RenderingContext?.BYTE]:           1,
+        [WebGL2RenderingContext?.UNSIGNED_SHORT]: 2,
+        [WebGL2RenderingContext?.SHORT]:          2,
+        [WebGL2RenderingContext?.UNSIGNED_INT]:   4,
+        [WebGL2RenderingContext?.INT]:            4,
+        [WebGL2RenderingContext?.HALF_FLOAT]:     2
     } as const;
 
     export type AttributeDescriptor = [

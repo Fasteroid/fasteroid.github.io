@@ -11,7 +11,7 @@
 		"deploy": "gh-pages -d build",
 		"buildtree": "tsx ./src/building/treebuilder.ts",
 		"buildscss": "tsx ./src/building/scssbase.ts",
-		"prebuild": "bun run buildtree && bun run buildscss",
+		"prebuild": "svelte-kit sync && bun run buildtree && bun run buildscss",
 		"soundcloud": "cd ./src/lib/soundcloud & tsx getGraphData.ts"
 	},
 	"devDependencies": {
