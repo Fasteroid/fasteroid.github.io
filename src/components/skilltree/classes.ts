@@ -554,7 +554,7 @@ extends GraphManager2<
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
         // the '6' here = 6 verts per edge (2 tris)
-        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, this.edges.size);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length / 2, this.edges.size);
     }
 
     public transformDragEventToSimulationCoords(v: Vec2) {
