@@ -8,7 +8,7 @@
 
 <svelte:head>
     <style lang="scss">
-        @import "src/globalstyle/global.scss";
+        @forward "src/globalstyle/global.scss";
     </style>
     <title>
         {pageData.titlePath.join(" | ")}

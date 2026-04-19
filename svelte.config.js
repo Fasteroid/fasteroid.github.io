@@ -19,7 +19,7 @@ const preprocessors = [
 	/* svelte-preprocess */
 	preprocess({
 		scss: {
-			includePaths: ["src/globalstyle"]
+			includePaths: ["src/globalstyle"],
 		}
 	})
 	
@@ -35,7 +35,6 @@ const config = {
 		adapter: adapter({
 			pages:  'build',
 			assets: 'build',
-			fallback: undefined,
 			precompress: false,
 			strict: true
 		}),

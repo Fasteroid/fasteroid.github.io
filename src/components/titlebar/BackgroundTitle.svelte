@@ -5,7 +5,7 @@
 </script>
 
 <style lang="scss">
-    @import "./backgroundtitle.scss";
+    @forward "./backgroundtitle.scss";
 </style>
 
 <section class="bgtitle">

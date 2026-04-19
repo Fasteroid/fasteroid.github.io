@@ -5,6 +5,10 @@ $js-color: #706425;
 $html-color: #5f3326;
 $css-color: #27314d;
 
+.hidden {
+    display: none;
+}
+
 .redstone > .front {
     background-image: url(base.$base + '/assets/skilltree/redstone.svg');
 }

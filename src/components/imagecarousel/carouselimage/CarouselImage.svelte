@@ -7,7 +7,7 @@
 </script>
 
 <style lang="scss">
-    @import "./carouselimage.scss";
+    @forward "./carouselimage.scss";
 </style>
 
 <div id="{id}" class="carousel-image {data.first ? "" : "hidden"}">

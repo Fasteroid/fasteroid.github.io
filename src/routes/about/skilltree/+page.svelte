@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
-  import Skilltree from "../../../components/skilltree/Skilltree.svelte";
+    import Skilltree from "../../../components/skilltree/Skilltree.svelte";
 </script>
 
 <body>

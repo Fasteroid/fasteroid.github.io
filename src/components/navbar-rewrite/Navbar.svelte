@@ -15,7 +15,7 @@
 </script>
 
 <style lang="scss">
-    @import "./navbar.scss";
+    @forward "./navbar.scss";
 </style>
 
 <nav>

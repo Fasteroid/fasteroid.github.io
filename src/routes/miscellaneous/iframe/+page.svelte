@@ -18,7 +18,7 @@
 </script>
 
 <style lang="scss">
-    @import "./iframe.scss";
+    @forward "./iframe.scss";
 </style>
 
 <div class="margins">

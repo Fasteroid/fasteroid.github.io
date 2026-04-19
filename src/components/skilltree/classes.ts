@@ -1,80 +1,92 @@
-import { clamp, Color } from "$lib/utils";
-import { PanZoomOptions } from "panzoom";
-import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
+import { clamp, Color, Derivative, RollingAverage } from '$lib/utils';
+import * as d3 from 'd3';
+import { GraphEdge2, GraphManager2, GraphNode2 } from '../graph/GraphManager2';
 import type { SkillTreeDataSet, SkillTreeDynamicNodeData, SkillTreeEdgeData, SkillTreeNodeData, SkillTreeStaticNodeData } from "./interfaces";
-import { Vec2 } from "$lib/vec2";
 
-function forceFalloff(d: number){
-    return d<0?d*0.05:d*(0.05 + (d/500)*0.45);
-}
+import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
+import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
+import { WebGLUtils } from '$lib/webgl/utils';
+import { dev } from '$app/environment';
 
-function rand(): number {
-    return Math.random() * 2 - 1
-}
+const NODE_PADDING   = 1;
+const GRAVITY        = 3;
+const PADDING_FORCE  = 0.1;
+const HOME_RADIUS    = 100;
 
-const NODE_DISTANCE  = 1.2;
-const NODE_PADDING   = 1.2;
-const NODE_MAX_VEL   = 80;
-const NODE_BOB_FORCE = 2;
-const GRAVITY        = 1.5;
+const EDGE_VERTS = new Float32Array([
+    // First triangle
+    0.0, -0.5,  // start, left
+    1.0, -0.5,  // end, left
+    0.0,  0.5,  // start, right
+    
+    // Second triangle
+    0.0,  0.5,  // start, right
+    1.0, -0.5,  // end, left
+    1.0,  0.5,  // end, right
+])
 
-export class SkillTreeEdge extends GraphEdge<SkillTreeNodeData, SkillTreeEdgeData, SkillTreeNode> {
+type Vec2 = [number, number]
+
+
+export class SkillTreeEdge extends GraphEdge2 {
 
     public hovered: boolean = false;
-    public dist: number;
 
-    public static readonly thin = 4;
+    public static readonly thin  = 4;
     public static readonly thick = 9;
+    public static readonly edgeAnimRate = 0.5;
 
-    public width: number = SkillTreeEdge.thin;
+    public get shouldRender() {
+        return !(this.source.html.hidden || this.target.html.hidden);
+    }
 
-    private _frame = () => {
-        this.width = clamp(this.width + (this.hovered ? 0.2 : -0.2), SkillTreeEdge.thin, SkillTreeEdge.thick);
-        requestAnimationFrame(this._frame);
+    private _width: number = SkillTreeEdge.thin;
+    public get width() { return this.shouldRender ? this._width : 0; }
+
+    public override render(dt: number): void {
+        this._width = clamp(this._width + (this.hovered ? 1 : -1) * dt * SkillTreeEdge.edgeAnimRate, SkillTreeEdge.thin, SkillTreeEdge.thick);
     }
 
     public static readonly WHITE = new Color(1,1,1);
     public color = SkillTreeEdge.WHITE;
 
-    constructor(private manager: SkillTreeManager, data: SkillTreeEdgeData){
-        super(manager, data);
-        this.dist = data.dist;
-        requestAnimationFrame(this._frame);
+    public get stress() {
+        return ( this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2
     }
 
-    public doForces() {
-        const childNode  = this.from!;
-        const parentNode = this.to!;
-        const dist = childNode.pos.distance(parentNode.pos) + 0.1;
-        const nx = (parentNode.pos.x-childNode.pos.x)/dist;
-        const ny = (parentNode.pos.y-childNode.pos.y)/dist;
-        const fac = clamp( forceFalloff(dist - this.dist * this.manager.relativeDistance * NODE_DISTANCE),-2,100);
-        childNode.applyForce(nx*fac,ny*fac);
-        parentNode.applyForce(-nx*fac,-ny*fac);        
+    constructor(    
+        public readonly source: SkillTreeNode,
+        public readonly target: SkillTreeNode,
+        data: SkillTreeEdgeData
+    ){
+        super();
     }
 
-    public getSerialized(): SkillTreeEdgeData {
+    public getSerialized(scalar: number): SkillTreeEdgeData {
         return {
-            from: this.from.id,
-            to:   this.to.id,
-            dist: this.dist
+            from: this.source.id,
+            to:   this.target.id,
         }
     }
 
 }
 
-export abstract class SkillTreeNode extends GraphNode<SkillTreeNodeData, SkillTreeEdgeData, SkillTreeEdge> {
+export abstract class SkillTreeNode extends GraphNode2 {
+
+    declare edges: SkillTreeEdge[];
+    public readonly type: 'static' | 'dynamic'; 
+    public readonly id: string;
 
     public abstract tier: number;
-    public readonly type: "dynamic" | "static";
 
-    declare readonly manager: SkillTreeManager;
-
-    constructor(manager: SkillTreeManager, data: SkillTreeNodeData){
-        super(manager, data);
+    constructor(manager: SkillTreeManager2, data: SkillTreeNodeData){
+        super(manager as unknown as GraphManager2<GraphNode2, GraphEdge2>);
 
         this.type = data.type;
+        this.id   = data.id;
+
         this.html.querySelector(".front")!.innerHTML = data.id;
+        this.html.hidden = false;
 
         // fade the node in
         this.html.animate(
@@ -101,23 +113,57 @@ export abstract class SkillTreeNode extends GraphNode<SkillTreeNodeData, SkillTr
 
 export class SkillTreeDynamicNode extends SkillTreeNode {
 
+    // d3 fixed position
+    protected fx: number | undefined;
+    protected fy: number | undefined;
+
     private canMouseOver: boolean = true;
-    private mouseForce:   number  = 0;
 
-    private homePos?: Vec2;
+    private homePos?: {x: number, y: number};
+    private homeForceMul: number = 1;
+    
+    private _hasHomed: boolean = false;
+    public get hasHomed() { return this._hasHomed; }
 
-    public readonly desc:     string[];
-    public readonly cssClass: string;
+    public doHomingForces(w: number, h: number){
+        if( this.homePos && !this._hasHomed ){
 
-    private dragListener: ((this: Document, ev: MouseEvent | TouchEvent) => any) | null = null;
+            const homeX = this.homePos.x * w;
+            const homeY = this.homePos.y * h;
+
+            if( Math.hypot( this.x - homeX, this.y - homeY ) < HOME_RADIUS ){
+                this.homeForceMul -= 0.02;
+                if( this.homeForceMul <= 0 ){
+                    this._hasHomed = true;
+                    // console.log("Node", this.id, "has homed."); 
+                    // this.html.style.boxShadow = "0 0 15px 5px rgba(0,255,0,0.6)";
+                    return;
+                }
+                
+                
+                this.vx *= 0.1;
+                this.vy *= 0.1;
+            }
+
+            this.vx += (homeX - this.x) * 0.1 * this.manager.dt * this.homeForceMul;
+            this.vy += (homeY - this.y) * 0.1 * this.manager.dt * this.homeForceMul;
+
+            const alpha = Math.exp(-6 * this.manager.dt * this.homeForceMul);
+            this.x = this.x * (1-alpha) + homeX * alpha;
+            this.y = this.y * (1-alpha) + homeY * alpha;        
+        }
+    }
+        
 
     private _tier!: number;
+    private hasCustomTier = true;
     public get tier(){
         if( !this._tier ){
+            this.hasCustomTier = false;
             let tier = 0;
             for( const edge of this.edges ){ // peek parents
-                if( edge.to === this ){      // are we the child?
-                    tier = Math.max(tier, edge.from.tier); // get the highest parent tier
+                if( edge.target === this ){      // are we the child?
+                    tier = Math.max(tier, edge.source.tier); // get the highest parent tier
                 }
             }
             this._tier = tier + 1; // we are one below the highest parent 
@@ -125,49 +171,77 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
         return this._tier;
     }
 
-    constructor(manager: SkillTreeManager, data: SkillTreeDynamicNodeData){
+    public readonly desc:     string[];
+    public readonly cssClass: string;
+
+    private dragListener: ((this: Document, ev: MouseEvent | TouchEvent) => any) | null = null;
+
+    private static node_id: number = 0;
+
+    constructor(private manager: SkillTreeManager2, data: SkillTreeDynamicNodeData){
         super(manager, data);
 
         this.desc     = data.desc;
         this.cssClass = data.style;
+        
+        if( data.tier ) this._tier = data.tier;
 
         this.html.classList.add(this.cssClass);
 
         if( data.x !== undefined && data.y !== undefined ){ // do we have a home?
-            this.homePos = new Vec2(data.x, data.y);
+            this.homePos = {x: data.x, y: data.y};
         }
 
         this.html.querySelector(".back")!.innerHTML = this.desc.join("<br><br>");
 
         // setupDragEvents
-        this.html.addEventListener("mouseover",() => {
+        this.html.addEventListener("pointerenter",() => {
             if( this.canMouseOver ){
-                this.mouseForce = NODE_BOB_FORCE;
                 this.canMouseOver = false;
-                setTimeout(() => {this.canMouseOver = true;}, 100);
+                setTimeout(() => {this.canMouseOver = true;}, 1000); // failsafe in case pointerleave doesn't fire (a node moving off the cursor while hovering will cause this)
+
+                // boop
+                this.vx += this.manager.mouse_dx * 0.3;
+                this.vy += this.manager.mouse_dy * 0.3;
             }
         });
 
-        this.html.addEventListener("mouseout",() => {
-            if( this.canMouseOver ){
-                this.canMouseOver = false;
-                setTimeout(() => {this.canMouseOver = true;}, 100);
-            }
+        this.html.addEventListener('pointerleave', () => {
+            setTimeout(() => {this.canMouseOver = true;}, 100);
         });
-        
-        this.html.addEventListener("mousedown",() => this.startDrag());
-        this.html.addEventListener("touchstart",() => this.startDrag());
 
-        document.addEventListener("mouseup",() => this.stopDrag());
-        document.addEventListener("touchend",() => this.stopDrag());
-        
-        this.setPos( manager.nodeContainer.clientWidth * 0.5, 0 );
-        this.applyForce( rand() * 10, rand() * 10 );
+        document.addEventListener("pointerup", () => this.stopDrag());
+        this.html.addEventListener("pointerdown", () => { this.stopDrag(); this.startDrag() }); // stopDrag again just in case the first one didn't fire somehow 
+
+        this.x = manager.nodeContainer.clientWidth * 0.5;
+        this.y = 0;
+
+
+        // staggered reveal
+
+        SkillTreeDynamicNode.node_id += 1;
+        this.fx = this.x;
+        this.fy = this.y;
+        this.html.hidden = true;
+
+        window.setTimeout( 
+            () => {
+                this.fx = undefined;
+                this.fy = undefined;
+                this.html.hidden = false;
+                this.html.animate(
+                    { opacity: [0, 1] },
+                    { duration: 50 }
+                );
+                this.manager.onNodesResized();
+            }, 
+            SkillTreeDynamicNode.node_id * 50 
+        );
+
     }
 
     private startDrag(){
         if(this.dragListener) return;
-        this.manager.panzoom?.pause();
         this.dragListener = ((ev: MouseEvent | TouchEvent) => this.dragEvent(ev));
         this.html.classList.toggle("grabbed",true);
         document.addEventListener("mousemove",this.dragListener);
@@ -176,7 +250,8 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
 
     private stopDrag(){
         if(!this.dragListener) return;
-        this.manager.panzoom?.resume();
+        this.fx = undefined;
+        this.fy = undefined;
         document.removeEventListener("mousemove",this.dragListener);
         document.removeEventListener("touchmove",this.dragListener);
         this.html.classList.toggle("grabbed",false);
@@ -186,99 +261,30 @@ export class SkillTreeDynamicNode extends SkillTreeNode {
     private dragEvent(e: MouseEvent | TouchEvent){
         let event: MouseEvent | Touch = ( e instanceof TouchEvent ) ? e.touches[0] : e;
 
-        this.pos.x = event.clientX;
-        this.pos.y = event.clientY;
-        this.manager.transformDragEventToSimulationCoords(this.pos);
+        const [posX, posY] = this.manager.transformDragEventToSimulationCoords([event.clientX, event.clientY]);
 
-        this.vel.setTo(0,0);
+        this.fx = posX;
+        this.fy = posY;
+
+        this.vx = 0;
+        this.vy = 0;
     }
-
-    private doRepulsionForce(that: SkillTreeNode) {
-        const dist = this.pos.distance(that.pos)+0.1; // todo: don't compute this twice since we may find it in the above func
-        let repulmul = 1.0
-
-        if(dist < this.manager.relativeDistance*0.9){ // if two nodes intersect, nudge them in the right directions
-            const diff = (this.tier - that.tier) * 0.5;
-            this.applyForce(0, diff);
-            that.applyForce(0, -diff);
-            repulmul = 0.5;
-        }        
-
-        const nx = (that.pos.x-this.pos.x)/dist;
-        const ny = (that.pos.y-this.pos.y)/dist;
-        const fac = clamp((dist - this.manager.relativeDistance*NODE_DISTANCE)*0.03,-2,0) * repulmul;
-        this.applyForce(nx*fac,ny*fac);
-        that.applyForce(-nx*fac,-ny*fac);
-    }
-
-    private doHomingForce(){
-        if(this.homePos){
-
-            const force = this.homePos.copy;
-            force.x = force.x * this.manager.nodeContainer.clientWidth; // homePos is relative
-            force.y = force.y * this.manager.nodeContainer.clientHeight;
-
-            if( force.distance(this.pos) < this.manager.relativeDistance * 0.5 ){ // close enough, stop
-                this.homePos = undefined;
-                return;
-            }
-
-            force.subV(this.pos);
-            force.clampLength(0, 15);
-            force.scaleBy(0.8);
-
-            this.applyForce(force.x, force.y);
-        }        
-    }
-
-    private doWallForce(){
-        const relpad = this.manager.relativePadding;
-        if( this.pos.x < relpad ){
-            this.applyForce( ((relpad - this.pos.x)**2)*0.00005, 0 );
-        }
-        else if( this.pos.x > this.manager.nodeContainer.clientWidth - relpad ){
-            this.applyForce( -((this.manager.nodeContainer.clientWidth - relpad - this.pos.x)**2)*0.00005, 0 );
-        }
-
-        if( this.pos.y < relpad ){
-            this.applyForce( 0, ((relpad - this.pos.y)**2)*0.00005 );
-        }
-        else if( this.pos.y > this.manager.nodeContainer.clientHeight - relpad ){
-            this.applyForce( 0, -((this.manager.nodeContainer.clientHeight - relpad - this.pos.y)**2)*0.00005 );
-        }
-    }
-
-    // abstract implementations
-
-    public doForces(){
-        this.applyForce(0, GRAVITY);
-        this.mouseForce = clamp(this.mouseForce - 0.1,0,Infinity);       
-        this.applyForce(0, -this.mouseForce);
-
-        for( const that of this.manager.nodes.values() ){
-            if( that === this ) continue; // don't repel self lol
-            this.doRepulsionForce(that);
-        }
-
-        this.doHomingForce();
-        this.doWallForce();
-    }
-
-    public override doPositioning(){
-        if(this.dragListener){ return }
-        this.pos.addV( this.vel.clampLength(0, NODE_MAX_VEL).scaleBy(0.9) );
-        this.setPos(this.pos.x, this.pos.y); // clamp
-    }     
 
     public getSerialized(): SkillTreeDynamicNodeData {
-        return {
+        const result: SkillTreeDynamicNodeData ={
             id:    this.id,
-            x:     this.pos.x / this.manager.nodeContainer.clientWidth,
-            y:     this.pos.y / this.manager.nodeContainer.clientHeight,
+            x:     this.x / this.manager.nodeContainer.clientWidth,
+            y:     this.y / this.manager.nodeContainer.clientHeight,
             type:  "dynamic",
             desc:  this.desc,
-            style: this.cssClass
+            style: this.cssClass,
         }
+
+        if( this.hasCustomTier ){
+            result.tier = this._tier;
+        }
+
+        return result;
     }
     
 }
@@ -287,33 +293,24 @@ export class SkillTreeStaticNode extends SkillTreeNode {
 
     public readonly tier: number;
 
-    public readonly x: number;
-    public readonly y: number;
+    // d3 fixed position
+    public get fx() { return this.data.x * this.manager.nodeContainer.clientWidth; }
+    public get fy() { return this.data.y * this.manager.nodeContainer.clientHeight; }
 
-    constructor(manager: SkillTreeManager, data: SkillTreeStaticNodeData){
+    constructor(private manager: SkillTreeManager2, private data: SkillTreeStaticNodeData){
         super(manager, data);
-        this.tier = data.tier;
-        this.x    = data.x;
-        this.y    = data.y;
+        this.tier  = data.tier;
 
         this.html.classList.add("static")
         this.html.querySelector(".back")!.remove();
     }
 
-    public doForces(){ }
-
-    public override doPositioning(){ 
-        this.setPos(
-            this.x * this.manager.nodeContainer.clientWidth,
-            this.y * this.manager.nodeContainer.clientHeight
-        );
-    }
 
     public getSerialized(): SkillTreeStaticNodeData {
         return {
             id:   this.id,
-            x:    this.pos.x / this.manager.nodeContainer.clientWidth,
-            y:    this.pos.y / this.manager.nodeContainer.clientHeight,
+            x:    this.fx / this.manager.nodeContainer.clientWidth,
+            y:    this.fy / this.manager.nodeContainer.clientHeight,
             type: "static",
             tier: this.tier
         }
@@ -322,45 +319,245 @@ export class SkillTreeStaticNode extends SkillTreeNode {
 }
 
 
-export class SkillTreeManager
-extends GraphManager<
-    SkillTreeNodeData,
-    SkillTreeEdgeData,
+export class SkillTreeManager2
+extends GraphManager2<
+    SkillTreeNode,
     SkillTreeEdge,
-    SkillTreeNode
+    SkillTreeNodeData,
+    SkillTreeEdgeData
 > {
 
     public relativeDistance = 120;
-    public relativePadding  = 120;
+    public relativePadding  = 240;    
+    
+    private readonly gl: WebGL2RenderingContext;
+    private readonly edgeBuffer: WebGLBuffer;
+    private readonly resUniform: WebGLUniformLocation;
 
-    private _firstNode: SkillTreeNode;
-
-    protected override handleResize(){
-        this.relativeDistance = NODE_DISTANCE * this._firstNode.html.clientWidth;
-        this.relativePadding  = NODE_PADDING  * this._firstNode.html.clientWidth;
-        super.handleResize();
+    protected get _someNode(): SkillTreeNode {
+        const node = this.nodes.values().next().value;
+        if( !node ) throw new Error("No nodes in the graph!");
+        return node;
     }
+
+    private _maxTier?: number;
+    public get maxTier(): number {
+        return this._maxTier ??= this.nodes.values().map(node => node.tier).reduce( (a, b) => Math.max(a, b), 0 );
+    }
+
+    public readonly onNodesResized = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.2 ).strength(0.3) );
+
+    public readonly onCanvasResized = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = this.edgeContainer.clientWidth;
+        const displayHeight = this.edgeContainer.clientHeight;
+        
+        // Set actual canvas resolution
+        this.edgeContainer.width = displayWidth * dpr;
+        this.edgeContainer.height = displayHeight * dpr;
+
+        this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
+        this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
+
+        this.render(); // immediately rerender
+    }
+
+    private readonly mouse_dxs = new RollingAverage(10);
+    private readonly mouse_dys = new RollingAverage(10);
+    private mouse_ticked: boolean = false;
+
+    public get mouse_dx() { return this.mouse_dxs.get(); }
+    public get mouse_dy() { return this.mouse_dys.get(); }
 
     constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SkillTreeDataSet){
-        super(templateNode, nodeContainer, lineContainer, data);
-        (window as any).manager = this;
-        this._firstNode = this.nodes.values().next().value!;
-        this.handleResize();
+
+        super(
+            templateNode, 
+            nodeContainer, 
+            lineContainer, 
+            function(this: SkillTreeManager2, edgeData) { 
+                return new SkillTreeEdge( this.nodes.get(edgeData.from)! , this.nodes.get(edgeData.to)!, edgeData)
+            },
+            function(this: SkillTreeManager2, nodeData) {
+                console.log("Creating node:", nodeData);
+                switch(nodeData.type) {
+                    case 'dynamic':
+                        return new SkillTreeDynamicNode(this, nodeData as SkillTreeDynamicNodeData);
+                    case 'static':
+                        return new SkillTreeStaticNode(this, nodeData as SkillTreeStaticNodeData);
+                }
+            },
+            data
+        );
+
+        const mouse_dx = new Derivative();
+        const mouse_dy = new Derivative();
+
+        const current_mouse_pos: Vec2 = [0, 0];
+    
+        document.addEventListener("pointermove", (e) => {
+            if( this.mouse_ticked ) return;
+            this.mouse_ticked = true;
+
+            current_mouse_pos[0] = e.clientX;
+            current_mouse_pos[1] = e.clientY;
+
+            this.transformDragEventToSimulationCoords(current_mouse_pos);
+
+            this.mouse_dxs.push( mouse_dx.push(current_mouse_pos[0], this.dt) );
+            this.mouse_dys.push( mouse_dy.push(current_mouse_pos[1], this.dt) );
+        })
+
+        this.linkForces.distance( this.relativeDistance ).strength( (link) => Math.min( link.stress * 1.3 / this.relativeDistance + 0.2, 1 ) )
+
+        // gravity
+        this.simulation.force("gravity", (alpha: number) => {
+            for( const node of this.nodes.values() ){
+                if( node instanceof SkillTreeDynamicNode ){
+                    node.vy += GRAVITY * alpha * this.dt;
+                }
+            }
+        });
+
+        // keep nodes inside the container
+        this.simulation.force("containment", (alpha: number) => {
+            const w = this.nodeContainer.clientWidth;
+            const h = this.nodeContainer.clientHeight;
+
+            for( const node of this.nodes.values() ){
+                if( node instanceof SkillTreeDynamicNode ){
+
+                    // padding
+                    const paddingX = NODE_PADDING * this.relativePadding;
+                    const paddingY = NODE_PADDING * this.relativePadding;
+
+                    if( node.x < paddingX ){
+                        node.vx += (paddingX - node.x) * PADDING_FORCE * this.dt;
+                    }
+                    if( node.x > w - paddingX ){
+                        node.vx -= (node.x - (w - paddingX)) * PADDING_FORCE * this.dt;
+                    }
+                    if( node.y < paddingY ){
+                        node.vy += (paddingY - node.y) * PADDING_FORCE * this.dt;
+                    }
+                    if( node.y > h - paddingY ){
+                        node.vy -= (node.y - (h - paddingY)) * PADDING_FORCE * this.dt;
+                    }
+
+                    node.doHomingForces(w, h);
+
+                }
+            }
+        });
+
+        // vaguely distribute nodes by tier ( y ~ tier )
+        const Y_START = 1;
+        this.simulation.force("tierY", (alpha: number) => {
+
+            const tierHeight = this.nodeContainer.clientHeight / (this.maxTier + Y_START);
+
+            for( const node of this.nodes.values() ){
+
+                if( node instanceof SkillTreeDynamicNode ){
+                    const targetY = tierHeight * (node.tier + 0.5 + Y_START);
+                    node.vy += (targetY - node.y) * 0.03 * alpha * this.dt;
+                }
+
+            }
+        });
+
+        // webgl!
+        {
+            const gl = this.edgeContainer.getContext("webgl2");
+            if( !gl ) throw new Error("WebGL2 not supported!");
+            this.gl = gl;
+
+            const program = WebGLUtils.createProgram(
+                gl, 
+                EDGE_FRAG_SHADER, 
+                EDGE_VERT_SHADER
+            );
+
+            gl.useProgram(program);
+
+            this.resUniform = gl.getUniformLocation(program, 'u_resolution')!;
+
+            const templateBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, EDGE_VERTS, gl.STATIC_DRAW);
+    
+            const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
+            gl.enableVertexAttribArray(a_templatePosition);
+            gl.vertexAttribPointer(a_templatePosition, 2, gl.FLOAT, false, 0, 0);
+
+            const edgeBuffer = this.edgeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.getRawEdgeData() ), gl.DYNAMIC_DRAW);
+    
+            // Set up per-instance attributes
+
+            const stride = 5 * 4; // 5 floats per edge (2 + 2 + 1) * 4 bytes each
+            
+            const a_startPoint = gl.getAttribLocation(program, 'a_startPoint');
+            gl.enableVertexAttribArray(a_startPoint);
+            gl.vertexAttribPointer(a_startPoint, 2, gl.FLOAT, false, stride, 0);
+            gl.vertexAttribDivisor(a_startPoint, 1); // One per instance!
+            
+            const a_endPoint = gl.getAttribLocation(program, 'a_endPoint');
+            gl.enableVertexAttribArray(a_endPoint);
+            gl.vertexAttribPointer(a_endPoint, 2, gl.FLOAT, false, stride, 2 * 4);
+            gl.vertexAttribDivisor(a_endPoint, 1);
+            
+            const a_width = gl.getAttribLocation(program, 'a_width');
+            gl.enableVertexAttribArray(a_width);
+            gl.vertexAttribPointer(a_width, 1, gl.FLOAT, false, stride, 4 * 4);
+            gl.vertexAttribDivisor(a_width, 1);
+
+        }
+
+    
+        this.simulation.velocityDecay(0.05);
+        this.simulation.alphaDecay(0);
+        this.simulation.alpha(0.25);
+
+
+        const nodeResizeWatcher = new ResizeObserver(this.onNodesResized);
+        nodeResizeWatcher.observe(this._someNode.html);
+
+        const canvasResizeWatcher = new ResizeObserver(this.onCanvasResized);
+        canvasResizeWatcher.observe(this.edgeContainer);
     }
 
-    protected override createNode(data: SkillTreeNodeData): SkillTreeNode {
-        switch(data.type){
-            case "dynamic": return new SkillTreeDynamicNode(this, data as SkillTreeDynamicNodeData);
-            case "static":  return new SkillTreeStaticNode(this, data as SkillTreeStaticNodeData);
+    private *getRawEdgeData(): Generator<number, void, unknown> {
+        for( const edge of this.edges.values() ){
+            yield edge.source.x;
+            yield edge.source.y;
+            yield edge.target.x;
+            yield edge.target.y;
+            yield edge.width;
         }
     }
 
-    protected override createEdge(data: SkillTreeEdgeData): SkillTreeEdge {
-        return new SkillTreeEdge(this, data);
+    public override requestRender(): void {
+        super.requestRender();
     }
 
+    public override render() {
+        super.render();
+        this.mouse_ticked = false;
 
-    public transformDragEventToSimulationCoords(v: Vec2): Vec2 {
+        // Thanks to Anthropic's Claude (and all programmers it learned from) for this more optimized GPU instanced drawing of edges.
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array( this.getRawEdgeData() ));
+        
+        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+        // the '6' here = 6 verts per edge (2 tris)
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, this.edges.size);
+    }
+
+    public transformDragEventToSimulationCoords(v: Vec2) {
         const thisRect = this.selfBox;
         const parentRect = this.parentBox;
         const style = this.selfComputedSize;
@@ -368,16 +565,15 @@ extends GraphManager<
         const scaleX = thisRect.width / style.width;
         const scaleY = thisRect.height / style.height;
 
-        return v.setTo(
-            (v.x - thisRect.left) * scaleX + thisRect.left - parentRect.left,
-            (v.y - thisRect.top)  * scaleY + thisRect.top  - parentRect.top
-        );
-    }
+        v[0] = (v[0] - thisRect.left) * scaleX + thisRect.left - parentRect.left;
+        v[1] = (v[1] - thisRect.top) * scaleY + thisRect.top - parentRect.top;
 
+        return v;
+    }
 
     public serialize(): void {
         const nodes = Array.from(this.nodes.values()).map(node => node.getSerialized());
-        const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized());
+        const edges = Array.from(this.edges.values()).map(edge => edge.getSerialized(this.relativeDistance));
         
         const json = JSON.stringify({ nodes, edges }, undefined, 4);
 

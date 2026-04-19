@@ -22,7 +22,7 @@
 
 <svelte:head>
     <style lang="scss">
-        @import "./expression2.scss";
+        @forward "./expression2.scss";
     </style>
 </svelte:head>
 

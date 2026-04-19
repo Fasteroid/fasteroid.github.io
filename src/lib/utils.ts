@@ -84,6 +84,26 @@ export function clamp(n: number, min: number, max: number): number {
     return ret;
 }
 
+export function lerp(a: number, b: number, t: number): number {
+    return a * (1 - t) + b * t;
+}
+
+/**
+ * Damped harmonic oscillator, as an easing function.  Bakes one with the constants precomputed.
+ * @author Claude Sonnet 4.6, Github Copilot, Fasteroid
+ */
+export function makeHarmonicOscillator(damping = 0.35, frequency = 12) {
+    const wd       = frequency * Math.sqrt(1 - damping * damping);
+    const decay    = damping * frequency;
+    const sinScale = damping / Math.sqrt(1 - damping * damping);
+
+    const f1 = (t: number) => 1 - Math.exp(-decay * t) * (Math.cos(wd * t) + sinScale * Math.sin(wd * t));
+    const offset = f1(0);
+    const stretch = f1(1) - offset;
+    return (t: number) => (f1(t) - offset) / stretch;
+}
+
+
 /**
  * 2D map using a pair of keys.
  * @author Fasteroid
@@ -116,68 +136,26 @@ export class Map2D<K, V> {
         this.mapMap.get(k1)?.delete(k2);
     }
 
-    forEach(callback: (v: V, k1: K, k2: K) => void){
-        this.mapMap.forEach((inner, k1) => {
-            inner.forEach((v, k2) => {
-                callback(v, k1, k2);
-            })
-        })
+    *values() {
+        for( let inner of this.mapMap.values() )
+            for( let v of inner.values() )
+                yield v;
     }
 
-    values(): V[] {
-        let ret: V[] = [];
-        this.forEach(v => ret.push(v));
-        return ret;
+    *keys() {
+        for( let [k1, inner] of this.mapMap.entries() )
+            for( let k2 of inner.keys() )
+                yield [k1, k2] as [K, K];
     }
 
-    keys(): [K, K][] {
-        let ret: [K, K][] = [];
-        this.forEach((_, k1, k2) => ret.push([k1, k2]));
-        return ret;
+
+    public get size(): number {
+        let size = 0;
+        for( let inner of this.mapMap.values() )
+            size += inner.size;
+        return size;
     }
 
-}
-
-/**
- * 2D set using a pair of keys.
- * @author Fasteroid
- */
-export class Set2D<K> {
-    private setSet: Map<K, Set<K>> = new Map<K, Set<K>>();
-
-    add(k1: K, k2: K){
-        let inner: Set<K>;
-        if(!this.setSet.has(k1)){
-            inner = new Set<K>();
-            this.setSet.set(k1, inner);
-        }
-        else {
-            inner = this.setSet.get(k1)!;
-        }
-        inner.add(k2);
-    }
-
-    has(k1: K, k2: K): boolean {
-        return this.setSet.get(k1)?.has(k2) ?? false;
-    }
-
-    delete(k1: K, k2: K){
-        this.setSet.get(k1)?.delete(k2);
-    }
-
-    forEach(callback: (k1: K, k2: K) => void){
-        this.setSet.forEach((inner, k1) => {
-            inner.forEach(k2 => {
-                callback(k1, k2);
-            })
-        })
-    }
-
-    keys(): [K, K][] {
-        let ret: [K, K][] = [];
-        this.forEach((k1, k2) => ret.push([k1, k2]));
-        return ret;
-    }
 }
 
 /**
@@ -211,7 +189,7 @@ export function die(msg: string): never {
 */
 export function SetOnce() {
     return function(target: any, key: string) {
-        let dirty = false;
+        let dirty = false; 
         let val = target[key];
         Object.defineProperty(target, key, {
             get: () => val,
@@ -317,4 +295,61 @@ export async function loadDynamicJSON<T>(branch: string, file: string): Promise<
     let json = await resp.text();
 
     return JSON.parse(json)
+}
+
+export class RollingAverage {
+    private buffer: number[] = [];
+    private ptr: number = 0;
+    private value: number | undefined = 0;
+    constructor(public readonly size: number) {}
+
+    /**
+     * Pushed a value into the buffer, up to a size of {@linkcode size}, then starts overwriting old values.
+     */
+    public push(value: number) {
+        if( this.buffer.length < this.size ){
+            this.buffer.push(value);
+        }
+        else {
+            this.buffer[this.ptr] = value;
+            this.ptr = (this.ptr + 1) % this.size;
+        }
+        this.value = undefined;
+    }
+
+    private compute() {
+        if( this.buffer.length === 0 ) return 0;
+        const sum = this.buffer.reduce((a, b) => a + b, 0);
+        return sum / this.buffer.length;
+    }
+
+    /**
+     * Gets (or computes) the average of the values in the buffer.
+     */
+    public get(): number {
+        return this.value ??= this.compute();
+    }
+}
+
+export class Derivative {
+    private lastValue!: number;
+
+    /**
+     * Pushes a value into the derivative calculator, and returns the derivative (change) since the last value was pushed.
+     */
+    public push(value: number, dt: number): number {
+        if( dt === 0 ) return 0; // bail
+        this.lastValue ??= value; // just in case; don't want undefined here.
+        const derivative = (value - this.lastValue) / dt;
+        this.lastValue = value;
+        return derivative;
+    }
+}
+
+export function nextMicrotask(): Promise<void> {
+    return new Promise( (resolve) => queueMicrotask(resolve) )
+}
+
+export function chooseRandomly<T>(choices: T[]) {
+    return choices[ Math.floor(Math.random() * choices.length) ] as T | undefined;
 }

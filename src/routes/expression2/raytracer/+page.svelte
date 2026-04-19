@@ -26,7 +26,7 @@
 </script>
 
 <style lang="scss">
-    @import "./raytracer.scss";
+    @forward "./raytracer.scss";
 </style>
 
 <div class="margins">

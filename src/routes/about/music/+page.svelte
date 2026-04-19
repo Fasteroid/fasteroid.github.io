@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from "$app/paths";
-    import { FAVORITES_SIZE_MUL, LIKES_SIZE_MUL, RELICS_SIZE_MUL } from "../../../components/soundcloudgraph/classes";
+    import { FAVORITES_SIZE_MUL, LIKES_SIZE_MUL, RELICS_SIZE_MUL } from "../../../components/soundcloudgraph/constants";
     import SoundcloudGraph from "../../../components/soundcloudgraph/SoundcloudGraph.svelte";
 
     const legendaryFavoritesDesc = "A competitive catalogue, limited to my top 30 with a max of 3 per artist."

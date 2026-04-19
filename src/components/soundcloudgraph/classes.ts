@@ -1,38 +1,51 @@
-import { clamp, Color } from "$lib/utils";
-import { GraphEdge, GraphManager, GraphNode } from "../graph/classes";
+
 
 import type { SoundcloudEdgeData, SoundcloudGraphDataset, SoundcloudNodeData } from "$lib/soundcloud/types_native";
 import { base } from "$app/paths";
-import { getPaletteAsync } from "$lib/colorthiefextensions";
-import { Vec2 } from "$lib/vec2";
-import type { ImmutableVec2 } from "$lib/vec2"
-import { Transform } from "panzoom";
 import { addHyperlinks } from "./url-adder";
 import { getEnhancedBio, trimBioText } from "./bio-enhancements";
 
 import "./widget-types"; // cursed hack by Claude
+import { GraphEdge2, GraphManager2, GraphNode2 } from "../graph/GraphManager2";
+import { chooseRandomly, clamp, Color, lerp, makeHarmonicOscillator, nextMicrotask } from "$lib/utils";
+import { getPalette } from "colorthief";
+import { LIKES_SIZE_MUL, FAVORITES_SIZE_MUL, RELICS_SIZE_MUL } from "./constants";
+import * as d3 from "d3";
+import type { Panzoom } from "@fasteroid/panzoom-revamped";
+import type { PanzoomTransform } from "@fasteroid/panzoom-revamped/transform";
+import { WebGLUtils } from "$lib/webgl/utils";
 
-const sqrt = Math.sqrt
+import EDGE_FRAG_SHADER from './edges.frag.glsl?raw';
+import EDGE_VERT_SHADER from './edges.vert.glsl?raw';
+
 const max = Math.max
 const min = Math.min
 
-const REPEL_SOFTNESS              = 2;    // to avoid NaN if nodes are very close
-const AMBIENT_REPEL_STRENGTH      = 100; // inverse square multiplier
-const FAR_AWAY_FROM_CENTER_THRESH = 1700; // min "far" distance
+const BASE_NODE_SIZE        = 48;   // self-explanatory
+const UNFOCUS_DRAG_DIST     = 50;  // how far to drag before unfocusing; allows micro-movements during selection
+const NODE_SUPER_RESOLUTION = 4;
+const FOCUS_TIME            = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
-const THINNING_FACTOR             = 30;   // controls triangle overlap on bidirectional edges
+const HOVER_EDGE_THICKNESS = 1.5;
+const SELECT_EDGE_THICKNESS = 12;
+const SELECT_EDGE_RATE = 0.5;
 
-const EDGE_RATE                   = 0.1;  // how quickly the edges grow and shrink
+const EDGE_VERTS = new Float32Array([
+    1, 0, 
+    0, -0.5,
+    0, 0.5,
+    
+    0, 0,
+    1, -0.5,
+    1, 0.5
+])
 
-const BASE_NODE_SIZE              = 48;   // self-explanatory
 
-const UNFOCUS_DRAG_DIST           = 50;  // how far to drag before unfocusing; allows micro-movements during selection
+// technically this easing isn't physically accurate, but to do what I actually want I'd need to implement RK4 and tune a fuckton of parameters.  Close enough.
+const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
+const EASE_FN = (t: number) => OSCILLATOR(t ** 1.5);
 
-const NODE_SUPER_RESOLUTION       = 4;
-
-export const LIKES_SIZE_MUL     = 1.5;
-export const FAVORITES_SIZE_MUL = 6;
-export const RELICS_SIZE_MUL    = 9;
+const ZERO_VEC: readonly [number, number] = [0, 0];
 
 function getZoomScaleMul(){
     return document.body.clientWidth * 0.065
@@ -54,152 +67,88 @@ function getShuffledCopy<T>(array: T[]) {
     return array;
 }
 
-export class SoundcloudEdge extends GraphEdge<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudNode> {
+export class SoundcloudEdge extends GraphEdge2 {
 
     public get width() {
-        return max(this.to.edgeWidth, this.from.edgeWidth) * 3;
+        return max( this.source.edgeWidth, this.target.edgeWidth )
     }
 
-    public readonly color: Color = Color.BLACK;
-    constructor(private manager: SoundcloudGraphManager, data: SoundcloudEdgeData){
-        super(manager, data);
+    public get stress() {
+        return ( this.source.x - this.target.x ) ** 2 + ( this.source.y - this.target.y ) ** 2
     }
 
-    private $lastToPalette: Color[] = [];
-    private $lastFromPalette: Color[] = [];
-
-    private toColor: Color = Color.BLACK;
-    private fromColor: Color = Color.BLACK;
-
-    private _fromForceScalar!: number;
-    private get fromForceScalar() {
-        return this._fromForceScalar ??= (this.to.diameter / (this.to.diameter + this.from.diameter));
+    constructor(
+        public readonly source: SoundcloudNode,
+        public readonly target: SoundcloudNode,
+        _: SoundcloudEdgeData
+    ){
+        super();
     }
 
-    private _toForceScalar!: number;
-    private get toForceScalar() {
-        return this._toForceScalar ??= (this.from.diameter / (this.to.diameter + this.from.diameter));
-    }
+    private _targetColor?: Color;
+    private _sourceColor?: Color;
 
 
-    public override get verts(): [Vec2, Color][] {
+    public get targetColor() {
+        if( this._targetColor ) return this._targetColor;
 
-        if( this.width === 0 ) return [];
-
-        if( this.to.palette !== this.$lastToPalette ){
-            this.$lastToPalette = this.to.palette;
-            this.toColor = this.to.palette[ Math.floor(Math.random() * this.to.palette.length) ]; // pick randomly
+        if( !this.bidirectional ) {
+            return this._targetColor = Color.BLACK;
         }
 
-        if( this.from.palette !== this.$lastFromPalette ){
-            this.$lastFromPalette = this.from.palette;
-            this.fromColor = this.from.palette[ Math.floor(Math.random() * this.from.palette.length) ]; // pick randomly
+        if( this.target.palette ) {
+            this._targetColor = chooseRandomly(this.target.palette) ?? Color.BLACK;
+            return this._targetColor;
         }
 
-        let original: [Vec2, Color][];
+        return Color.BLACK;
+    }
 
-        const to   = this.to.pos.copy;
-        const from = this.from.pos.copy;
+    public get sourceColor() {
+        if( this._sourceColor ) return this._sourceColor;
 
-        const normal = this.normal;
+        if( this.source.palette ) {
+            this._sourceColor = chooseRandomly(this.source.palette) ?? Color.BLACK;
+            return this._sourceColor;
+        }
 
-        const offsetScaledTo   = normal.copy.scaleBy(this.to.diameter * 0.24);
-        const offsetScaledFrom = normal.copy.scaleBy(this.from.diameter * 0.24);
-
-        // fix the endpoints so they're on the edge of the node instead of the center
-        to.subV( offsetScaledTo );
-        from.addV( offsetScaledFrom );
-
-        const size = this.manager.selfComputedSize;
-        const x = size.width * 0.5;
-        const y = size.height * 0.5;
-        const center = this.manager.offsetPos ?? Vec2.ZERO;
-
-        // transform the base points since coordinates are jank here
-        to.add(x - center.x, y - center.y);
-        from.add(x - center.x, y - center.y);
-
-        // make these perpendicular now
-        offsetScaledTo.pivot90CCW();
-        offsetScaledFrom.pivot90CCW();
-
-        // and shrink them because 0.6 * diameter will be way too thick
-        offsetScaledTo.scaleBy(0.05 * this.width);
-        offsetScaledFrom.scaleBy(0.05 * this.width);
-
-        if( this.bidirectional )
-            original = [ 
-                [to.copy.scaleBy(THINNING_FACTOR - 1).addV(from).scaleBy(1 / THINNING_FACTOR), this.toColor],
-                [from.copy.addV(offsetScaledFrom), this.fromColor],
-                [from.copy.subV(offsetScaledFrom), this.fromColor],
-                [from.copy.scaleBy(THINNING_FACTOR - 1).addV(to).scaleBy(1 / THINNING_FACTOR), this.fromColor],
-                [to.copy.subV(offsetScaledTo), this.toColor],
-                [to.copy.addV(offsetScaledTo), this.toColor],
-            ];
-        else
-            original = [ 
-                [to.copy.subV(from).scaleBy(1.5).addV(from), this.fromColor], // these fade a little fast, so make the edge extra "too long" so it's just right in practice
-                [from.copy.addV(offsetScaledFrom), this.fromColor],
-                [from.copy.subV(offsetScaledFrom), this.fromColor],
-            ];
-
-        return original;
+        return Color.BLACK;
     }
 
     public getSerialized(): SoundcloudEdgeData {
         return {
-            from: this.from.id,
-            to:   this.to.id,
+            from: this.source.data.id,
+            to:   this.target.data.id,
         }
     }
 
-    public doForces() {
-        const fromNode  = this.from!;
-        const toNode = this.to!;
-
-        const dist = fromNode.pos.distance(toNode.pos);
-        let factor = clamp( (dist - toNode.diameter - fromNode.diameter) * 0.025, -0.2, 2) * 
-                     (1 + this.width * 0.25) * 
-                     (0.5 * fromNode.fewFollowingMul + 0.5 * toNode.fewFollowingMul) *
-                     ( (0.5 * fromNode.diameter + 0.5 * toNode.diameter) / BASE_NODE_SIZE ) *
-                     (this.bidirectional ? 2 : 0.5);
-
-        const dir    = toNode.pos.copy.subV(fromNode.pos).scaleBy(factor / dist);
-        const dircpy = dir.copy;
-
-        fromNode.vel.addV(dir.scaleBy(this.fromForceScalar));
-        toNode.vel.subV(dircpy.scaleBy(this.toForceScalar));
-
+    public *getRawData(): Generator<number, void, unknown> {
+        yield this.source.x;
+        yield this.source.y;
+        yield this.target.x;
+        yield this.target.y;
+        yield this.width;
+        yield this.sourceColor.r;
+        yield this.sourceColor.g;
+        yield this.sourceColor.b;
+        yield this.targetColor.r;
+        yield this.targetColor.g;
+        yield this.targetColor.b;
     }
 
 }
 
 
-export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdgeData, SoundcloudEdge> {
+export class SoundcloudNode extends GraphNode2 {
 
-    declare readonly manager: SoundcloudGraphManager;
+    declare readonly edges:   SoundcloudEdge[];
 
     private _focused:  boolean = false;
     private _selected: boolean = false;
 
-    private _edgeWidth: number = 0;
+    private _selectEdgeWidth:      number = 0;
     public get edgeWidth() {
-        return this._edgeWidth;
-    }
-
-    private _fewFollowingMul!: number;
-    public get fewFollowingMul(){
-        return (
-            this._fewFollowingMul ??= 1 / ( // only calculate it once
-                min(
-                    0.1 * this.edges.reduce<number>( 
-                        (acc, e) => acc + (e.bidirectional ? 1 : 0.5), 
-                        0 
-                    ),
-                    4
-                )
-            )
-        );
+        return this._selectEdgeWidth;
     }
 
     private _diameter!: number;
@@ -215,12 +164,12 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     // artists with large followings need the extra circumference
     private _trueDiameter!: number;
     public get trueDiameter(){
-        return this._trueDiameter ??= max(this.diameter * 2, BASE_NODE_SIZE + this.data.artist.followers_count * 0.0005);
+        return this._trueDiameter ??= max(this.diameter, BASE_NODE_SIZE + Math.sqrt(this.data.artist.followers_count) * 0.5 );
     }
 
     private _palette?: Color[];
-    public get palette(): Color[] {
-        return this._palette ?? [Color.BLACK];
+    public get palette(): Color[] | undefined {
+        return this._palette;
     }
 
     private _descriptor!: HTMLElement;
@@ -231,40 +180,10 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     public playNextNode() {
-        const TARGET_ZOOM = 1.5;
-
         const choices = getShuffledCopy(this.neighbors); // random walk to the next track
         const choice  = choices.find( (choice) => !this.manager.walked.has(choice) );
-        if( !choice ) return;
 
-        this.manager.panzoom!.smoothZoomAbs( this.manager.parentBox.width / 2, this.manager.parentBox.height / 2, TARGET_ZOOM );
-
-        setTimeout( 
-            () => {
-                const interval = window.setInterval(
-                    () => {
-                        let curTransform = this.manager.panzoom!.getTransform();
-                        let diff = Math.abs( TARGET_ZOOM - curTransform.scale );
-        
-                        if( diff < 0.02 ){
-                            window.clearInterval(interval);
-        
-                            this.manager.walked.add( choice )
-                            this.manager.setFocusedNode( choice )
-                        }
-                    }
-                )
-        
-                setTimeout(
-                    () => {
-                        window.clearInterval(interval);
-                    }, 
-                    2000  // took too long, forget it.
-                );
-            },
-            1000
-        );
-        
+        this.manager.setFocusedNode( choice ?? choices[0] ?? null ); // if there are no neighbors, just unfocus
     }
 
 
@@ -284,7 +203,7 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         widget.bind(
             window.SC.Widget.Events.READY, 
             () => {
-            widget.setVolume(40);
+                widget.setVolume(40);
             }
         );
 
@@ -293,12 +212,19 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
             window.SC.Widget.Events.FINISH,
             this.playNextNode.bind(this)
         )
+
+        // DEBUG
+        // setTimeout( () => this.playNextNode(), 3000 )
+            
     }
 
     /** When it's done fading in */
     private onFullVisible() {
         this.html.classList.remove('anim-middle');
         this.html.classList.add('anim-top');
+
+        this.html.hidden = true;
+        this.html.hidden = false;
     }
 
     /** When it's done fading out */
@@ -308,7 +234,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
     }
 
     private anim?: Animation;
-    private anim2?: Animation;
+    /**
+     * Shows / hides soundcloud overlay
+     */
     public setFocus(is: boolean){
         this._focused = is;
 
@@ -349,6 +277,9 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
+    /**
+     * Decides if this node should be playing music or not
+     */
     public setSelect(is: boolean){
         this._selected = is;
 
@@ -363,31 +294,22 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
-    private onClick = () => {
-        if( this.manager.dragging ) {
-            this.manager.setFocusedNode(null)
-            return;
-        };
-        if( this._focused ) {
-            window.open(this.data.artist.permalink_url, '_blank');
-            this.manager.preventUnfocus_ = true;
-            return;
-        }
-        this.manager.walked.clear();
-        this.manager.walked.add(this);
-        
-        this.manager.setFocusedNode(this);
-        this.manager.setSelectedNode(this);
-    }
+    constructor(
+        public readonly manager: SoundcloudGraphManager, 
+        public readonly data: Readonly<SoundcloudNodeData>
+    ){
 
-    constructor(manager: SoundcloudGraphManager, data: SoundcloudNodeData){
+        super(manager as unknown as GraphManager2<GraphNode2, GraphEdge2>);
 
-        super(manager, data);
+        this.x = Math.random() * 1000 - 500;
+        this.y = Math.random() * 1000 - 500;
 
         const {artist, track} = data;
 
-        this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
-        this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
+        // this.vel.addV( new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(20) );
+        // this.pos = new Vec2( Math.random() * 2 - 1, Math.random() * 2 - 1 ).scaleBy(100);
+
+        this.html.hidden = false;
 
         (this.html.querySelector(".text-outline")! as HTMLDivElement).innerText = artist.username;
 
@@ -401,9 +323,6 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         img.crossOrigin = "Anonymous";
         img.src = artist.avatar_url ?? `${base}/assets/soundcloud/missing.png`;
-
-        img.addEventListener('click', this.onClick);
-        img.addEventListener('touchend', this.onClick);
 
         (img as any).__data__ = this.data; // for devs; this will be what gets inspect-elemented
 
@@ -423,55 +342,60 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
 
         addHyperlinks(text_bio); // make the links clickable; cursed.
         
-        getPaletteAsync(img).then( colors => {
+        img.addEventListener('load', async () => {
+            const colors = await getPalette(img, {worker: true, colorCount: 5});
             if( !colors ) return;
-            this._palette = colors.map( (rgb: [number, number, number]) => {
-                let actualColor = new Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+            this._palette = colors.map( (color) => {
+                // TODO: two color classes? ugly! fix please!
+                let actualColor = new Color(...Object.values( color.rgb() ));
                 let hsv = actualColor.toHSV();
                 hsv.v = max(0.8, hsv.v);
                 hsv.s = min(0.6, hsv.s);
-                return Color.fromHSV(hsv.h, hsv.s, hsv.v); // make it brighter
+                return Color.fromHSV(hsv.h, hsv.s, hsv.v);
             } )
-        } );
+        });
+        
+    
+        const pointerUp = (e: PointerEvent) => { 
+            const distance = Math.hypot(e.clientX - this.manager.downEvent.clientX, e.clientY - this.manager.downEvent.clientY);
+            if( distance > UNFOCUS_DRAG_DIST ) {
+                // we dragged far, probably don't want to click
+                return;
+            }
+
+            if( this._focused ) {
+                window.open(this.data.artist.permalink_url, '_blank');
+                return;
+            }
+            this.manager.walked.clear();
+            this.manager.walked.add(this);
+            
+            this.manager.setFocusedNode(this);
+            this.manager.setSelectedNode(this);
+        }
+
+        const pointerDown = (e: PointerEvent) => {
+            this.manager.downEvent = e;
+            e.stopPropagation();
+        }
+
+        const cancel = (e: Event) => e.stopPropagation();
+
+        img.addEventListener('pointerup', pointerUp);
+        img.addEventListener('pointerdown', pointerDown);
+
+        const desc = this.html.querySelector(".descriptor")!;
+        desc.addEventListener('pointerdown', cancel)
+        desc.addEventListener('pointerup', cancel)
+
     }
 
     private _neighbors!: SoundcloudNode[];
 
     public get neighbors(): SoundcloudNode[] {
         return this._neighbors ?? (
-            this._neighbors = this.edges.map( (edge) => (edge.from === this ? edge.to : edge.from) )
+            this._neighbors = this.edges.map( (edge) => (edge.source === this ? edge.target : edge.source) )
         )
-    }
-
-    // abstract implementations
-    public override setPos(x: number, y: number): void {
-        this.pos.setTo(x, y);
-    }
-
-    public doRepulsionForce(that: SoundcloudNode) {
-        let repel_dist = this.pos.distance(that.pos) + REPEL_SOFTNESS;
-        const f = this.pos.copy.subV(that.pos).scaleBy( 
-            (-AMBIENT_REPEL_STRENGTH / (repel_dist**3)) * (this.trueDiameter + that.trueDiameter)
-        )
-
-        that.vel.addV(f);
-        this.vel.subV(f);
-    }
-
-    private doCenterSeekingForce(){
-        const len = this.pos.length() + REPEL_SOFTNESS;
-        const scale = clamp(len - FAR_AWAY_FROM_CENTER_THRESH, 0, Infinity) / len;
-        this.vel.addV( this.pos.copy.scaleBy(scale * -0.001 * this.trueDiameter) );
-    }
-
-    public override doPositioning(){
-        this._edgeWidth = clamp(this._edgeWidth + EDGE_RATE * (this._selected ? 1 : -0.4), 0, 1);
-        this.vel.scaleBy(0.6);
-        this.pos.addV(this.vel);
-    }
-
-    public doForces(){ 
-        this.doCenterSeekingForce();
     }
 
     public getSerialized(): SoundcloudNodeData {
@@ -480,228 +404,144 @@ export class SoundcloudNode extends GraphNode<SoundcloudNodeData, SoundcloudEdge
         }
     }
 
+    public isOutsideViewport() {
+        const { zoom, x: panX, y: panY } = this.manager.panzoomTransform;
+        const { width, height } = this.manager.parentBox;
+    
+        const lx = this.x * zoom + panX;
+        const ly = this.y * zoom + panY;
+        const halfW = width / 2;
+        const halfH = height / 2;
+    
+        return (
+            lx + this.diameter * 0.5 * this.manager.panzoomTransform.zoom < -halfW ||
+            lx - this.diameter * 0.5 * this.manager.panzoomTransform.zoom >  halfW ||
+            ly + this.diameter * 0.5 * this.manager.panzoomTransform.zoom < -halfH ||
+            ly - this.diameter * 0.5 * this.manager.panzoomTransform.zoom >  halfH
+        );
+    }
+
     public override render(){
-        this.vel.makeSafe();
-        this.pos.makeSafe();
+        this._selectEdgeWidth = clamp( this._selectEdgeWidth + (this._selected ? 1 : -1) * this.manager.dt * SELECT_EDGE_RATE, 0, SELECT_EDGE_THICKNESS)
 
-        const center = this.manager.offsetPos;
-        const size = this.manager.selfComputedSize;
-
-        this.style.transform = `
-        translate(
-            ${this.pos.x - center.x + size.width / 2}px, 
-            ${this.pos.y - center.y + size.height / 2}px
-        ) 
-        `;
+        const isOutside = this.isOutsideViewport();
+        const skipRender = isOutside && this.html.hidden;
+        this.html.hidden = isOutside;
+    
+        if (skipRender) return;
+    
+        const size   = this.manager.selfComputedSize;
+        this.html.style.transform = `translate(${this.x + size.width / 2}px,${this.y + size.height / 2}px)`;
     }
     
 }
 
-export class SoundcloudGraphManager extends GraphManager<
-    SoundcloudNodeData,
-    SoundcloudEdgeData,
+export class SoundcloudGraphManager extends GraphManager2<
+    SoundcloudNode,
     SoundcloudEdge,
-    SoundcloudNode
+    SoundcloudNodeData,
+    SoundcloudEdgeData
 > {
+
+    declare panzoom: Panzoom;
+
+    private readonly gl: WebGL2RenderingContext;
+    private readonly edgeBuffer: WebGLBuffer;
+    private readonly resUniform: WebGLUniformLocation;
+    private readonly panzoomUniform: WebGLUniformLocation;
+    private readonly timeUniform: WebGLUniformLocation;
 
     protected get frametime(){
         return 30;
     }
 
-    public  held:          boolean = false;
-    public  dragging:      boolean = false;
-    private focusChanged:  boolean = false;
+    public  downEvent!: PointerEvent;
+    public  dragging:   boolean = false;
 
-    public  preventUnfocus_: boolean = false;
+    private focusTime:  number  = 0;
+    /** snapshot of {@linkcode panzoomTransform} last time {@linkcode focusTime} was 0 */
+    private focusStart: PanzoomTransform | null = null;
 
-    private focusedNode: SoundcloudNode | null = null;
+    private focusedNode:  SoundcloudNode | null = null;
     private selectedNode: SoundcloudNode | null = null;
-    private firstDragTransform: Transform | null = null;
+
+    private _panzoomTransform: PanzoomTransform = {x: 0, y: 0, zoom: 1};
+    public get panzoomTransform() {
+        return this._panzoomTransform as Readonly<PanzoomTransform>;
+    }
+    // private firstDragTransform: Transform | null = null;
 
     public readonly walked = new Set<SoundcloudNode>();
 
     public readonly templateEmbed: HTMLIFrameElement;
 
+    /**
+     * Sets the node as selected and notes it on the {@link SoundcloudGraphManager | manager}
+     */
     public setSelectedNode(node: SoundcloudNode | null){
+        // Debug.logFancy("node", node, "selected")
         if( node === this.selectedNode ) return;
         this.selectedNode?.setSelect(false);
         this.selectedNode = node;
         node?.setSelect(true);
     }
 
+    /**
+     * Selects a node and moves the panzoom
+     */
     public setFocusedNode(node: SoundcloudNode | null){
-
         if( node === this.focusedNode ) return;
+        // Debug.logFancy("node", node, "focused")
+
+        this.focusedNode?.setFocus(false);
         
-        (window as any).focusedNode = node;
-
-        const transform = this.getPanzoomTransform();
-
-        const instant = new Vec2();
-        const deferred = new Vec2();
-
-        this.focusChanged = true;
-
-        if( this.focusedNode ){
-            this.focusedNode.setFocus(false);
-            instant.addV( this.focusedNode.pos.copy.scaleBy(-1) );
-        }
-
         this.focusedNode = node;
-
-        let zoom = transform.scale;
+        this.focusTime = 0;
+        this.focusStart = { ...this.panzoomTransform };
 
         if( node ){
             node.setFocus(true);
-            instant.addV( node.pos );
-            zoom = getZoomScaleMul() * NODE_SUPER_RESOLUTION / node.diameter;
-
             this.setSelectedNode(node);
         }
-
-        this.simulationToPanzoomOrigin(instant);
-        this.uniformToPanzoomOrigin(deferred);
-        this.firstDragTransform = null;
-
-
-        this.panzoom!.moveTo( ...instant.extract() );
-        if( node ){
-            deferred.add(-node.diameter * transform.scale * 0.5, 0)
-            this.panzoom!.smoothMoveTo( ...deferred.extract() );
-
-            setTimeout( 
-                () => {
-                    // zoom on it after we've aimed at it.  can't do sooner because panzoom library is jank.
-                    const interval = window.setInterval(
-                        () => {
-
-                            let curTransform = this.panzoom!.getTransform();
-                            let diff = sqrt(
-                                (deferred.x - curTransform.x) ** 2 +
-                                (deferred.y - curTransform.y) ** 2
-                            );
-
-                            if( diff < 10 ){
-                                window.clearInterval(interval);
-                                this.panzoom!.smoothZoomAbs( this.parentBox.width / 2, this.parentBox.height / 2, zoom );
-                            }
-
-                        }
-                    )
-
-                    setTimeout(
-                        () => {
-                            window.clearInterval(interval);
-                        }, 
-                        2000  // took too long, forget it.
-                    );
-                },
-                1000 // wait at least 1000ms before we start checking if the next animation is ready to go
-            )
-
-        }
-
-    }
-    
-    public get offsetPos(): ImmutableVec2 {
-        const  pos = this.focusedNode?.pos ?? Vec2.ZERO;
-        return pos.copy;
     }
 
-    public override preSimulate(): void {
-        const nodes = Array.from( this.nodes.values() );
-        for( let i = 0; i < nodes.length; i++ ){
-            const node1 = nodes[i];
-            for( let j = i + 1; j < nodes.length; j++ ){
-                node1.doRepulsionForce(nodes[j]);
-            }
-        }
-    }
-
-    // Transforms a document coordinate (clientX, clientY) to a simulation coordinate.  Self-modifies.
-    public documentToSimulation(v: Vec2): Vec2 {
-        const thisParentBox = this.parentBox;
-        const pzTransform = this.panzoom!.getTransform();
-
-        return v.setTo(
-            (v.x - thisParentBox.left - pzTransform.x) / pzTransform.scale - thisParentBox.width / 2,
-            (v.y - thisParentBox.top  - pzTransform.y) / pzTransform.scale - thisParentBox.height / 2
+    constructor(
+        templateNode: HTMLElement, 
+        nodeContainer: HTMLElement, 
+        lineContainer: HTMLCanvasElement,
+        data: SoundcloudGraphDataset
+    ){
+        super(
+            templateNode, 
+            nodeContainer, 
+            lineContainer, 
+            function(this: SoundcloudGraphManager, edgeData) {
+                return new SoundcloudEdge( this.nodes.get(edgeData.from)!, this.nodes.get(edgeData.to)!, edgeData );
+            },
+            function(this: SoundcloudGraphManager, nodeData) {
+                return new SoundcloudNode(this, nodeData);
+            },
+            data,
+            true
         );
-    }
 
-    // Transforms a simulation coordinate to a uniform coordinate (-1 to 1 relative to viewport).  Self-modifies.
-    public simulationToUniform(v: Vec2): Vec2 {
-        const thisParentBox = this.parentBox;
-        const pzTransform = this.panzoom!.getTransform();
+        this.panzoom.onTransformChanged( (transform) => {
+            this._panzoomTransform = transform;
+        } );
 
-        return v.setTo(
-            2 * ( (v.x + thisParentBox.width * 0.5) * pzTransform.scale + pzTransform.x ) / thisParentBox.width - 1,
-            2 * ( (v.y + thisParentBox.height * 0.5) * pzTransform.scale + pzTransform.y ) / thisParentBox.height - 1
-        );
-    }
+        this.simulation.force('center', d3.forceCenter(0, 0) );
+        this.simulation.force('charge', d3.forceManyBody<SoundcloudNode>().strength( (d: SoundcloudNode) => -60 * d.trueDiameter ) );
+        this.simulation.force('collision', d3.forceCollide<SoundcloudNode>().radius( (d: SoundcloudNode) => d.diameter * 0.25 ).strength(0.4).iterations(4) );
+        this.simulation.force("x", d3.forceX().strength(0.5))
+        this.simulation.force("y", d3.forceY().strength(0.5))
+
+        this.linkForces.strength(0.02).distance(0).iterations(5)
+
+        this.simulation.velocityDecay(0.8);
+        this.simulation.alpha(0.08);
+        this.simulation.alphaDecay(0);
 
 
-    public uniformToSimulation(v: Vec2): Vec2 {
-        const thisParentBox = this.parentBox;
-        const pzTransform = this.panzoom!.getTransform();
-
-        return v.setTo(
-            ( thisParentBox.width * (v.x + 1) * 0.5 - pzTransform.x ) / pzTransform.scale - thisParentBox.width * 0.5,
-            ( thisParentBox.height * (v.y + 1) * 0.5 - pzTransform.y ) / pzTransform.scale - thisParentBox.height * 0.5
-        );
-    }
-
-    public simulationToPanzoomOrigin(v: Vec2): Vec2 {
-        this.simulationToUniform(v);
-        return this.uniformToPanzoomOrigin(v);
-    }
-
-    public uniformToPanzoomOrigin(v: Vec2): Vec2 {
-        const pzTransform = this.panzoom!.getTransform();
-        const thisParentBox = this.parentBox;
-
-        return v.setTo(
-            thisParentBox.width * ( 1 - pzTransform.scale + v.x ) / 2,
-            thisParentBox.height * ( 1 - pzTransform.scale + v.y ) / 2,
-        )
-    }
-
-    public override get fragmentShader(): string {
-        return `#version 300 es
-
-        precision highp float;
-
-        in vec4 v_color;
-        in vec3 v_barycentric;
-
-        out vec4 outColor;
-
-        float lightFalloff(float dist) {
-            return dist * dist * dist * 16.0;
-        }
-
-        void main() {
-            float dist = min(v_barycentric.y, v_barycentric.z);
-            float a = lightFalloff(dist);
-            outColor = vec4(v_color.xyz * a, a);
-        }`
-    }
-
-    public pickRandom() {
-        let choices = [...this.nodes]
-        let choiche = choices[ Math.floor(Math.random() * choices.length) ];
-        this.setFocusedNode(choiche[1]);
-    }
-
-    constructor(templateNode: HTMLElement, nodeContainer: HTMLElement, lineContainer: HTMLCanvasElement, data: SoundcloudGraphDataset){
-        super(templateNode, nodeContainer, lineContainer, data, {
-                bounds: false,
-                zoomDoubleClickSpeed: 1,
-                zoomSpeed: 0.1,
-                minZoom: 0.1,
-                maxZoom: 15,
-        });
-        (window as any).manager = this;
         this.handleResize();
 
         this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
@@ -728,82 +568,123 @@ export class SoundcloudGraphManager extends GraphManager<
             })
         });
 
-
-        this.panzoom!.on('pan', () => {
-            if( !this.held ) return;
-            this.firstDragTransform ??= this.getPanzoomTransform();
-            let curDragTransform = this.panzoom!.getTransform();
-
-            if( sqrt(
-                ( this.firstDragTransform.x - curDragTransform.x ) ** 2 +
-                ( this.firstDragTransform.y - curDragTransform.y ) ** 2
-            ) > UNFOCUS_DRAG_DIST ) {
-                this.dragging = true;
-                this.setFocusedNode(null);
-            }
-        });
-
         const wheel = (e: WheelEvent) => {
             this.setFocusedNode(null);
         }
 
+        const pointerUp = async (e: PointerEvent) => {
+            const distance = Math.hypot(e.clientX - this.downEvent.clientX, e.clientY - this.downEvent.clientY);
+            // Debug.logFancy("root pointerUp", 1, e.type)
+            if( 
+                this.dragging && 
+                distance < UNFOCUS_DRAG_DIST &&
+                !(this.downEvent.target as HTMLElement).closest(".node")
+            ) {
+                // we didn't drag far and didn't click a node to begin with... user probably wants to deselect
+                this.setSelectedNode(null);
+            }
+
+            this.dragging = false;
+        };
+
+        const pointerDown = (e: PointerEvent) => {
+            // Debug.logFancy("root pointerDown", 1, e.type)
+            this.downEvent = e;
+            this.setFocusedNode(null);
+            this.dragging = true;
+        };
+
         this.edgeContainer.addEventListener('wheel', wheel)
         this.nodeContainer.addEventListener('wheel', wheel)
 
-        const mouseUp = () => {
-            setTimeout(() => {
-                if( !this.focusChanged && !this.preventUnfocus_ ){  // preventUnfocus triggers when opening a link by clicking a node again
-                    this.setFocusedNode(null);
-                    if( !this.dragging ) this.setSelectedNode(null);
-                }
-                this.preventUnfocus_    = false;
-                this.held               = false;
-                this.dragging           = false;
-                this.focusChanged       = false;
-                this.firstDragTransform = null;
-            })
-        };
+        this.nodeContainer.addEventListener('pointerup', pointerUp);
+        this.edgeContainer.addEventListener('pointerup', pointerUp);
 
-        this.nodeContainer.addEventListener('mouseup', mouseUp);
-        this.edgeContainer.addEventListener('mouseup', mouseUp);
+        this.nodeContainer.addEventListener('pointerdown', pointerDown);
+        this.edgeContainer.addEventListener('pointerdown', pointerDown);
 
-        this.nodeContainer.addEventListener('touchend', mouseUp);
-        this.edgeContainer.addEventListener('touchend', mouseUp);
+        // webgl!
+        {
+            const gl = this.edgeContainer.getContext("webgl2");
+            if( !gl ) throw new Error("WebGL2 not supported!");
+            this.gl = gl;
 
-        const mouseDown = () => {
-            this.held         = true;
-            this.dragging     = false;
-            this.focusChanged = false;
-        };
+            const program = WebGLUtils.createProgram(
+                gl, 
+                EDGE_FRAG_SHADER, 
+                EDGE_VERT_SHADER
+            );
 
-        this.nodeContainer.addEventListener('mousedown', mouseDown);
-        this.edgeContainer.addEventListener('mousedown', mouseDown);
+            gl.useProgram(program);
 
-        this.edgeContainer.addEventListener('touchstart', mouseDown);
-        this.nodeContainer.addEventListener('touchstart', mouseDown);
+            this.resUniform     = gl.getUniformLocation(program, 'u_resolution')!;
+            this.panzoomUniform = gl.getUniformLocation(program, 'u_panzoom')!;
+            this.timeUniform    = gl.getUniformLocation(program, 'u_time')!;
 
-        // this.panzoom!.zoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
+            const templateBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, templateBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, EDGE_VERTS, gl.STATIC_DRAW);
 
-        // window.setTimeout(() => {
-        //     this.panzoom!.smoothZoomAbs(this.nodeContainer.clientWidth / 2, this.nodeContainer.clientHeight / 2, 0.35);
-        // }, 1000);
+            const a_templatePosition = gl.getAttribLocation(program, 'a_templatePosition');
+            gl.enableVertexAttribArray(a_templatePosition);
+            gl.vertexAttribPointer(a_templatePosition, 2, gl.FLOAT, false, 0, 0);
 
-        // draw brighter edges (bidirectional followings) on top
-        this.gl_ctx.enable(this.gl_ctx.BLEND);
-        this.gl_ctx.blendFuncSeparate(this.gl_ctx.SRC_ALPHA, this.gl_ctx.ONE, this.gl_ctx.ZERO, this.gl_ctx.ONE);
-        //this.gl_ctx.blendEquation(this.gl_ctx.FUNC_ADD);
+            const edgeBuffer = this.edgeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.edges.size * this.getRawEdgeSize ), gl.DYNAMIC_DRAW);
+
+            WebGLUtils.setupInstanceAttributes(gl, program, [
+                ['a_startPoint', 2, gl.FLOAT],
+                ['a_endPoint',   2, gl.FLOAT],
+                ['a_width',      1, gl.FLOAT],
+                ['a_startcolor', 3, gl.FLOAT],
+                ['a_endcolor',   3, gl.FLOAT],
+            ])
+
+            const onCanvasResized = () => {
+                const dpr = window.devicePixelRatio || 1;
+                const displayWidth = this.edgeContainer.clientWidth;
+                const displayHeight = this.edgeContainer.clientHeight;
+                
+                // Set actual canvas resolution
+                this.edgeContainer.width = displayWidth * dpr;
+                this.edgeContainer.height = displayHeight * dpr;
+        
+                this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
+                this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
+        
+                this.render(); // immediately rerender
+            }
+
+            const canvasResizeWatcher = new ResizeObserver(onCanvasResized);
+            canvasResizeWatcher.observe(this.edgeContainer);
+
+            const onPanzoomChanged = () => {
+                this.gl.uniform3f(this.panzoomUniform, this.panzoomTransform.x, this.panzoomTransform.y, this.panzoomTransform.zoom);
+                this.renderWebGL();
+            }
+
+            this.panzoom.onTransformChanged(onPanzoomChanged)
+            onPanzoomChanged();
+
+        }
+
     }
 
-    protected getPanzoomTransform(): Transform {
-        return {...this.panzoom!.getTransform()};
+
+
+    private *getRawEdgeData(): Generator<number, void, unknown> {
+        for( const edge of this.edges.values() ){
+            if( edge.width === 0 ) continue; // skip invisible edges
+            yield* edge.getRawData();
+        }
     }
 
-    protected override createNode(data: SoundcloudNodeData): SoundcloudNode {
-        return new SoundcloudNode(this, data);
-    }
-
-    protected override createEdge(data: SoundcloudEdgeData): SoundcloudEdge {
-        return new SoundcloudEdge(this, data);
+    private _rawEdgeSize?: number;
+    public get getRawEdgeSize(): number {
+        return this._rawEdgeSize ??= this.edges.values()
+            .next().value!
+            .getRawData().reduce( (sum) => sum + 1, 0 );
     }
 
     public serialize(): void {
@@ -822,6 +703,91 @@ export class SoundcloudGraphManager extends GraphManager<
             element.click();
         document.body.removeChild(element);
     }
+
+    private renderWebGL() {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
+        const edgeData = new Float32Array( this.getRawEdgeData() );
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, edgeData);
+        
+        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, edgeData.length / this.getRawEdgeSize);
+    }
+
+    public override render(): void { 
+        this.focusTime = Math.min(this.focusTime + this.dt, FOCUS_TIME);
+
+        this.gl.uniform1f(this.timeUniform, performance.now() / 1000);
+
+        if( this.focusedNode ){
+            const node = this.focusedNode;
+
+            const t = this.focusTime / FOCUS_TIME;
+            const curved_t = EASE_FN(t);
+    
+            const targetZoom = 4 * getZoomScaleMul() / node.diameter;
+            const targetX = -node.x * targetZoom - this.parentBox.width * 0.15;
+            const targetY = -node.y * targetZoom;
+    
+            this.panzoom.editTransform((transform) => {
+                transform.zoom = lerp(this.focusStart!.zoom, targetZoom, curved_t);
+                transform.x    = lerp(this.focusStart!.x, targetX, curved_t);
+                transform.y    = lerp(this.focusStart!.y, targetY, curved_t);
+            });
+        } 
+
+        super.render();
+        this.renderWebGL();
+    }
+    
+    private offsetPos_buffer: [number, number] = [0, 0];
+    public get offsetPos(): [number, number] {
+        if( !this.focusedNode ) {
+            this.offsetPos_buffer[0] = 0;
+            this.offsetPos_buffer[1] = 0;
+        }
+        else {
+            this.offsetPos_buffer[0] = this.focusedNode.x;
+            this.offsetPos_buffer[1] = this.focusedNode.y;
+        }
+        return this.offsetPos_buffer;
+    }
+
+    private simToDoc_buffer: [number, number] = [0, 0];
+    public simToDoc(x: number, y: number) {
+        x *= this._panzoomTransform.zoom;
+        y *= this._panzoomTransform.zoom;
+        x += this._panzoomTransform.x;
+        y += this._panzoomTransform.y;
+        x += this.parentBox.x + this.parentBox.width / 2;
+        y += this.parentBox.y + this.parentBox.height / 2;
+        this.simToDoc_buffer[0] = x;
+        this.simToDoc_buffer[1] = y;
+        return this.simToDoc_buffer;
+    }
     
 
+    private docToChild_buffer: [number, number] = [0, 0];
+    public docToChild(x: number, y: number) {
+        const bounds = this.parentBox;
+        this.docToChild_buffer[0] = x - bounds.x - bounds.width / 2 - this._panzoomTransform.x;
+        this.docToChild_buffer[1] = y - bounds.y - bounds.height / 2 - this._panzoomTransform.y;
+        return this.docToChild_buffer;
+    }
+
+    private simToChild_buffer: [number, number] = [0, 0];
+    public simToChild(x: number, y: number) {
+        x = x * this._panzoomTransform.zoom;
+        y = y * this._panzoomTransform.zoom;
+        this.simToChild_buffer[0] = x;
+        this.simToChild_buffer[1] = y;
+        return this.simToChild_buffer;
+    }
+
+
 }
+
+
