@@ -122,6 +122,20 @@ export class SoundcloudEdge extends GraphEdge2 {
         }
     }
 
+    public *getRawData(): Generator<number, void, unknown> {
+        yield this.source.x;
+        yield this.source.y;
+        yield this.target.x;
+        yield this.target.y;
+        yield this.width;
+        yield this.sourceColor.r;
+        yield this.sourceColor.g;
+        yield this.sourceColor.b;
+        yield this.targetColor.r;
+        yield this.targetColor.g;
+        yield this.targetColor.b;
+    }
+
 }
 
 
@@ -617,7 +631,7 @@ export class SoundcloudGraphManager extends GraphManager2<
 
             const edgeBuffer = this.edgeBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.getRawEdgeData() ), gl.DYNAMIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array( this.edges.size * this.getRawEdgeSize ), gl.DYNAMIC_DRAW);
 
             WebGLUtils.setupInstanceAttributes(gl, program, [
                 ['a_startPoint', 2, gl.FLOAT],
@@ -661,18 +675,16 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     private *getRawEdgeData(): Generator<number, void, unknown> {
         for( const edge of this.edges.values() ){
-            yield edge.source.x;
-            yield edge.source.y;
-            yield edge.target.x;
-            yield edge.target.y;
-            yield edge.width;
-            yield edge.sourceColor.r;
-            yield edge.sourceColor.g;
-            yield edge.sourceColor.b;
-            yield edge.targetColor.r;
-            yield edge.targetColor.g;
-            yield edge.targetColor.b;
+            if( edge.width === 0 ) continue; // skip invisible edges
+            yield* edge.getRawData();
         }
+    }
+
+    private _rawEdgeSize?: number;
+    public get getRawEdgeSize(): number {
+        return this._rawEdgeSize ??= this.edges.values()
+            .next().value!
+            .getRawData().reduce( (sum) => sum + 1, 0 );
     }
 
     public serialize(): void {
@@ -694,14 +706,15 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     private renderWebGL() {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.edgeBuffer);
-        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, new Float32Array( this.getRawEdgeData() ));
+        const edgeData = new Float32Array( this.getRawEdgeData() );
+        this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, edgeData);
         
         this.gl.clearColor(0, 0, 0, 0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
-        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, this.edges.size);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, edgeData.length / this.getRawEdgeSize);
     }
 
     public override render(): void { 

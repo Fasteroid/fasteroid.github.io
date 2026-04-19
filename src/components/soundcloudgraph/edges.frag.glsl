@@ -26,7 +26,6 @@ float hash11(uint q) {
 
 
 const float WIDTH = 0.01;
-const float DUTY = 0.5;
 const float HIGH = 0.1;
 
 const float A = (1.0 - HIGH) / (1.0 + HIGH);
