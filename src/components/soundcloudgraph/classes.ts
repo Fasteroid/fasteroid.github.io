@@ -45,8 +45,6 @@ const EDGE_VERTS = new Float32Array([
 const OSCILLATOR = makeHarmonicOscillator(0.65, 30);
 const EASE_FN = (t: number) => OSCILLATOR(t ** 1.5);
 
-const ZERO_VEC: readonly [number, number] = [0, 0];
-
 function getZoomScaleMul(){
     return document.body.clientWidth * 0.065
 }
@@ -714,7 +712,7 @@ export class SoundcloudGraphManager extends GraphManager2<
 
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
-        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length, edgeData.length / this.getRawEdgeSize);
+        this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, EDGE_VERTS.length / 2, edgeData.length / this.getRawEdgeSize);
     }
 
     public override render(): void { 
