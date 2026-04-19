@@ -9,11 +9,14 @@ in vec2 a_templatePosition;
 in vec2 a_startPoint;
 in vec2 a_endPoint;
 in float a_width;
-in vec3 a_color;
+in vec3 a_startcolor;
+in vec3 a_endcolor;
 
-// we need to output color for the fragment shader to read
-out vec3 v_color;
-out vec3 v_barycentric;
+// outputs to frag shader
+out vec3  v_startcolor;
+out vec3  v_endcolor;
+out vec3  v_barycentric;
+flat out int v_id;
 
 uniform vec2 u_resolution;
 uniform vec3 u_panzoom;
@@ -45,9 +48,11 @@ void main() {
     clipSpace.y *= -1.0; // Flip Y axis
     
     gl_Position = vec4(clipSpace, 0.0, 1.0);
-    v_color     = a_color;
+    v_startcolor = a_startcolor;
+    v_endcolor = a_endcolor;
 
     // finally, uvs
     v_barycentric = vec3(0.0);
     v_barycentric[int(gl_VertexID % 3)] = 1.0;
+    v_id = gl_VertexID / 3;
 }

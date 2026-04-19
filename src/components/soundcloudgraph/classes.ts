@@ -27,7 +27,8 @@ const NODE_SUPER_RESOLUTION = 4;
 const FOCUS_TIME            = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
 const HOVER_EDGE_THICKNESS = 1.5;
-const SELECT_EDGE_THICKNESS = 6;
+const SELECT_EDGE_THICKNESS = 16;
+const SELECT_EDGE_RATE = 10.0;
 
 const EDGE_VERTS = new Float32Array([
     1, 0, 
@@ -90,6 +91,10 @@ export class SoundcloudEdge extends GraphEdge2 {
 
     public get targetColor() {
         if( this._targetColor ) return this._targetColor;
+
+        if( !this.bidirectional ) {
+            return this._targetColor = Color.BLACK;
+        }
 
         if( this.target.palette ) {
             this._targetColor = chooseRandomly(this.target.palette) ?? Color.BLACK;
@@ -184,7 +189,7 @@ export class SoundcloudNode extends GraphNode2 {
         widget.bind(
             window.SC.Widget.Events.READY, 
             () => {
-            widget.setVolume(20);
+                widget.setVolume(0);
             }
         );
 
@@ -403,7 +408,7 @@ export class SoundcloudNode extends GraphNode2 {
     }
 
     public override render(){
-        this._selectEdgeWidth = clamp( this._selectEdgeWidth + (this._selected ? 1 : -1) * this.manager.dt * 0.1, 0, SELECT_EDGE_THICKNESS)
+        this._selectEdgeWidth = clamp( this._selectEdgeWidth + (this._selected ? 1 : -1) * this.manager.dt * SELECT_EDGE_RATE, 0, SELECT_EDGE_THICKNESS)
 
         const isOutside = this.isOutsideViewport();
         const skipRender = isOutside && this.html.hidden;
@@ -618,7 +623,8 @@ export class SoundcloudGraphManager extends GraphManager2<
                 ['a_startPoint', 2, gl.FLOAT],
                 ['a_endPoint',   2, gl.FLOAT],
                 ['a_width',      1, gl.FLOAT],
-                ['a_color',      3, gl.FLOAT]
+                ['a_startcolor', 3, gl.FLOAT],
+                ['a_endcolor',   3, gl.FLOAT],
             ])
 
             const onCanvasResized = () => {
@@ -663,6 +669,9 @@ export class SoundcloudGraphManager extends GraphManager2<
             yield edge.sourceColor.r;
             yield edge.sourceColor.g;
             yield edge.sourceColor.b;
+            yield edge.targetColor.r;
+            yield edge.targetColor.g;
+            yield edge.targetColor.b;
         }
     }
 
