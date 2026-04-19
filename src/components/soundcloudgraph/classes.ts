@@ -27,8 +27,8 @@ const NODE_SUPER_RESOLUTION = 4;
 const FOCUS_TIME            = 90; // how long it takes to fully focus on a node, in "frames" (60 frames = 1 second)
 
 const HOVER_EDGE_THICKNESS = 1.5;
-const SELECT_EDGE_THICKNESS = 16;
-const SELECT_EDGE_RATE = 10.0;
+const SELECT_EDGE_THICKNESS = 12;
+const SELECT_EDGE_RATE = 0.5;
 
 const EDGE_VERTS = new Float32Array([
     1, 0, 
@@ -80,7 +80,7 @@ export class SoundcloudEdge extends GraphEdge2 {
     constructor(
         public readonly source: SoundcloudNode,
         public readonly target: SoundcloudNode,
-        data: SoundcloudEdgeData
+        _: SoundcloudEdgeData
     ){
         super();
     }
@@ -203,7 +203,7 @@ export class SoundcloudNode extends GraphNode2 {
         widget.bind(
             window.SC.Widget.Events.READY, 
             () => {
-                widget.setVolume(0);
+                widget.setVolume(40);
             }
         );
 
