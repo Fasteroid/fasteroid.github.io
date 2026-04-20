@@ -737,38 +737,6 @@ export class SoundcloudGraphManager extends GraphManager2<
         return this.offsetPos_buffer;
     }
 
-    private simToDoc_buffer: [number, number] = [0, 0];
-    public simToDoc(x: number, y: number) {
-        x *= this._panzoomTransform.zoom;
-        y *= this._panzoomTransform.zoom;
-        x += this._panzoomTransform.x;
-        y += this._panzoomTransform.y;
-        x += this.parentBox.x + this.parentBox.width / 2;
-        y += this.parentBox.y + this.parentBox.height / 2;
-        this.simToDoc_buffer[0] = x;
-        this.simToDoc_buffer[1] = y;
-        return this.simToDoc_buffer;
-    }
-    
-
-    private docToChild_buffer: [number, number] = [0, 0];
-    public docToChild(x: number, y: number) {
-        const bounds = this.parentBox;
-        this.docToChild_buffer[0] = x - bounds.x - bounds.width / 2 - this._panzoomTransform.x;
-        this.docToChild_buffer[1] = y - bounds.y - bounds.height / 2 - this._panzoomTransform.y;
-        return this.docToChild_buffer;
-    }
-
-    private simToChild_buffer: [number, number] = [0, 0];
-    public simToChild(x: number, y: number) {
-        x = x * this._panzoomTransform.zoom;
-        y = y * this._panzoomTransform.zoom;
-        this.simToChild_buffer[0] = x;
-        this.simToChild_buffer[1] = y;
-        return this.simToChild_buffer;
-    }
-
-
 }
 
 
