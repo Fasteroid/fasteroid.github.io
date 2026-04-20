@@ -121,11 +121,12 @@ export class SoundcloudEdge extends GraphEdge2 {
     }
 
     public *getRawData(): Generator<number, void, unknown> {
-        yield this.source.x;
-        yield this.source.y;
-        yield this.target.x;
-        yield this.target.y;
-        yield this.width;
+        const dpr = window.devicePixelRatio || 1;
+        yield this.source.x * dpr;
+        yield this.source.y * dpr;
+        yield this.target.x * dpr;
+        yield this.target.y * dpr;
+        yield this.width * dpr;
         yield this.sourceColor.r;
         yield this.sourceColor.g;
         yield this.sourceColor.b;

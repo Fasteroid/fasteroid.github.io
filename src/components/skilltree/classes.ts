@@ -529,12 +529,13 @@ extends GraphManager2<
     }
 
     private *getRawEdgeData(): Generator<number, void, unknown> {
+        const dpr = window.devicePixelRatio || 1;
         for( const edge of this.edges.values() ){
-            yield edge.source.x;
-            yield edge.source.y;
-            yield edge.target.x;
-            yield edge.target.y;
-            yield edge.width;
+            yield edge.source.x * dpr;
+            yield edge.source.y * dpr;
+            yield edge.target.x * dpr;
+            yield edge.target.y * dpr;
+            yield edge.width    * dpr;
         }
     }
 
