@@ -166,6 +166,10 @@ export abstract class GraphManager2<
             this.requestRender();
         });
 
+        setTimeout(() => {
+            this.handleResize();
+        })
+
     }
 
     private oldW: number;
@@ -182,6 +186,7 @@ export abstract class GraphManager2<
 
         this.edgeContainer.width  = this.nodeContainer.clientWidth;
         this.edgeContainer.height = this.nodeContainer.clientHeight
+        
     }
 
     private renderRequested: Promise<void> | undefined = undefined;

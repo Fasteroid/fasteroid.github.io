@@ -121,12 +121,11 @@ export class SoundcloudEdge extends GraphEdge2 {
     }
 
     public *getRawData(): Generator<number, void, unknown> {
-        const dpr = window.devicePixelRatio || 1;
-        yield this.source.x * dpr;
-        yield this.source.y * dpr;
-        yield this.target.x * dpr;
-        yield this.target.y * dpr;
-        yield this.width * dpr;
+        yield this.source.x;
+        yield this.source.y;
+        yield this.target.x;
+        yield this.target.y;
+        yield this.width   ;
         yield this.sourceColor.r;
         yield this.sourceColor.g;
         yield this.sourceColor.b;
@@ -539,10 +538,7 @@ export class SoundcloudGraphManager extends GraphManager2<
         this.simulation.velocityDecay(0.8);
         this.simulation.alpha(0.08);
         this.simulation.alphaDecay(0);
-
-
-        this.handleResize();
-
+        
         this.templateEmbed = document.getElementById('template-embed') as HTMLIFrameElement;
 
         const urlLookupMap = new Map<string, SoundcloudNode>();
@@ -640,24 +636,6 @@ export class SoundcloudGraphManager extends GraphManager2<
                 ['a_endcolor',   3, gl.FLOAT],
             ])
 
-            const onCanvasResized = () => {
-                const dpr = window.devicePixelRatio || 1;
-                const displayWidth = this.edgeContainer.clientWidth;
-                const displayHeight = this.edgeContainer.clientHeight;
-                
-                // Set actual canvas resolution
-                this.edgeContainer.width = displayWidth * dpr;
-                this.edgeContainer.height = displayHeight * dpr;
-        
-                this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
-                this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
-        
-                this.render(); // immediately rerender
-            }
-
-            const canvasResizeWatcher = new ResizeObserver(onCanvasResized);
-            canvasResizeWatcher.observe(this.edgeContainer);
-
             const onPanzoomChanged = () => {
                 this.gl.uniform3f(this.panzoomUniform, this.panzoomTransform.x, this.panzoomTransform.y, this.panzoomTransform.zoom);
                 this.renderWebGL();
@@ -670,7 +648,11 @@ export class SoundcloudGraphManager extends GraphManager2<
 
     }
 
-
+    protected override handleResize(): void {
+        super.handleResize();
+        this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
+        this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
+    }
 
     private *getRawEdgeData(): Generator<number, void, unknown> {
         for( const edge of this.edges.values() ){

@@ -347,21 +347,6 @@ extends GraphManager2<
 
     public readonly onNodesResized = () => this.simulation.force( "collisions", d3.forceCollide<SkillTreeNode>( (node) => node.html.clientWidth * 1.2 ).strength(0.3) );
 
-    public readonly onCanvasResized = () => {
-        const dpr = window.devicePixelRatio || 1;
-        const displayWidth = this.edgeContainer.clientWidth;
-        const displayHeight = this.edgeContainer.clientHeight;
-        
-        // Set actual canvas resolution
-        this.edgeContainer.width = displayWidth * dpr;
-        this.edgeContainer.height = displayHeight * dpr;
-
-        this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
-        this.gl.uniform2f(this.resUniform, this.edgeContainer.width, this.edgeContainer.height);
-
-        this.render(); // immediately rerender
-    }
-
     private readonly mouse_dxs = new RollingAverage(10);
     private readonly mouse_dys = new RollingAverage(10);
     private mouse_ticked: boolean = false;
@@ -524,8 +509,6 @@ extends GraphManager2<
         const nodeResizeWatcher = new ResizeObserver(this.onNodesResized);
         nodeResizeWatcher.observe(this._someNode.html);
 
-        const canvasResizeWatcher = new ResizeObserver(this.onCanvasResized);
-        canvasResizeWatcher.observe(this.edgeContainer);
     }
 
     private *getRawEdgeData(): Generator<number, void, unknown> {
@@ -539,8 +522,11 @@ extends GraphManager2<
         }
     }
 
-    public override requestRender(): void {
-        super.requestRender();
+    protected override handleResize(): void {
+        const dpr = window.devicePixelRatio || 1;
+        super.handleResize();
+        this.gl.viewport(0, 0, this.edgeContainer.width, this.edgeContainer.height);
+        this.gl.uniform2f(this.resUniform, this.edgeContainer.width * dpr, this.edgeContainer.height * dpr);
     }
 
     public override render() {
