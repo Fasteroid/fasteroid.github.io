@@ -93,8 +93,7 @@
                 Each year, teams of 5-7 choose one of five long-term problems (which all involve some combination of goofy skits and engineering),
                 and upon performance day must tackle the secret 'spontaneous' problem with nothing but their wits and what's provided.<br>
                 <br>
-                With my dad as team coach (who's only there to keep us on-task and safe–
-                <div class='term'>
+                With my dad as team coach (who's only there to keep us on-task and safe–<div class='term'>
                     <div class='desc'>The team must develop all ideas and props on their own.</div>
                     outside assistance
                 </div> 
