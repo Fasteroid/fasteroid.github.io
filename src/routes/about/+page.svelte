@@ -6,24 +6,39 @@
 
     .term {
         display: inline-block;
-        position: relative;
-        font-style: italic;
-        cursor: help;
+        anchor-scope: --term;
+
+        span {
+            anchor-name: --term;
+            display: inline-block;
+            font-style: italic;
+            cursor: help;
+        }
 
         .desc {
-            text-decoration: none;
-            position: absolute;
+
+            position: fixed;            
             width: max-content;
-            font-style: normal;
+            max-width: max-content;
             padding: 3px 6px;
+            box-sizing: border-box;
+
+            text-decoration: none;
+            font-style: normal;
+            font-size: small;
+
             background-color: rgba(0, 0, 0, 0.418);
             backdrop-filter: blur(3px);
-            font-size: small;
-            bottom: calc(-100% - 5px);
-            box-sizing: border-box;
+
+            position-anchor: --term;
+            position-area: center;
+            justify-self: start;
+            transform: translateY(90%);
 
             opacity: 0;
             pointer-events: none;
+
+            z-index: 2;
 
             transition: opacity 1s ease;
         }
@@ -76,8 +91,8 @@
                 </div>
                 I began writing my first original lines of code early to mid 2014, in a niche language unique to 
                 <div class='term'>
+                    <span>Garry's Mod</span>
                     <div class='desc'>A physics sandbox game built on Half-Life 2's game engine, <i>Source</i></div>
-                    Garry's Mod
                 </div> 
                 called Expression&nbsp;2.  It had a very steep learning curve to it at first due to its obscurity and 
                 narrow scope of applications, but by 2015 (once I had begun to understand basic syntax), it had ignited a god complex within me.  
@@ -95,7 +110,7 @@
                 <br>
                 With my dad as team coach (who's only there to keep us on-task and safe–<div class='term'>
                     <div class='desc'>The team must develop all ideas and props on their own.</div>
-                    outside assistance
+                    <span>outside assistance</span>
                 </div> 
                 is forbidden), and some crazy ideas from my teammates,
                 we reached the prestigious World Finals competition four times in a row, 2016 to 2019, with a second place
@@ -108,7 +123,7 @@
                 a weakness eventually.  In contrast, with good teamwork and good skill coverage, due to the
                 <div class='term'>
                     <div class='desc'>An individual slice may have holes, but with enough stacked it can appear as if there aren't any.</div>
-                    swiss cheese model
+                    <span>swiss cheese model</span>
                 </div>, it is almost impossible to
                 pick a challenge that truly defeats everyone on the team.  I still try to keep in touch with them, but as adults that have 
                 scattered across the country, it's nearly impossible.<br>
@@ -142,3 +157,4 @@
         </section>
     </div>
 </body>
+
