@@ -30,14 +30,14 @@
     }
 </script>
 
-<section class="stack grid">
+<section class="grid-stack grid">
     <canvas class="lines-container"/>   
     <div class="node-container" id="panzoom">
         
         <!-- template cell -->
         <div class="node initial" id="template-node" hidden>
             <div class="scale">
-                <div class="stack artist">
+                <div class="grid-stack artist">
                     <img alt="">
                     <div class="text-outline">b</div>
                     <div class="text-main">a</div>

@@ -28,7 +28,7 @@
     }
 </script>
 
-<section class="stack grid">
+<section class="grid-stack grid">
     <canvas class="lines-container"/>   
     <div class="node-container" id="panzoom">
         

@@ -119,3 +119,20 @@ span.emdash {
     width:13pt;
     transform: scale(1.7, 1);
 }
+
+
+.grid-stack {
+    background-color: black;
+    display: grid;
+    height: 100%;
+    grid-template-areas: "stack";
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+
+    & > * {
+        grid-area: stack;
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+}
